@@ -514,6 +514,14 @@ const Game = () => {
 
   const playerPositions = getPlayerPositions();
 
+  if (gameState.status === 'setup') {
+    return <SetupScreen onStartGame={startGame} />;
+  }
+
+  if (gameState.status === 'finished' && gameState.winner) {
+    return <GameOverScreen winner={gameState.winner} onPlayAgain={handlePlayAgain} />;
+  }
+
   return (
     <div className="w-full max-w-7xl mx-auto">
       <StatusMessage 
