@@ -1,6 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface StatusMessageProps {
   message: string;
@@ -26,30 +27,39 @@ const StatusMessage = ({ message, type, isVisible, onHide }: StatusMessageProps)
   const getTypeStyles = () => {
     switch (type) {
       case 'success':
-        return 'bg-green-500';
+        return 'bg-green-500/90 border-green-600';
       case 'warning':
-        return 'bg-yellow-500';
+        return 'bg-yellow-500/90 border-yellow-600';
       case 'error':
-        return 'bg-red-500';
+        return 'bg-red-500/90 border-red-600';
       case 'info':
       default:
-        return 'bg-blue-500';
+        return 'bg-blue-500/90 border-blue-600';
     }
   };
 
   if (!isRendered) return null;
 
   return (
-    <div 
-      className={cn(
-        "fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50",
-        "px-4 py-2 rounded-lg shadow-lg text-white font-medium",
-        "animate-float-message pointer-events-none",
-        getTypeStyles()
+    <AnimatePresence>
+      {isVisible && (
+        <motion.div 
+          className={cn(
+            "fixed top-1/4 left-1/2 transform -translate-x-1/2 z-50",
+            "px-4 py-2 rounded-md shadow-lg text-white font-medium",
+            "backdrop-blur-sm border",
+            "pointer-events-none",
+            getTypeStyles()
+          )}
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.3 }}
+        >
+          {message}
+        </motion.div>
       )}
-    >
-      {message}
-    </div>
+    </AnimatePresence>
   );
 };
 

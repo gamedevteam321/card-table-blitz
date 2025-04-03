@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Card, GameState, Player, checkCardMatch, createDeck, generatePlayerColors, shuffleDeck } from '@/models/game';
 import { useToast } from '@/hooks/use-toast';
@@ -9,6 +8,7 @@ import StatusMessage from './StatusMessage';
 import Confetti from './Confetti';
 import SetupScreen from './SetupScreen';
 import GameOverScreen from './GameOverScreen';
+import PauseMenu from './PauseMenu';
 import { Button } from './ui/button';
 import { X } from 'lucide-react';
 
@@ -37,20 +37,17 @@ const Game = () => {
   const [capturePosition, setCapturePosition] = useState<{ x: number; y: number } | null>(null);
   const [showCaptureConfetti, setShowCaptureConfetti] = useState(false);
   const [capturingPlayerId, setCapturingPlayerId] = useState<string | null>(null);
+  const [isPaused, setIsPaused] = useState(false);
   
   const { toast } = useToast();
   const isMobile = useIsMobile();
-  
-  // Initialize game
+
   const startGame = useCallback((playerNames: string[], playerCount: number) => {
-    // Create and shuffle the deck
     let deck = createDeck();
     deck = shuffleDeck(deck);
     
-    // Generate avatar colors for players
     const colors = generatePlayerColors(playerCount);
     
-    // Distribute cards equally
     const cardsPerPlayer = Math.floor(deck.length / playerCount);
     const players: Player[] = [];
     
@@ -68,7 +65,6 @@ const Game = () => {
       });
     }
     
-    // Randomly select first player
     const firstPlayerIndex = Math.floor(Math.random() * playerCount);
     
     setGameState({
@@ -85,28 +81,23 @@ const Game = () => {
     setIsDealing(true);
     setGameActive(false);
 
-    // Simulate dealing animation
     setTimeout(() => {
       handleDealComplete();
     }, 2000);
   }, []);
 
-  // Display status message
   const displayMessage = useCallback((text: string, type: 'info' | 'success' | 'warning' | 'error') => {
     setStatusMessage({ text, type });
     setShowStatusMessage(true);
 
-    // Use setTimeout to avoid the React warning about setState during rendering
     setTimeout(() => {
       toast({ title: text });
     }, 0);
   }, [toast]);
-  
-  // Handle dealer animation completion
+
   const handleDealComplete = useCallback(() => {
     setIsDealing(false);
     
-    // Start the game timer and turn timer only after dealing
     setGameState(prev => ({
       ...prev,
       turnStartTime: Date.now(),
@@ -120,20 +111,17 @@ const Game = () => {
       displayMessage(`${currentPlayer.name}'s turn`, 'info');
     }
   }, [gameState.players, gameState.currentPlayerIndex, displayMessage]);
-  
-  // Advance to next player
+
   const nextPlayer = useCallback(() => {
     setGameState(prev => {
       let nextIndex = (prev.currentPlayerIndex + 1) % prev.players.length;
       
-      // Skip inactive or kicked players
       while (
         prev.players[nextIndex].status === 'inactive' || 
         prev.players[nextIndex].status === 'kicked'
       ) {
         nextIndex = (nextIndex + 1) % prev.players.length;
         
-        // If we've looped through all players, they must all be inactive
         if (nextIndex === prev.currentPlayerIndex) {
           return {
             ...prev,
@@ -161,12 +149,10 @@ const Game = () => {
       y: (rect.top + rect.bottom) / 2 / window.innerHeight * 100
     };
   };
-  
-  // Handle player's hit action
+
   const handleHit = useCallback(() => {
     setLastActionType('hit');
     
-    // Slight delay to allow animation to start
     setTimeout(() => {
       setGameState(prev => {
         const currentPlayer = prev.players[prev.currentPlayerIndex];
@@ -175,30 +161,24 @@ const Game = () => {
           return prev;
         }
         
-        // Take the top card from player's deck
         const [playedCard, ...remainingCards] = currentPlayer.cards;
         
-        // Check if the played card matches the top card on the table
         const isMatch = checkCardMatch(playedCard, prev.tableCards);
         
         const updatedPlayers = [...prev.players];
         
         if (isMatch && prev.tableCards.length > 0) {
-          // If match, player captures all cards on the table
           displayMessage('Cards matched!', 'success');
           setLastActionType('capture');
           
-          // Trigger confetti and set capturing player
           setCapturingPlayerId(currentPlayer.id);
           setShowCaptureConfetti(true);
           
-          // Get position for confetti effect
           const position = getPositionForPlayer(currentPlayer.id);
           if (position) {
             setCapturePosition(position);
           }
           
-          // Clear effects after a delay
           setTimeout(() => {
             setShowCaptureConfetti(false);
             setCapturingPlayerId(null);
@@ -210,9 +190,7 @@ const Game = () => {
             cards: [...remainingCards, ...prev.tableCards, playedCard],
           };
           
-          // Check if any player has no cards after this move
           if (remainingCards.length === 0) {
-            // Game is over, current player loses
             const winner = updatedPlayers
               .filter(p => p.id !== currentPlayer.id)
               .reduce((prev, curr) => 
@@ -238,24 +216,20 @@ const Game = () => {
             turnStartTime: Date.now(),
           };
         } else {
-          // No match, card goes to the table
           updatedPlayers[prev.currentPlayerIndex] = {
             ...currentPlayer,
             cards: remainingCards,
           };
           
-          // Check if player has no more cards
           if (remainingCards.length === 0) {
             updatedPlayers[prev.currentPlayerIndex].status = 'inactive';
             displayMessage(`${currentPlayer.name} is out of cards!`, 'warning');
             
-            // Check if only one player is left with cards
             const activePlayers = updatedPlayers.filter(
               p => p.status === 'active' && p.cards.length > 0
             );
             
             if (activePlayers.length === 1) {
-              // Game over, last player with cards wins
               return {
                 ...prev,
                 players: updatedPlayers.map(p => ({
@@ -269,7 +243,6 @@ const Game = () => {
             }
           }
           
-          // Continue game
           const nextPlayerIndex = getNextPlayerIndex(updatedPlayers, prev.currentPlayerIndex);
           
           return {
@@ -283,14 +256,12 @@ const Game = () => {
         }
       });
       
-      // Reset action type after a delay
       setTimeout(() => {
         setLastActionType('none');
       }, 500);
     }, 100);
   }, [displayMessage]);
-  
-  // Get the next active player index
+
   const getNextPlayerIndex = (players: Player[], currentIndex: number) => {
     let nextIndex = (currentIndex + 1) % players.length;
     
@@ -300,7 +271,6 @@ const Game = () => {
     ) {
       nextIndex = (nextIndex + 1) % players.length;
       
-      // If we've checked all players and none are active, return the current one
       if (nextIndex === currentIndex) {
         return currentIndex;
       }
@@ -308,17 +278,14 @@ const Game = () => {
     
     return nextIndex;
   };
-  
-  // Handle auto-play on timer expiration
+
   const handleAutoPlay = useCallback(() => {
     setGameState(prev => {
       const currentPlayer = prev.players[prev.currentPlayerIndex];
       const updatedPlayers = [...prev.players];
       
-      // Increment auto-play count
       const newAutoPlayCount = currentPlayer.autoPlayCount + 1;
       
-      // Update player status if they've had too many auto-plays
       if (newAutoPlayCount >= 2) {
         updatedPlayers[prev.currentPlayerIndex] = {
           ...currentPlayer,
@@ -328,11 +295,9 @@ const Game = () => {
         
         displayMessage(`${currentPlayer.name} kicked for inactivity!`, 'error');
         
-        // Check if only one player remains active
         const activePlayers = updatedPlayers.filter(p => p.status === 'active');
         
         if (activePlayers.length === 1) {
-          // Last active player wins
           return {
             ...prev,
             players: updatedPlayers.map(p => ({
@@ -352,7 +317,6 @@ const Game = () => {
         displayMessage('Auto-played!', 'warning');
       }
       
-      // Process the auto-play (play the top card)
       if (currentPlayer.cards.length > 0) {
         const [playedCard, ...remainingCards] = currentPlayer.cards;
         
@@ -361,11 +325,9 @@ const Game = () => {
           cards: remainingCards,
         };
         
-        // Check if played card matches the top card on the table
         const isMatch = checkCardMatch(playedCard, prev.tableCards);
         
         if (isMatch && prev.tableCards.length > 0) {
-          // Match - player captures cards
           updatedPlayers[prev.currentPlayerIndex] = {
             ...updatedPlayers[prev.currentPlayerIndex],
             cards: [...remainingCards, ...prev.tableCards, playedCard],
@@ -379,7 +341,6 @@ const Game = () => {
             turnStartTime: Date.now(),
           };
         } else {
-          // No match - card goes to table
           return {
             ...prev,
             players: updatedPlayers,
@@ -390,7 +351,6 @@ const Game = () => {
         }
       }
       
-      // No cards left for this player
       return {
         ...prev,
         players: updatedPlayers.map((p, i) => 
@@ -401,8 +361,7 @@ const Game = () => {
       };
     });
   }, [displayMessage]);
-  
-  // Handle player's shuffle action
+
   const handleShuffle = useCallback(() => {
     setGameState(prev => {
       const currentPlayer = prev.players[prev.currentPlayerIndex];
@@ -411,7 +370,6 @@ const Game = () => {
         return prev;
       }
       
-      // Shuffle the player's cards
       const shuffledCards = shuffleDeck(currentPlayer.cards);
       
       const updatedPlayers = [...prev.players];
@@ -430,7 +388,6 @@ const Game = () => {
     });
   }, [displayMessage]);
 
-  // Handle quitting the game
   const handleQuitGame = useCallback(() => {
     setGameState({
       players: [],
@@ -448,9 +405,9 @@ const Game = () => {
     setGameActive(false);
     setIsDealing(false);
     setShowStatusMessage(false);
+    setIsPaused(false);
   }, []);
-  
-  // Handle play again
+
   const handlePlayAgain = () => {
     setGameState({
       players: [],
@@ -465,10 +422,29 @@ const Game = () => {
     setTimeRemaining(TURN_TIME_LIMIT);
     setGameTimeRemaining(GAME_TIME_LIMIT);
   };
-  
-  // Timer effects
+
+  const togglePause = useCallback(() => {
+    setIsPaused(prev => !prev);
+    
+    if (isPaused) {
+      setGameState(prev => ({
+        ...prev,
+        turnStartTime: Date.now(),
+      }));
+    }
+  }, [isPaused]);
+
+  const handleResumeGame = useCallback(() => {
+    setIsPaused(false);
+    
+    setGameState(prev => ({
+      ...prev,
+      turnStartTime: Date.now(),
+    }));
+  }, []);
+
   useEffect(() => {
-    if (gameState.status !== 'playing' || !gameActive) return;
+    if (gameState.status !== 'playing' || !gameActive || isPaused) return;
     
     const timer = setInterval(() => {
       const elapsedTurnTime = Math.floor((Date.now() - gameState.turnStartTime) / 1000);
@@ -480,14 +456,12 @@ const Game = () => {
         handleAutoPlay();
       }
       
-      // Game timer
       const elapsedGameTime = Math.floor((Date.now() - gameState.gameStartTime) / 1000);
       const remainingGameTime = Math.max(0, GAME_TIME_LIMIT - elapsedGameTime);
       
       setGameTimeRemaining(remainingGameTime);
       
       if (remainingGameTime === 0 && gameState.status === 'playing') {
-        // End game due to time limit
         const sortedPlayers = [...gameState.players].sort((a, b) => b.cards.length - a.cards.length);
         const winner = sortedPlayers[0];
         
@@ -506,9 +480,8 @@ const Game = () => {
     }, 1000);
     
     return () => clearInterval(timer);
-  }, [gameState.status, gameState.turnStartTime, gameState.gameStartTime, handleAutoPlay, gameActive, displayMessage]);
-  
-  // Update message when current player changes
+  }, [gameState.status, gameState.turnStartTime, gameState.gameStartTime, handleAutoPlay, gameActive, displayMessage, isPaused]);
+
   useEffect(() => {
     if (gameState.status === 'playing' && gameState.players.length > 0) {
       const currentPlayer = gameState.players[gameState.currentPlayerIndex];
@@ -520,50 +493,27 @@ const Game = () => {
       }
     }
   }, [gameState.currentPlayerIndex, gameState.status, displayMessage]);
-  
-  // Render appropriate screen based on game state
-  if (gameState.status === 'setup') {
-    return <SetupScreen onStartGame={startGame} />;
-  }
-  
-  if (gameState.status === 'finished' && gameState.winner) {
-    return (
-      <>
-        <Confetti isActive={true} />
-        <GameOverScreen 
-          winner={gameState.winner} 
-          players={gameState.players}
-          onPlayAgain={handlePlayAgain} 
-        />
-      </>
-    );
-  }
 
-  // Always make first player (index 0) at the bottom
   const getPlayerPositions = () => {
-    const positions = isMobile ? ['bottom', 'top', 'left', 'right'] : ['bottom', 'right', 'top', 'left'];
+    let positions = isMobile ? ['bottom', 'top', 'left', 'right'] : ['bottom', 'right', 'top', 'left'];
     const playerPositions: Record<string, string> = {};
     
-    // Ensure player-0 is always at bottom
-    for (let i = 0; i < gameState.players.length; i++) {
-      const player = gameState.players[i];
-      let positionIndex = 0;
-      
+    gameState.players.forEach(player => {
       if (player.id === 'player-0') {
-        positionIndex = 0; // Bottom
+        playerPositions[player.id] = 'bottom';
       } else {
-        positionIndex = (Array.from(player.id)[player.id.length - 1] as unknown as number) % positions.length;
-        if (positionIndex === 0) positionIndex = 1; // Don't let other players be at bottom
+        const remainingPositions = positions.filter(pos => pos !== 'bottom');
+        const index = Number(player.id.split('-')[1]) - 1;
+        const position = remainingPositions[index % remainingPositions.length];
+        playerPositions[player.id] = position;
       }
-      
-      playerPositions[player.id] = positions[positionIndex];
-    }
+    });
     
     return playerPositions;
   };
-  
+
   const playerPositions = getPlayerPositions();
-  
+
   return (
     <div className="w-full max-w-7xl mx-auto">
       <StatusMessage 
@@ -577,53 +527,49 @@ const Game = () => {
         <Confetti isActive={true} position={capturePosition} />
       )}
       
-      <div className="bg-casino p-4 rounded-lg shadow-lg border border-casino-table mb-4">
-        <div className="flex justify-between items-center">
-          <h1 className="text-xl font-bold text-casino-gold">Card Table Blitz</h1>
-          <div className="text-sm text-gray-400">
-            Game time: {Math.floor(gameTimeRemaining / 60)}:{(gameTimeRemaining % 60).toString().padStart(2, '0')}
-          </div>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={handleQuitGame}
-            className="text-gray-400 hover:text-white hover:bg-destructive/20"
-          >
-            <X className="w-4 h-4 mr-1" />
-            Quit
-          </Button>
+      <div className="bg-casino p-2 rounded-lg shadow-lg border border-casino-table mb-2 flex justify-between items-center">
+        <h1 className="text-base sm:text-xl font-bold text-casino-gold">Card Table Blitz</h1>
+        <div className="text-xs sm:text-sm text-gray-400">
+          Game time: {Math.floor(gameTimeRemaining / 60)}:{(gameTimeRemaining % 60).toString().padStart(2, '0')}
+        </div>
+        <div className="flex gap-2">
+          <PauseMenu 
+            isPaused={isPaused}
+            onTogglePause={togglePause}
+            onResume={handleResumeGame}
+            onQuit={handleQuitGame}
+          />
         </div>
       </div>
       
-      {/* Game table with players positioned around it */}
-      <div className="relative md:h-[600px] h-[450px] bg-casino-dark rounded-xl overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-4/5">
+      <div className="relative min-h-[350px] md:h-[600px] h-[450px] bg-casino-dark rounded-xl overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full sm:w-4/5 px-2 sm:px-0">
           <GameTable cards={gameState.tableCards} />
         </div>
         
-        {/* Players positioned around the table */}
         {gameState.players.map((player, index) => {
           const position = playerPositions[player.id];
           const isCurrentPlayer = index === gameState.currentPlayerIndex;
           const isCapturing = player.id === capturingPlayerId;
           
-          // Calculate position classes
           let positionClass = '';
           if (position === 'top') {
-            positionClass = 'top-4 left-1/2 transform -translate-x-1/2';
+            positionClass = 'top-2 left-1/2 transform -translate-x-1/2';
           } else if (position === 'right') {
-            positionClass = 'right-4 top-1/2 transform -translate-y-1/2';
+            positionClass = 'right-2 top-1/2 transform -translate-y-1/2';
           } else if (position === 'bottom') {
-            positionClass = 'bottom-4 left-1/2 transform -translate-x-1/2';
+            positionClass = 'bottom-2 left-1/2 transform -translate-x-1/2';
           } else if (position === 'left') {
-            positionClass = 'left-4 top-1/2 transform -translate-y-1/2';
+            positionClass = 'left-2 top-1/2 transform -translate-y-1/2';
           }
+          
+          const scaleClass = isMobile ? 'scale-90' : '';
           
           return (
             <div 
               key={player.id} 
               id={`player-${player.id}`}
-              className={`absolute ${positionClass}`}
+              className={`absolute ${positionClass} ${scaleClass}`}
               style={{ zIndex: isCurrentPlayer ? 20 : 10 }}
             >
               <PlayerArea
@@ -637,6 +583,7 @@ const Game = () => {
                 isDealing={isDealing}
                 positionClass={position}
                 isCapturing={isCapturing}
+                isMobile={isMobile}
               />
             </div>
           );
