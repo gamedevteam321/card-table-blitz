@@ -31,6 +31,7 @@ const Game = () => {
   const [showStatusMessage, setShowStatusMessage] = useState(false);
   const [statusMessage, setStatusMessage] = useState({ text: '', type: 'info' as const });
   const [lastActionType, setLastActionType] = useState<'none' | 'hit' | 'capture'>('none');
+  const [gameActive, setGameActive] = useState(false);
   
   const { toast } = useToast();
   const isMobile = useIsMobile();
@@ -73,17 +74,12 @@ const Game = () => {
       status: 'playing',
       winner: null,
       message: `${players[firstPlayerIndex].name}'s turn`,
-      turnStartTime: Date.now(),
-      gameStartTime: Date.now(),
+      turnStartTime: 0,
+      gameStartTime: 0,
     });
     
     setIsDealing(true);
-    setTimeout(() => setIsDealing(false), 3000); // Longer animation time
-    
-    // Show initial message after dealing completes
-    setTimeout(() => {
-      displayMessage(`${players[firstPlayerIndex].name}'s turn`, 'info');
-    }, 3500);
+    setGameActive(false);
   }, []);
 
   // Display status message
@@ -96,6 +92,25 @@ const Game = () => {
       toast({ title: text });
     }, 0);
   }, [toast]);
+  
+  // Handle dealer animation completion
+  const handleDealComplete = useCallback(() => {
+    setIsDealing(false);
+    
+    // Start the game timer and turn timer only after dealing
+    setGameState(prev => ({
+      ...prev,
+      turnStartTime: Date.now(),
+      gameStartTime: Date.now(),
+    }));
+    
+    setGameActive(true);
+    
+    const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+    if (currentPlayer) {
+      displayMessage(`${currentPlayer.name}'s turn`, 'info');
+    }
+  }, [gameState.players, gameState.currentPlayerIndex, displayMessage]);
   
   // Advance to next player
   const nextPlayer = useCallback(() => {
@@ -394,18 +409,9 @@ const Game = () => {
     setGameTimeRemaining(GAME_TIME_LIMIT);
   };
   
-  // Handle dealer animation completion
-  const handleDealComplete = () => {
-    setIsDealing(false);
-    const currentPlayer = gameState.players[gameState.currentPlayerIndex];
-    if (currentPlayer) {
-      displayMessage(`${currentPlayer.name}'s turn`, 'info');
-    }
-  };
-  
   // Timer effects
   useEffect(() => {
-    if (gameState.status !== 'playing') return;
+    if (gameState.status !== 'playing' || !gameActive) return;
     
     const timer = setInterval(() => {
       const elapsedTurnTime = Math.floor((Date.now() - gameState.turnStartTime) / 1000);
@@ -443,7 +449,7 @@ const Game = () => {
     }, 1000);
     
     return () => clearInterval(timer);
-  }, [gameState.status, gameState.turnStartTime, gameState.gameStartTime, handleAutoPlay]);
+  }, [gameState.status, gameState.turnStartTime, gameState.gameStartTime, handleAutoPlay, gameActive, displayMessage]);
   
   // Update message when current player changes
   useEffect(() => {
@@ -500,6 +506,7 @@ const Game = () => {
             isDealing={isDealing} 
             orientation={orientation}
             onDealComplete={handleDealComplete}
+            players={gameState.players}
           />
         </div>
         

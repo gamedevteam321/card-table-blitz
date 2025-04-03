@@ -74,10 +74,11 @@ const Dealer = ({ isDealing, orientation, onDealComplete, players = [] }: Dealer
           const playerDealEnd = playerDealStart + 3;
           const isCurrentPlayerDealing = dealIndex >= playerDealStart && dealIndex < playerDealEnd;
           const target = getPlayerPosition(playerIndex);
+          const cardIndex = dealIndex % 3; // Which of the 3 cards for this player
           
           return isCurrentPlayerDealing && (
             <motion.div 
-              key={player.id}
+              key={`${player.id}-${dealIndex}`}
               className="absolute top-0 -right-2 w-10 h-14 bg-white border border-gray-300 rounded-md card-back"
               initial={{ x: 0, y: 0, rotate: 0, opacity: 1 }}
               animate={{ 

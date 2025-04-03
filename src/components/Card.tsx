@@ -39,7 +39,7 @@ const CardComponent = ({
   }
 
   const getSuitColor = (suit: string) => {
-    return suit === 'hearts' || suit === 'diamonds' ? 'text-red-500' : 'text-white';
+    return suit === 'hearts' || suit === 'diamonds' ? 'text-red-500' : 'text-black';
   };
 
   const getSuitSymbol = (suit: string) => {

@@ -58,7 +58,7 @@ const GameTable = ({ cards, orientation }: GameTableProps) => {
               ))}
             </div>
             {cards.length > 0 && (
-              <div className="text-casino-gold text-sm font-medium bg-casino-dark/80 px-3 py-1 rounded-full">
+              <div className="text-casino-gold text-sm font-medium bg-casino-dark/80 px-3 py-1 rounded-full mt-2">
                 {getCardName(cards[cards.length - 1])}
               </div>
             )}
