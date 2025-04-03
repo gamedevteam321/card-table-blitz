@@ -1,5 +1,4 @@
-
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Card, GameState, Player, checkCardMatch, createDeck, generatePlayerColors, shuffleDeck } from '@/models/game';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -31,6 +30,7 @@ const Game = () => {
   const [isDealing, setIsDealing] = useState(false);
   const [showStatusMessage, setShowStatusMessage] = useState(false);
   const [statusMessage, setStatusMessage] = useState({ text: '', type: 'info' as const });
+  const [lastActionType, setLastActionType] = useState<'none' | 'hit' | 'capture'>('none');
   
   const { toast } = useToast();
   const isMobile = useIsMobile();
@@ -78,17 +78,24 @@ const Game = () => {
     });
     
     setIsDealing(true);
-    setTimeout(() => setIsDealing(false), 1500);
+    setTimeout(() => setIsDealing(false), 3000); // Longer animation time
     
-    displayMessage(`${players[firstPlayerIndex].name}'s turn`, 'info');
+    // Show initial message after dealing completes
+    setTimeout(() => {
+      displayMessage(`${players[firstPlayerIndex].name}'s turn`, 'info');
+    }, 3500);
   }, []);
 
   // Display status message
-  const displayMessage = (text: string, type: 'info' | 'success' | 'warning' | 'error') => {
+  const displayMessage = useCallback((text: string, type: 'info' | 'success' | 'warning' | 'error') => {
     setStatusMessage({ text, type });
     setShowStatusMessage(true);
-    toast({ title: text });
-  };
+
+    // Use setTimeout to avoid the React warning about setState during rendering
+    setTimeout(() => {
+      toast({ title: text });
+    }, 0);
+  }, [toast]);
   
   // Advance to next player
   const nextPlayer = useCallback(() => {
@@ -122,103 +129,114 @@ const Game = () => {
   
   // Handle player's hit action
   const handleHit = useCallback(() => {
-    setGameState(prev => {
-      const currentPlayer = prev.players[prev.currentPlayerIndex];
-      
-      if (currentPlayer.cards.length === 0) {
-        return prev;
-      }
-      
-      // Take the top card from player's deck
-      const [playedCard, ...remainingCards] = currentPlayer.cards;
-      
-      // Check if the played card matches the top card on the table
-      const isMatch = checkCardMatch(playedCard, prev.tableCards);
-      
-      const updatedPlayers = [...prev.players];
-      
-      if (isMatch && prev.tableCards.length > 0) {
-        // If match, player captures all cards on the table
-        displayMessage('Cards matched!', 'success');
+    setLastActionType('hit');
+    
+    // Slight delay to allow animation to start
+    setTimeout(() => {
+      setGameState(prev => {
+        const currentPlayer = prev.players[prev.currentPlayerIndex];
         
-        updatedPlayers[prev.currentPlayerIndex] = {
-          ...currentPlayer,
-          cards: [...remainingCards, ...prev.tableCards, playedCard],
-        };
-        
-        // Check if any player has no cards after this move
-        if (remainingCards.length === 0) {
-          // Game is over, current player loses
-          const winner = updatedPlayers
-            .filter(p => p.id !== currentPlayer.id)
-            .reduce((prev, curr) => 
-              (prev.cards.length > curr.cards.length) ? prev : curr
-            );
-            
-          return {
-            ...prev,
-            players: updatedPlayers.map(p => ({
-              ...p,
-              status: p.id === winner.id ? 'winner' : 'loser'
-            })),
-            tableCards: [],
-            status: 'finished',
-            winner,
-          };
+        if (currentPlayer.cards.length === 0) {
+          return prev;
         }
         
-        return {
-          ...prev,
-          players: updatedPlayers,
-          tableCards: [],
-          turnStartTime: Date.now(),
-        };
-      } else {
-        // No match, card goes to the table
-        updatedPlayers[prev.currentPlayerIndex] = {
-          ...currentPlayer,
-          cards: remainingCards,
-        };
+        // Take the top card from player's deck
+        const [playedCard, ...remainingCards] = currentPlayer.cards;
         
-        // Check if player has no more cards
-        if (remainingCards.length === 0) {
-          updatedPlayers[prev.currentPlayerIndex].status = 'inactive';
-          displayMessage(`${currentPlayer.name} is out of cards!`, 'warning');
+        // Check if the played card matches the top card on the table
+        const isMatch = checkCardMatch(playedCard, prev.tableCards);
+        
+        const updatedPlayers = [...prev.players];
+        
+        if (isMatch && prev.tableCards.length > 0) {
+          // If match, player captures all cards on the table
+          displayMessage('Cards matched!', 'success');
+          setLastActionType('capture');
           
-          // Check if only one player is left with cards
-          const activePlayers = updatedPlayers.filter(
-            p => p.status === 'active' && p.cards.length > 0
-          );
+          updatedPlayers[prev.currentPlayerIndex] = {
+            ...currentPlayer,
+            cards: [...remainingCards, ...prev.tableCards, playedCard],
+          };
           
-          if (activePlayers.length === 1) {
-            // Game over, last player with cards wins
+          // Check if any player has no cards after this move
+          if (remainingCards.length === 0) {
+            // Game is over, current player loses
+            const winner = updatedPlayers
+              .filter(p => p.id !== currentPlayer.id)
+              .reduce((prev, curr) => 
+                (prev.cards.length > curr.cards.length) ? prev : curr
+              );
+              
             return {
               ...prev,
               players: updatedPlayers.map(p => ({
                 ...p,
-                status: p.id === activePlayers[0].id ? 'winner' : 'loser'
+                status: p.id === winner.id ? 'winner' : 'loser'
               })),
-              tableCards: [...prev.tableCards, playedCard],
+              tableCards: [],
               status: 'finished',
-              winner: activePlayers[0],
+              winner,
             };
           }
+          
+          return {
+            ...prev,
+            players: updatedPlayers,
+            tableCards: [],
+            turnStartTime: Date.now(),
+          };
+        } else {
+          // No match, card goes to the table
+          updatedPlayers[prev.currentPlayerIndex] = {
+            ...currentPlayer,
+            cards: remainingCards,
+          };
+          
+          // Check if player has no more cards
+          if (remainingCards.length === 0) {
+            updatedPlayers[prev.currentPlayerIndex].status = 'inactive';
+            displayMessage(`${currentPlayer.name} is out of cards!`, 'warning');
+            
+            // Check if only one player is left with cards
+            const activePlayers = updatedPlayers.filter(
+              p => p.status === 'active' && p.cards.length > 0
+            );
+            
+            if (activePlayers.length === 1) {
+              // Game over, last player with cards wins
+              return {
+                ...prev,
+                players: updatedPlayers.map(p => ({
+                  ...p,
+                  status: p.id === activePlayers[0].id ? 'winner' : 'loser'
+                })),
+                tableCards: [...prev.tableCards, playedCard],
+                status: 'finished',
+                winner: activePlayers[0],
+              };
+            }
+          }
+          
+          // Continue game
+          const nextPlayerIndex = getNextPlayerIndex(updatedPlayers, prev.currentPlayerIndex);
+          
+          return {
+            ...prev,
+            players: updatedPlayers,
+            currentPlayerIndex: nextPlayerIndex,
+            tableCards: [...prev.tableCards, playedCard],
+            turnStartTime: Date.now(),
+            message: `${updatedPlayers[nextPlayerIndex].name}'s turn`,
+          };
         }
-        
-        // Continue game
-        const nextPlayerIndex = getNextPlayerIndex(updatedPlayers, prev.currentPlayerIndex);
-        
-        return {
-          ...prev,
-          players: updatedPlayers,
-          currentPlayerIndex: nextPlayerIndex,
-          tableCards: [...prev.tableCards, playedCard],
-          turnStartTime: Date.now(),
-          message: `${updatedPlayers[nextPlayerIndex].name}'s turn`,
-        };
-      }
-    });
-  }, []);
+      });
+      
+      // Reset action type after a delay
+      setTimeout(() => {
+        setLastActionType('none');
+      }, 500);
+    }, 100);
+  }, [displayMessage]);
   
   // Get the next active player index
   const getNextPlayerIndex = (players: Player[], currentIndex: number) => {
@@ -376,6 +394,15 @@ const Game = () => {
     setGameTimeRemaining(GAME_TIME_LIMIT);
   };
   
+  // Handle dealer animation completion
+  const handleDealComplete = () => {
+    setIsDealing(false);
+    const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+    if (currentPlayer) {
+      displayMessage(`${currentPlayer.name}'s turn`, 'info');
+    }
+  };
+  
   // Timer effects
   useEffect(() => {
     if (gameState.status !== 'playing') return;
@@ -424,10 +451,12 @@ const Game = () => {
       const currentPlayer = gameState.players[gameState.currentPlayerIndex];
       
       if (currentPlayer) {
-        displayMessage(`${currentPlayer.name}'s turn`, 'info');
+        setTimeout(() => {
+          displayMessage(`${currentPlayer.name}'s turn`, 'info');
+        }, 0);
       }
     }
-  }, [gameState.currentPlayerIndex, gameState.status]);
+  }, [gameState.currentPlayerIndex, gameState.status, displayMessage]);
   
   // Render appropriate screen based on game state
   if (gameState.status === 'setup') {
@@ -467,7 +496,11 @@ const Game = () => {
       
       <div className={`flex ${orientation === 'vertical' ? 'flex-col space-y-4' : 'space-x-4'}`}>
         <div className="flex-1">
-          <Dealer isDealing={isDealing} orientation={orientation} />
+          <Dealer 
+            isDealing={isDealing} 
+            orientation={orientation}
+            onDealComplete={handleDealComplete}
+          />
         </div>
         
         <div className="flex-grow">
@@ -491,6 +524,7 @@ const Game = () => {
             onShuffle={handleShuffle}
             timeRemaining={timeRemaining}
             orientation={orientation}
+            lastActionType={index === gameState.currentPlayerIndex ? lastActionType : 'none'}
           />
         ))}
       </div>

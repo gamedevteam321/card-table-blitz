@@ -18,27 +18,28 @@ const GameTable = ({ cards, orientation }: GameTableProps) => {
     )}>
       <div className="absolute inset-0 table-surface"></div>
       <div className={cn(
-        "relative z-10 flex items-center justify-center",
-        orientation === 'vertical' ? "flex-row flex-wrap gap-2" : "flex-row gap-1"
+        "relative z-10 flex items-center justify-center"
       )}>
         {cards.length === 0 ? (
           <div className="text-gray-400 text-sm">
             No cards on the table
           </div>
         ) : (
-          cards.map((card, index) => (
-            <CardComponent 
-              key={card.id} 
-              card={card} 
-              isTable={true} 
-              className={cn(
-                "transform",
-                orientation === 'vertical' 
-                  ? "translate-y-0" 
-                  : `translate-x-${index * 2} translate-y-${index % 2 === 0 ? '0' : '1'}`
-              )}
-            />
-          ))
+          <div className="relative">
+            {cards.map((card, index) => (
+              <CardComponent 
+                key={card.id} 
+                card={card} 
+                isTable={true} 
+                style={{
+                  position: 'absolute',
+                  zIndex: index + 1,
+                  transform: `translateX(${index * 2}px) translateY(${index * 2}px) rotate(${(index % 3 - 1) * 2}deg)`
+                }}
+                className={index === cards.length - 1 ? "shadow-lg" : ""}
+              />
+            ))}
+          </div>
         )}
       </div>
     </div>

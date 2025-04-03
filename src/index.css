@@ -72,3 +72,28 @@
   width: 10px;
   height: 20px;
 }
+
+@keyframes card-hit {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-50px) rotate(10deg); }
+  100% { transform: translateY(0) translateX(100px) rotate(0); }
+}
+
+@keyframes card-capture {
+  0% { transform: translateX(0); opacity: 1; }
+  50% { transform: translateX(50px) scale(0.8); opacity: 0.7; }
+  100% { transform: translateX(0) scale(1); opacity: 1; }
+}
+
+@keyframes deal-card {
+  0% { transform: translateY(-100px) translateX(-100px) rotate(0deg); opacity: 0; }
+  100% { transform: translateY(0) translateX(0) rotate(360deg); opacity: 1; }
+}
+
+.animate-card-hit {
+  animation: card-hit 0.5s ease-out forwards;
+}
+
+.animate-card-capture {
+  animation: card-capture 0.5s ease-out forwards;
+}

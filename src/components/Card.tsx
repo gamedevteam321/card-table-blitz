@@ -10,6 +10,7 @@ interface CardProps {
   isDealing?: boolean;
   dealDelay?: number;
   faceDown?: boolean;
+  style?: React.CSSProperties;
 }
 
 const CardComponent = ({ 
@@ -19,7 +20,8 @@ const CardComponent = ({
   onClick,
   isDealing = false,
   dealDelay = 0,
-  faceDown = false
+  faceDown = false,
+  style = {}
 }: CardProps) => {
   if (!card) {
     return (
@@ -28,6 +30,7 @@ const CardComponent = ({
           "w-16 h-24 flex items-center justify-center rounded-md border border-casino-table bg-casino-dark",
           className
         )}
+        style={style}
       />
     );
   }
@@ -46,10 +49,17 @@ const CardComponent = ({
     }
   };
 
-  const animationStyle = isDealing ? {
-    animation: `deal-card 0.5s ease-out forwards`,
-    animationDelay: `${dealDelay}s`
-  } : {};
+  const getRankDisplay = (rank: string) => {
+    return rank === '10' ? '10' : rank.charAt(0);
+  };
+
+  const animationStyle = {
+    ...style,
+    ...(isDealing ? {
+      animation: `deal-card 0.5s ease-out forwards`,
+      animationDelay: `${dealDelay}s`
+    } : {})
+  };
 
   return (
     <div
@@ -66,16 +76,16 @@ const CardComponent = ({
       {!faceDown && (
         <div className="flex flex-col h-full p-1">
           <div className={cn("text-sm font-bold", getSuitColor(card.suit))}>
-            {card.rank}
+            {getRankDisplay(card.rank)}
             <span className="ml-1">{getSuitSymbol(card.suit)}</span>
           </div>
           <div className="flex-1 flex items-center justify-center">
-            <span className={cn("text-xl", getSuitColor(card.suit))}>
+            <span className={cn("text-3xl", getSuitColor(card.suit))}>
               {getSuitSymbol(card.suit)}
             </span>
           </div>
           <div className={cn("text-sm font-bold self-end rotate-180", getSuitColor(card.suit))}>
-            {card.rank}
+            {getRankDisplay(card.rank)}
             <span className="ml-1">{getSuitSymbol(card.suit)}</span>
           </div>
         </div>
