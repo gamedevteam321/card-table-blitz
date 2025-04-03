@@ -128,24 +128,3 @@
   0% { transform: translateY(0) rotate(0deg); opacity: 1; }
   100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
 }
-
-.game-paused {
-  position: relative;
-}
-
-.game-paused::after {
-  content: "PAUSED";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.7);
-  color: white;
-  font-size: 2rem;
-  font-weight: bold;
-  z-index: 50;
-}
