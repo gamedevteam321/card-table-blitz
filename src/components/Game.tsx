@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Card, GameState, Player, checkCardMatch, createDeck, generatePlayerColors, shuffleDeck } from '@/models/game';
 import { useToast } from '@/hooks/use-toast';
@@ -91,7 +90,6 @@ const Game = () => {
     setStatusMessage({ text, type });
     setShowStatusMessage(true);
 
-    // Only show the toast for important messages
     if (type === 'success' || type === 'warning' || type === 'error') {
       toast({ title: text });
     }
@@ -497,17 +495,17 @@ const Game = () => {
   }, [gameState.currentPlayerIndex, gameState.status, displayMessage]);
 
   const getPlayerPositions = () => {
-    let positions = isMobile ? ['bottom', 'top', 'left', 'right'] : ['bottom', 'right', 'top', 'left'];
     const playerPositions: Record<string, string> = {};
     
-    gameState.players.forEach(player => {
-      if (player.id === 'player-0') {
+    gameState.players.forEach((player, index) => {
+      if (index === 0) {
         playerPositions[player.id] = 'bottom';
-      } else {
-        const remainingPositions = positions.filter(pos => pos !== 'bottom');
-        const index = Number(player.id.split('-')[1]) - 1;
-        const position = remainingPositions[index % remainingPositions.length];
-        playerPositions[player.id] = position;
+      } else if (index === 1) {
+        playerPositions[player.id] = 'left';
+      } else if (index === 2) {
+        playerPositions[player.id] = 'top';
+      } else if (index === 3) {
+        playerPositions[player.id] = 'right';
       }
     });
     
@@ -537,7 +535,6 @@ const Game = () => {
         onHide={() => setShowStatusMessage(false)}
       />
       
-      {/* Header moved to the very top */}
       <div className="bg-casino p-2 rounded-lg shadow-lg border border-casino-table mb-4 flex justify-between items-center">
         <h1 className="text-base sm:text-xl font-bold text-casino-gold">Card Table Blitz</h1>
         <div className="text-xs sm:text-sm text-gray-400">
@@ -557,7 +554,6 @@ const Game = () => {
         <Confetti isActive={true} position={capturePosition} />
       )}
       
-      {/* Game content - takes up more space now */}
       <div className="relative flex-grow min-h-[calc(100vh-160px)] bg-casino-dark rounded-xl overflow-hidden">
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full sm:w-4/5 px-2 sm:px-0">
           <GameTable cards={gameState.tableCards} />
@@ -569,17 +565,31 @@ const Game = () => {
           const isCapturing = player.id === capturingPlayerId;
           
           let positionClass = '';
-          if (position === 'top') {
-            positionClass = 'top-4 left-1/2 transform -translate-x-1/2';
-          } else if (position === 'right') {
-            positionClass = 'right-4 top-1/2 transform -translate-y-1/2';
-          } else if (position === 'bottom') {
-            positionClass = 'bottom-4 left-1/2 transform -translate-x-1/2';
-          } else if (position === 'left') {
-            positionClass = 'left-4 top-1/2 transform -translate-y-1/2';
+          
+          if (isMobile) {
+            if (position === 'top') {
+              positionClass = 'top-2 left-1/2 transform -translate-x-1/2';
+            } else if (position === 'right') {
+              positionClass = 'right-1 top-1/2 transform -translate-y-1/2';
+            } else if (position === 'bottom') {
+              positionClass = 'bottom-2 left-1/2 transform -translate-x-1/2';
+            } else if (position === 'left') {
+              positionClass = 'left-1 top-1/2 transform -translate-y-1/2';
+            }
+          } else {
+            if (position === 'top') {
+              positionClass = 'top-8 left-1/2 transform -translate-x-1/2';
+            } else if (position === 'right') {
+              positionClass = 'right-8 top-1/2 transform -translate-y-1/2';
+            } else if (position === 'bottom') {
+              positionClass = 'bottom-8 left-1/2 transform -translate-x-1/2';
+            } else if (position === 'left') {
+              positionClass = 'left-8 top-1/2 transform -translate-y-1/2';
+            }
           }
           
-          const scaleClass = isMobile ? 'scale-90' : '';
+          const scaleClass = isMobile ? 
+            (position === 'left' || position === 'right' ? 'scale-80' : 'scale-90') : '';
           
           return (
             <div 
