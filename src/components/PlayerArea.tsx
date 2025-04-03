@@ -4,7 +4,8 @@ import { Player } from "@/models/game";
 import CardComponent from "./Card";
 import { cn } from "@/lib/utils";
 import { Shuffle } from "lucide-react";
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import { motion } from "framer-motion";
 
 interface PlayerAreaProps {
   player: Player;
@@ -30,11 +31,17 @@ const PlayerArea = ({
   const { name, cards, shufflesRemaining, status } = player;
   const topCard = cards[0];
   const cardRef = useRef<HTMLDivElement>(null);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   const handleHit = () => {
-    // This is just a visual animation trigger
-    // The actual card hit logic is in Game.tsx
-    onHit();
+    if (isAnimating) return;
+    
+    setIsAnimating(true);
+    // Let the animation play before actually executing the hit logic
+    setTimeout(() => {
+      onHit();
+      setTimeout(() => setIsAnimating(false), 500);
+    }, 300);
   };
 
   return (
@@ -62,11 +69,24 @@ const PlayerArea = ({
             <CardComponent 
               card={topCard} 
               faceDown={true}
+              animationType={lastActionType === 'capture' ? 'capture' : 'none'}
               className={cn(
-                lastActionType === 'capture' ? "animate-card-capture" : "",
                 cards.length > 1 ? "after:content-[''] after:absolute after:top-1 after:left-1 after:w-full after:h-full after:bg-casino-dark after:rounded-md after:-z-10" : ""
               )}
             />
+          )}
+          {isAnimating && cards.length > 0 && (
+            <motion.div 
+              className="absolute top-0 left-0"
+              initial={{ opacity: 1, y: 0, x: 0 }}
+              animate={{ opacity: 0, y: -30, x: 80 }}
+              transition={{ duration: 0.4 }}
+            >
+              <CardComponent 
+                card={topCard} 
+                faceDown={false}
+              />
+            </motion.div>
           )}
           {cards.length === 0 && (
             <div className="w-16 h-24 border border-dashed border-gray-600 rounded-md flex items-center justify-center">
@@ -89,7 +109,7 @@ const PlayerArea = ({
         <Button
           variant="default"
           size="sm"
-          disabled={!isCurrentPlayer || cards.length === 0 || status !== 'active'}
+          disabled={!isCurrentPlayer || cards.length === 0 || status !== 'active' || isAnimating}
           onClick={handleHit}
           className={cn(
             "bg-casino-accent hover:bg-casino-accent/90 text-white",
