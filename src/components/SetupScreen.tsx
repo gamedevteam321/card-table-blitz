@@ -11,7 +11,7 @@ const SetupScreen = ({
   onStartGame
 }: SetupScreenProps) => {
   const [playerCount, setPlayerCount] = useState(2);
-  const [playerNames, setPlayerNames] = useState<string[]>(Array(5).fill("").map((_, i) => `Player ${i + 1}`));
+  const [playerNames, setPlayerNames] = useState<string[]>(Array(4).fill("").map((_, i) => `Player ${i + 1}`));
   const handlePlayerCountChange = (value: string) => {
     setPlayerCount(parseInt(value));
   };
@@ -45,7 +45,6 @@ const SetupScreen = ({
               <SelectItem value="2">2 Players</SelectItem>
               <SelectItem value="3">3 Players</SelectItem>
               <SelectItem value="4">4 Players</SelectItem>
-              <SelectItem value="5">5 Players</SelectItem>
             </SelectContent>
           </Select>
         </div>

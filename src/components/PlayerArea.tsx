@@ -43,7 +43,7 @@ const PlayerArea = ({
   const [isAnimating, setIsAnimating] = useState(false);
 
   const handleHit = () => {
-    if (isAnimating) return;
+    if (isAnimating || !isCurrentPlayer || cards.length === 0 || status !== 'active' || isDealing) return;
     
     setIsAnimating(true);
     // Let the animation play before actually executing the hit logic
@@ -111,7 +111,10 @@ const PlayerArea = ({
         )} ref={cardRef}>
           <div className="relative">
             {cards.length > 0 ? (
-              <div className="relative">
+              <div 
+                className="relative cursor-pointer" 
+                onClick={handleHit}
+              >
                 <CardComponent 
                   card={topCard} 
                   faceDown={true}
@@ -120,7 +123,8 @@ const PlayerArea = ({
                   className={cn(
                     cards.length > 1 ? "after:content-[''] after:absolute after:top-1 after:left-1 after:w-full after:h-full after:bg-indigo-900 after:rounded-md after:-z-10" : "",
                     isCapturing && "shadow-glow-card",
-                    isMobile ? "scale-75" : ""
+                    isMobile ? "scale-75" : "",
+                    isCurrentPlayer && "hover:scale-105 transition-transform"
                   )}
                 />
                 {isCurrentPlayer && (
