@@ -11,20 +11,8 @@ interface StatusMessageProps {
 }
 
 const StatusMessage = ({ message, type, isVisible, onHide }: StatusMessageProps) => {
-  const [isRendered, setIsRendered] = useState(false);
-
-  useEffect(() => {
-    if (isVisible) {
-      setIsRendered(true);
-      const timer = setTimeout(() => {
-        onHide();
-      }, 2000);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [isVisible, onHide]);
-
-  // Hide the component completely since we don't want the middle screen feedback
+  // We're returning null as requested to completely disable the feedback
+  // in the middle of the screen
   return null;
 };
 
