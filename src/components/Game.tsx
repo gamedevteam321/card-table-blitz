@@ -519,7 +519,11 @@ const Game = () => {
   }
 
   if (gameState.status === 'finished' && gameState.winner) {
-    return <GameOverScreen winner={gameState.winner} onPlayAgain={handlePlayAgain} />;
+    return <GameOverScreen 
+      winner={gameState.winner} 
+      players={gameState.players}
+      onPlayAgain={handlePlayAgain} 
+    />;
   }
 
   return (

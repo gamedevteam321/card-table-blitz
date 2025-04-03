@@ -4,13 +4,15 @@ import { Player } from "@/models/game";
 
 interface GameOverScreenProps {
   winner: Player;
-  players: Player[];
+  players?: Player[]; // Made optional
   onPlayAgain: () => void;
 }
 
-const GameOverScreen = ({ winner, players, onPlayAgain }: GameOverScreenProps) => {
-  // Sort players by their card count (descending)
-  const sortedPlayers = [...players].sort((a, b) => b.cards.length - a.cards.length);
+const GameOverScreen = ({ winner, players = [], onPlayAgain }: GameOverScreenProps) => {
+  // Sort players by their card count (descending) if players are provided
+  const sortedPlayers = players.length > 0 
+    ? [...players].sort((a, b) => b.cards.length - a.cards.length)
+    : [winner]; // Fallback to just showing the winner
 
   return (
     <div className="max-w-md w-full mx-auto p-6 bg-casino rounded-lg border border-casino-table shadow-lg">
