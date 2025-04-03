@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -52,15 +53,12 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				sidebar: {
-					DEFAULT: 'hsl(var(--sidebar-background))',
-					foreground: 'hsl(var(--sidebar-foreground))',
-					primary: 'hsl(var(--sidebar-primary))',
-					'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
-					accent: 'hsl(var(--sidebar-accent))',
-					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
-					border: 'hsl(var(--sidebar-border))',
-					ring: 'hsl(var(--sidebar-ring))'
+				casino: {
+					DEFAULT: '#1A2C38',
+					dark: '#0F1923',
+					table: '#193441',
+					accent: '#4CAF50',
+					gold: '#FFD700'
 				}
 			},
 			borderRadius: {
@@ -70,25 +68,44 @@ export default {
 			},
 			keyframes: {
 				'accordion-down': {
-					from: {
-						height: '0'
-					},
-					to: {
-						height: 'var(--radix-accordion-content-height)'
-					}
+					from: { height: '0' },
+					to: { height: 'var(--radix-accordion-content-height)' }
 				},
 				'accordion-up': {
-					from: {
-						height: 'var(--radix-accordion-content-height)'
-					},
-					to: {
-						height: '0'
-					}
+					from: { height: 'var(--radix-accordion-content-height)' },
+					to: { height: '0' }
+				},
+				'slide-in-right': {
+					'0%': { transform: 'translateX(100%)' },
+					'100%': { transform: 'translateX(0)' }
+				},
+				'slide-out-right': {
+					'0%': { transform: 'translateX(0)' },
+					'100%': { transform: 'translateX(100%)' }
+				},
+				'deal-card': {
+					'0%': { transform: 'translateY(-100px) rotate(0deg)', opacity: '0' },
+					'100%': { transform: 'translateY(0) rotate(360deg)', opacity: '1' }
+				},
+				'float-message': {
+					'0%': { transform: 'translateY(0px)', opacity: '0' },
+					'10%': { transform: 'translateY(-10px)', opacity: '1' },
+					'90%': { transform: 'translateY(-20px)', opacity: '1' },
+					'100%': { transform: 'translateY(-30px)', opacity: '0' }
+				},
+				confetti: {
+					'0%': { transform: 'translateY(0) rotate(0deg)', opacity: '1' },
+					'100%': { transform: 'translateY(100vh) rotate(720deg)', opacity: '0' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'slide-in-right': 'slide-in-right 0.3s ease-out',
+				'slide-out-right': 'slide-out-right 0.3s ease-out',
+				'deal-card': 'deal-card 0.5s ease-out forwards',
+				'float-message': 'float-message 2s ease-out forwards',
+				'confetti': 'confetti 4s ease-out forwards'
 			}
 		}
 	},
