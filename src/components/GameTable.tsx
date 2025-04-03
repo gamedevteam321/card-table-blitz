@@ -11,6 +11,7 @@ interface GameTableProps {
 
 const GameTable = ({ cards }: GameTableProps) => {
   const isMobile = useIsMobile();
+  const [showPlacingAnimation, setShowPlacingAnimation] = useState(false);
   
   // Helper function to get the full name of a card
   const getCardName = (card: Card) => {
@@ -40,8 +41,6 @@ const GameTable = ({ cards }: GameTableProps) => {
         </div>
       </div>
       
-      {/* No more directional arrows - removed as requested */}
-      
       <div className="relative z-10 flex flex-col items-center justify-center gap-4 w-full">
         {cards.length === 0 ? (
           <div className="text-gray-400 text-sm">
@@ -61,6 +60,7 @@ const GameTable = ({ cards }: GameTableProps) => {
                     transform: `translateX(${index % 3 - 1}px) translateY(${index % 2}px) rotate(${(index % 5 - 2) * 3}deg)`
                   }}
                   className={index === cards.length - 1 ? "shadow-lg" : ""}
+                  animationType={index === cards.length - 1 ? 'hit' : 'none'}
                 />
               ))}
             </div>

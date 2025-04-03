@@ -4,22 +4,27 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
 import { generatePlayerColors } from "@/models/game";
+
 interface SetupScreenProps {
   onStartGame: (playerNames: string[], playerCount: number) => void;
 }
+
 const SetupScreen = ({
   onStartGame
 }: SetupScreenProps) => {
   const [playerCount, setPlayerCount] = useState(2);
-  const [playerNames, setPlayerNames] = useState<string[]>(Array(5).fill("").map((_, i) => `Player ${i + 1}`));
+  const [playerNames, setPlayerNames] = useState<string[]>(Array(4).fill("").map((_, i) => `Player ${i + 1}`));
+  
   const handlePlayerCountChange = (value: string) => {
     setPlayerCount(parseInt(value));
   };
+  
   const handleNameChange = (index: number, name: string) => {
     const newNames = [...playerNames];
     newNames[index] = name;
     setPlayerNames(newNames);
   };
+  
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -31,6 +36,7 @@ const SetupScreen = ({
     }
     onStartGame(activePlayerNames, playerCount);
   };
+  
   return <div className="max-w-md w-full mx-auto p-6 bg-casino rounded-lg border border-casino-table shadow-lg">
       <h2 className="text-2xl font-bold mb-6 text-center text-casino-gold">Satte pe Satta</h2>
       
@@ -45,7 +51,6 @@ const SetupScreen = ({
               <SelectItem value="2">2 Players</SelectItem>
               <SelectItem value="3">3 Players</SelectItem>
               <SelectItem value="4">4 Players</SelectItem>
-              <SelectItem value="5">5 Players</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -67,4 +72,5 @@ const SetupScreen = ({
       </form>
     </div>;
 };
+
 export default SetupScreen;

@@ -43,7 +43,7 @@ const PlayerArea = ({
   const [isAnimating, setIsAnimating] = useState(false);
 
   const handleHit = () => {
-    if (isAnimating) return;
+    if (isAnimating || !isCurrentPlayer || cards.length === 0 || status !== 'active' || isDealing) return;
     
     setIsAnimating(true);
     // Let the animation play before actually executing the hit logic
@@ -105,10 +105,15 @@ const PlayerArea = ({
         </div>
 
         {/* Middle section with card stack */}
-        <div className={cn(
-          "relative flex-shrink-0",
-          isCurrentPlayer ? "scale-100" : "scale-90"
-        )} ref={cardRef}>
+        <div 
+          className={cn(
+            "relative flex-shrink-0 cursor-pointer",
+            isCurrentPlayer && cards.length > 0 && status === 'active' && !isDealing ? "hover:scale-105" : "",
+            isCurrentPlayer ? "scale-100" : "scale-90"
+          )} 
+          ref={cardRef}
+          onClick={handleHit}
+        >
           <div className="relative">
             {cards.length > 0 ? (
               <div className="relative">
@@ -116,7 +121,7 @@ const PlayerArea = ({
                   card={topCard} 
                   faceDown={true}
                   isDealing={isDealing}
-                  animationType={lastActionType === 'capture' ? 'capture' : 'none'}
+                  animationType={lastActionType === 'hit' ? 'hit' : lastActionType === 'capture' ? 'capture' : 'none'}
                   className={cn(
                     cards.length > 1 ? "after:content-[''] after:absolute after:top-1 after:left-1 after:w-full after:h-full after:bg-indigo-900 after:rounded-md after:-z-10" : "",
                     isCapturing && "shadow-glow-card",
