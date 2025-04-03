@@ -67,6 +67,22 @@
               0 2px 4px -1px rgba(0, 0, 0, 0.1);
 }
 
+.shadow-glow {
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.7);
+  animation: pulse-gold 1.5s infinite;
+}
+
+.shadow-glow-card {
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+  animation: pulse-gold 1.5s infinite;
+}
+
+@keyframes pulse-gold {
+  0% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.7); }
+  50% { box-shadow: 0 0 25px rgba(255, 215, 0, 0.9); }
+  100% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.7); }
+}
+
 .confetti {
   position: absolute;
   width: 10px;
@@ -106,4 +122,9 @@
   position: absolute;
   z-index: 30;
   pointer-events: none;
+}
+
+@keyframes confetti {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
 }

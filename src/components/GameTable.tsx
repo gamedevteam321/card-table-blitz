@@ -3,13 +3,15 @@ import { useState } from "react";
 import { Card, getCardValue } from "@/models/game";
 import CardComponent from "./Card";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface GameTableProps {
   cards: Card[];
-  orientation: 'horizontal' | 'vertical';
 }
 
-const GameTable = ({ cards, orientation }: GameTableProps) => {
+const GameTable = ({ cards }: GameTableProps) => {
+  const isMobile = useIsMobile();
+  
   // Helper function to get the full name of a card
   const getCardName = (card: Card) => {
     const rankNames: Record<string, string> = {
@@ -31,25 +33,45 @@ const GameTable = ({ cards, orientation }: GameTableProps) => {
       <div className="absolute inset-0 bg-casino-dark rounded-xl opacity-90 z-0"></div>
       
       {/* Circular direction indicators */}
-      <div className="absolute top-1/3 left-1/4 z-10">
-        <div className="w-12 h-12 rounded-full bg-casino-dark/50 border border-gray-600 flex items-center justify-center">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M20 12L14 18V13H4V11H14V6L20 12Z" fill="#6b7280" />
-          </svg>
-        </div>
-      </div>
+      {!isMobile ? (
+        <>
+          <div className="absolute top-1/3 left-1/4 z-10">
+            <div className="w-12 h-12 rounded-full bg-casino-dark/50 border border-gray-600 flex items-center justify-center">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 12L14 18V13H4V11H14V6L20 12Z" fill="#6b7280" />
+              </svg>
+            </div>
+          </div>
+          
+          <div className="absolute bottom-1/3 right-1/4 z-10">
+            <div className="w-12 h-12 rounded-full bg-casino-dark/50 border border-gray-600 flex items-center justify-center">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4 12L10 6V11H20V13H10V18L4 12Z" fill="#6b7280" />
+              </svg>
+            </div>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="absolute top-1/4 left-1/3 z-10">
+            <div className="w-8 h-8 rounded-full bg-casino-dark/50 border border-gray-600 flex items-center justify-center">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 12L14 18V13H4V11H14V6L20 12Z" fill="#6b7280" />
+              </svg>
+            </div>
+          </div>
+          
+          <div className="absolute bottom-1/4 right-1/3 z-10">
+            <div className="w-8 h-8 rounded-full bg-casino-dark/50 border border-gray-600 flex items-center justify-center">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4 12L10 6V11H20V13H10V18L4 12Z" fill="#6b7280" />
+              </svg>
+            </div>
+          </div>
+        </>
+      )}
       
-      <div className="absolute bottom-1/3 right-1/4 z-10">
-        <div className="w-12 h-12 rounded-full bg-casino-dark/50 border border-gray-600 flex items-center justify-center">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M4 12L10 6V11H20V13H10V18L4 12Z" fill="#6b7280" />
-          </svg>
-        </div>
-      </div>
-      
-      <div className={cn(
-        "relative z-10 flex flex-col items-center justify-center gap-4 w-full"
-      )}>
+      <div className="relative z-10 flex flex-col items-center justify-center gap-4 w-full">
         {cards.length === 0 ? (
           <div className="text-gray-400 text-sm">
             Waiting for players...

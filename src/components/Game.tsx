@@ -9,6 +9,8 @@ import StatusMessage from './StatusMessage';
 import Confetti from './Confetti';
 import SetupScreen from './SetupScreen';
 import GameOverScreen from './GameOverScreen';
+import { Button } from './ui/button';
+import { X } from 'lucide-react';
 
 const TURN_TIME_LIMIT = 10; // seconds
 const GAME_TIME_LIMIT = 120; // seconds (2 minutes)
@@ -32,10 +34,12 @@ const Game = () => {
   const [statusMessage, setStatusMessage] = useState({ text: '', type: 'info' as const });
   const [lastActionType, setLastActionType] = useState<'none' | 'hit' | 'capture'>('none');
   const [gameActive, setGameActive] = useState(false);
+  const [capturePosition, setCapturePosition] = useState<{ x: number; y: number } | null>(null);
+  const [showCaptureConfetti, setShowCaptureConfetti] = useState(false);
+  const [capturingPlayerId, setCapturingPlayerId] = useState<string | null>(null);
   
   const { toast } = useToast();
   const isMobile = useIsMobile();
-  const orientation = isMobile ? 'vertical' as const : 'horizontal' as const;
   
   // Initialize game
   const startGame = useCallback((playerNames: string[], playerCount: number) => {
@@ -146,6 +150,17 @@ const Game = () => {
       };
     });
   }, []);
+
+  const getPositionForPlayer = (playerId: string) => {
+    const playerElement = document.getElementById(`player-${playerId}`);
+    if (!playerElement) return null;
+    
+    const rect = playerElement.getBoundingClientRect();
+    return {
+      x: (rect.left + rect.right) / 2 / window.innerWidth * 100,
+      y: (rect.top + rect.bottom) / 2 / window.innerHeight * 100
+    };
+  };
   
   // Handle player's hit action
   const handleHit = useCallback(() => {
@@ -172,6 +187,23 @@ const Game = () => {
           // If match, player captures all cards on the table
           displayMessage('Cards matched!', 'success');
           setLastActionType('capture');
+          
+          // Trigger confetti and set capturing player
+          setCapturingPlayerId(currentPlayer.id);
+          setShowCaptureConfetti(true);
+          
+          // Get position for confetti effect
+          const position = getPositionForPlayer(currentPlayer.id);
+          if (position) {
+            setCapturePosition(position);
+          }
+          
+          // Clear effects after a delay
+          setTimeout(() => {
+            setShowCaptureConfetti(false);
+            setCapturingPlayerId(null);
+            setCapturePosition(null);
+          }, 1500);
           
           updatedPlayers[prev.currentPlayerIndex] = {
             ...currentPlayer,
@@ -256,7 +288,7 @@ const Game = () => {
         setLastActionType('none');
       }, 500);
     }, 100);
-  }, []);
+  }, [displayMessage]);
   
   // Get the next active player index
   const getNextPlayerIndex = (players: Player[], currentIndex: number) => {
@@ -368,7 +400,7 @@ const Game = () => {
         turnStartTime: Date.now(),
       };
     });
-  }, []);
+  }, [displayMessage]);
   
   // Handle player's shuffle action
   const handleShuffle = useCallback(() => {
@@ -396,6 +428,26 @@ const Game = () => {
         players: updatedPlayers,
       };
     });
+  }, [displayMessage]);
+
+  // Handle quitting the game
+  const handleQuitGame = useCallback(() => {
+    setGameState({
+      players: [],
+      currentPlayerIndex: 0,
+      tableCards: [],
+      status: 'setup',
+      winner: null,
+      message: '',
+      turnStartTime: 0,
+      gameStartTime: 0,
+    });
+    setTimeRemaining(TURN_TIME_LIMIT);
+    setGameTimeRemaining(GAME_TIME_LIMIT);
+    setLastActionType('none');
+    setGameActive(false);
+    setIsDealing(false);
+    setShowStatusMessage(false);
   }, []);
   
   // Handle play again
@@ -486,16 +538,26 @@ const Game = () => {
       </>
     );
   }
-  
-  // Determine player positions based on number of players
+
+  // Always make first player (index 0) at the bottom
   const getPlayerPositions = () => {
-    const positions = ['top', 'right', 'bottom', 'left'];
+    const positions = isMobile ? ['bottom', 'top', 'left', 'right'] : ['bottom', 'right', 'top', 'left'];
     const playerPositions: Record<string, string> = {};
     
-    gameState.players.forEach((player, index) => {
-      const position = positions[index % positions.length];
-      playerPositions[player.id] = position;
-    });
+    // Ensure player-0 is always at bottom
+    for (let i = 0; i < gameState.players.length; i++) {
+      const player = gameState.players[i];
+      let positionIndex = 0;
+      
+      if (player.id === 'player-0') {
+        positionIndex = 0; // Bottom
+      } else {
+        positionIndex = (Array.from(player.id)[player.id.length - 1] as unknown as number) % positions.length;
+        if (positionIndex === 0) positionIndex = 1; // Don't let other players be at bottom
+      }
+      
+      playerPositions[player.id] = positions[positionIndex];
+    }
     
     return playerPositions;
   };
@@ -511,25 +573,39 @@ const Game = () => {
         onHide={() => setShowStatusMessage(false)}
       />
       
+      {showCaptureConfetti && capturePosition && (
+        <Confetti isActive={true} position={capturePosition} />
+      )}
+      
       <div className="bg-casino p-4 rounded-lg shadow-lg border border-casino-table mb-4">
         <div className="flex justify-between items-center">
           <h1 className="text-xl font-bold text-casino-gold">Card Table Blitz</h1>
           <div className="text-sm text-gray-400">
             Game time: {Math.floor(gameTimeRemaining / 60)}:{(gameTimeRemaining % 60).toString().padStart(2, '0')}
           </div>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={handleQuitGame}
+            className="text-gray-400 hover:text-white hover:bg-destructive/20"
+          >
+            <X className="w-4 h-4 mr-1" />
+            Quit
+          </Button>
         </div>
       </div>
       
       {/* Game table with players positioned around it */}
-      <div className="relative h-[600px] bg-casino-dark rounded-xl overflow-hidden">
+      <div className="relative md:h-[600px] h-[450px] bg-casino-dark rounded-xl overflow-hidden">
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-4/5">
-          <GameTable cards={gameState.tableCards} orientation={orientation} />
+          <GameTable cards={gameState.tableCards} />
         </div>
         
         {/* Players positioned around the table */}
         {gameState.players.map((player, index) => {
           const position = playerPositions[player.id];
           const isCurrentPlayer = index === gameState.currentPlayerIndex;
+          const isCapturing = player.id === capturingPlayerId;
           
           // Calculate position classes
           let positionClass = '';
@@ -546,6 +622,7 @@ const Game = () => {
           return (
             <div 
               key={player.id} 
+              id={`player-${player.id}`}
               className={`absolute ${positionClass}`}
               style={{ zIndex: isCurrentPlayer ? 20 : 10 }}
             >
@@ -559,6 +636,7 @@ const Game = () => {
                 lastActionType={isCurrentPlayer ? lastActionType : 'none'}
                 isDealing={isDealing}
                 positionClass={position}
+                isCapturing={isCapturing}
               />
             </div>
           );

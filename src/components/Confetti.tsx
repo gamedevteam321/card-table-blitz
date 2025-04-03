@@ -3,15 +3,18 @@ import { useEffect, useState } from "react";
 
 interface ConfettiProps {
   isActive: boolean;
+  position?: { x: number, y: number } | null;
 }
 
-const Confetti = ({ isActive }: ConfettiProps) => {
+const Confetti = ({ isActive, position = null }: ConfettiProps) => {
   const [particles, setParticles] = useState<Array<{
     id: number;
     x: number;
     y: number;
     color: string;
     rotation: number;
+    size: number;
+    speed: number;
   }>>([]);
 
   useEffect(() => {
@@ -27,13 +30,20 @@ const Confetti = ({ isActive }: ConfettiProps) => {
         'bg-casino-gold'
       ];
       
-      for (let i = 0; i < 100; i++) {
+      const particleCount = position ? 50 : 100;
+      
+      for (let i = 0; i < particleCount; i++) {
+        const speed = 2 + Math.random() * 3;
+        
         newParticles.push({
           id: i,
-          x: Math.random() * 100, // percentage of screen width
-          y: -5, // start above the viewport
+          // If position is provided, use it as the starting point
+          x: position ? position.x + Math.random() * 40 - 20 : Math.random() * 100, 
+          y: position ? position.y : -5, // start above the viewport or at position
           color: colors[Math.floor(Math.random() * colors.length)],
-          rotation: Math.random() * 360
+          rotation: Math.random() * 360,
+          size: 3 + Math.random() * 7,
+          speed: speed
         });
       }
       
@@ -41,7 +51,7 @@ const Confetti = ({ isActive }: ConfettiProps) => {
     } else {
       setParticles([]);
     }
-  }, [isActive]);
+  }, [isActive, position]);
 
   if (!isActive) return null;
 
@@ -50,13 +60,14 @@ const Confetti = ({ isActive }: ConfettiProps) => {
       {particles.map((particle) => (
         <div
           key={particle.id}
-          className={`confetti ${particle.color}`}
+          className={`absolute ${particle.color} rounded-sm`}
           style={{
             left: `${particle.x}%`,
             top: `${particle.y}%`,
+            width: `${particle.size}px`,
+            height: `${particle.size * 2}px`,
             transform: `rotate(${particle.rotation}deg)`,
-            animationDelay: `${Math.random() * 2}s`,
-            animationDuration: `${2 + Math.random() * 3}s`
+            animation: `confetti ${4 / particle.speed}s ease-out forwards`
           }}
         />
       ))}
