@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Card, GameState, Player, checkCardMatch, createDeck, generatePlayerColors, shuffleDeck } from '@/models/game';
 import { useToast } from '@/hooks/use-toast';
@@ -90,9 +91,10 @@ const Game = () => {
     setStatusMessage({ text, type });
     setShowStatusMessage(true);
 
-    setTimeout(() => {
+    // Only show the toast for important messages
+    if (type === 'success' || type === 'warning' || type === 'error') {
       toast({ title: text });
-    }, 0);
+    }
   }, [toast]);
 
   const handleDealComplete = useCallback(() => {
@@ -527,7 +529,7 @@ const Game = () => {
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto">
+    <div className="w-full max-w-7xl mx-auto flex flex-col h-full">
       <StatusMessage 
         message={statusMessage.text}
         type={statusMessage.type}
@@ -535,11 +537,8 @@ const Game = () => {
         onHide={() => setShowStatusMessage(false)}
       />
       
-      {showCaptureConfetti && capturePosition && (
-        <Confetti isActive={true} position={capturePosition} />
-      )}
-      
-      <div className="bg-casino p-2 rounded-lg shadow-lg border border-casino-table mb-2 flex justify-between items-center">
+      {/* Header moved to the very top */}
+      <div className="bg-casino p-2 rounded-lg shadow-lg border border-casino-table mb-4 flex justify-between items-center">
         <h1 className="text-base sm:text-xl font-bold text-casino-gold">Card Table Blitz</h1>
         <div className="text-xs sm:text-sm text-gray-400">
           Game time: {Math.floor(gameTimeRemaining / 60)}:{(gameTimeRemaining % 60).toString().padStart(2, '0')}
@@ -554,7 +553,12 @@ const Game = () => {
         </div>
       </div>
       
-      <div className="relative min-h-[350px] md:h-[600px] h-[450px] bg-casino-dark rounded-xl overflow-hidden">
+      {showCaptureConfetti && capturePosition && (
+        <Confetti isActive={true} position={capturePosition} />
+      )}
+      
+      {/* Game content - takes up more space now */}
+      <div className="relative flex-grow min-h-[calc(100vh-160px)] bg-casino-dark rounded-xl overflow-hidden">
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full sm:w-4/5 px-2 sm:px-0">
           <GameTable cards={gameState.tableCards} />
         </div>
@@ -566,13 +570,13 @@ const Game = () => {
           
           let positionClass = '';
           if (position === 'top') {
-            positionClass = 'top-2 left-1/2 transform -translate-x-1/2';
+            positionClass = 'top-4 left-1/2 transform -translate-x-1/2';
           } else if (position === 'right') {
-            positionClass = 'right-2 top-1/2 transform -translate-y-1/2';
+            positionClass = 'right-4 top-1/2 transform -translate-y-1/2';
           } else if (position === 'bottom') {
-            positionClass = 'bottom-2 left-1/2 transform -translate-x-1/2';
+            positionClass = 'bottom-4 left-1/2 transform -translate-x-1/2';
           } else if (position === 'left') {
-            positionClass = 'left-2 top-1/2 transform -translate-y-1/2';
+            positionClass = 'left-4 top-1/2 transform -translate-y-1/2';
           }
           
           const scaleClass = isMobile ? 'scale-90' : '';
