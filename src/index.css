@@ -85,9 +85,9 @@
   100% { transform: translateX(0) scale(1); opacity: 1; }
 }
 
-@keyframes deal-card {
-  0% { transform: translateY(-100px) translateX(-100px) rotate(0deg); opacity: 0; }
-  100% { transform: translateY(0) translateX(0) rotate(360deg); opacity: 1; }
+@keyframes card-deal {
+  0% { transform: translateY(-100px) translateX(-100px) rotate(180deg); opacity: 0; }
+  100% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 1; }
 }
 
 .animate-card-hit {
@@ -96,4 +96,14 @@
 
 .animate-card-capture {
   animation: card-capture 0.5s ease-out forwards;
+}
+
+.animate-card-deal {
+  animation: card-deal 0.8s ease-out forwards;
+}
+
+.card-distribution {
+  position: absolute;
+  z-index: 30;
+  pointer-events: none;
 }

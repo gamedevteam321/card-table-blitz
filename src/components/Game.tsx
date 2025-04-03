@@ -1,10 +1,10 @@
+
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Card, GameState, Player, checkCardMatch, createDeck, generatePlayerColors, shuffleDeck } from '@/models/game';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 import PlayerArea from './PlayerArea';
 import GameTable from './GameTable';
-import Dealer from './Dealer';
 import StatusMessage from './StatusMessage';
 import Confetti from './Confetti';
 import SetupScreen from './SetupScreen';
@@ -80,6 +80,11 @@ const Game = () => {
     
     setIsDealing(true);
     setGameActive(false);
+
+    // Simulate dealing animation
+    setTimeout(() => {
+      handleDealComplete();
+    }, 2000);
   }, []);
 
   // Display status message
@@ -251,7 +256,7 @@ const Game = () => {
         setLastActionType('none');
       }, 500);
     }, 100);
-  }, [displayMessage]);
+  }, []);
   
   // Get the next active player index
   const getNextPlayerIndex = (players: Player[], currentIndex: number) => {
@@ -482,8 +487,23 @@ const Game = () => {
     );
   }
   
+  // Determine player positions based on number of players
+  const getPlayerPositions = () => {
+    const positions = ['top', 'right', 'bottom', 'left'];
+    const playerPositions: Record<string, string> = {};
+    
+    gameState.players.forEach((player, index) => {
+      const position = positions[index % positions.length];
+      playerPositions[player.id] = position;
+    });
+    
+    return playerPositions;
+  };
+  
+  const playerPositions = getPlayerPositions();
+  
   return (
-    <div className="w-full max-w-4xl mx-auto">
+    <div className="w-full max-w-7xl mx-auto">
       <StatusMessage 
         message={statusMessage.text}
         type={statusMessage.type}
@@ -500,40 +520,49 @@ const Game = () => {
         </div>
       </div>
       
-      <div className={`flex ${orientation === 'vertical' ? 'flex-col space-y-4' : 'space-x-4'}`}>
-        <div className="flex-1">
-          <Dealer 
-            isDealing={isDealing} 
-            orientation={orientation}
-            onDealComplete={handleDealComplete}
-            players={gameState.players}
-          />
-        </div>
-        
-        <div className="flex-grow">
+      {/* Game table with players positioned around it */}
+      <div className="relative h-[600px] bg-casino-dark rounded-xl overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-4/5">
           <GameTable cards={gameState.tableCards} orientation={orientation} />
         </div>
-      </div>
-      
-      <div className={`grid gap-4 mt-4 ${
-        orientation === 'vertical' 
-          ? 'grid-cols-1' 
-          : gameState.players.length <= 3 
-            ? 'grid-cols-3' 
-            : 'grid-cols-5'
-      }`}>
-        {gameState.players.map((player, index) => (
-          <PlayerArea
-            key={player.id}
-            player={player}
-            isCurrentPlayer={index === gameState.currentPlayerIndex}
-            onHit={handleHit}
-            onShuffle={handleShuffle}
-            timeRemaining={timeRemaining}
-            orientation={orientation}
-            lastActionType={index === gameState.currentPlayerIndex ? lastActionType : 'none'}
-          />
-        ))}
+        
+        {/* Players positioned around the table */}
+        {gameState.players.map((player, index) => {
+          const position = playerPositions[player.id];
+          const isCurrentPlayer = index === gameState.currentPlayerIndex;
+          
+          // Calculate position classes
+          let positionClass = '';
+          if (position === 'top') {
+            positionClass = 'top-4 left-1/2 transform -translate-x-1/2';
+          } else if (position === 'right') {
+            positionClass = 'right-4 top-1/2 transform -translate-y-1/2';
+          } else if (position === 'bottom') {
+            positionClass = 'bottom-4 left-1/2 transform -translate-x-1/2';
+          } else if (position === 'left') {
+            positionClass = 'left-4 top-1/2 transform -translate-y-1/2';
+          }
+          
+          return (
+            <div 
+              key={player.id} 
+              className={`absolute ${positionClass}`}
+              style={{ zIndex: isCurrentPlayer ? 20 : 10 }}
+            >
+              <PlayerArea
+                player={player}
+                isCurrentPlayer={isCurrentPlayer}
+                onHit={handleHit}
+                onShuffle={handleShuffle}
+                timeRemaining={timeRemaining}
+                orientation={position === 'left' || position === 'right' ? 'vertical' : 'horizontal'}
+                lastActionType={isCurrentPlayer ? lastActionType : 'none'}
+                isDealing={isDealing}
+                positionClass={position}
+              />
+            </div>
+          );
+        })}
       </div>
     </div>
   );

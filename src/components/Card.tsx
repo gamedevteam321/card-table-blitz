@@ -59,15 +59,16 @@ const CardComponent = ({
   // Animation variants based on type
   const animationVariants = {
     deal: {
-      initial: { opacity: 0, y: -50, rotate: -10 },
-      animate: { opacity: 1, y: 0, rotate: 0, transition: { duration: 0.5, delay: dealDelay } }
+      initial: { opacity: 0, y: -100, rotate: -10, scale: 0.8 },
+      animate: { opacity: 1, y: 0, rotate: 0, scale: 1, transition: { duration: 0.5, delay: dealDelay } }
     },
     hit: {
-      initial: { y: 0, x: 0, scale: 1 },
+      initial: { y: 0, x: 0, scale: 1, rotate: 0 },
       animate: { 
         y: [-30, 0], 
         x: [0, 80], 
-        scale: [0.9, 1], 
+        scale: [0.9, 1],
+        rotate: [0, 5, 0],
         transition: { duration: 0.4, ease: "easeOut" } 
       }
     },
@@ -76,7 +77,8 @@ const CardComponent = ({
       animate: { 
         opacity: [1, 0.8, 1], 
         scale: [1, 0.85, 1], 
-        x: [0, 20, -80], 
+        x: [0, 20, -80],
+        rotate: [0, -5, 0], 
         transition: { duration: 0.5 } 
       }
     },
@@ -89,21 +91,35 @@ const CardComponent = ({
   const selectedAnimation = animationVariants[animationType];
 
   // Use motion.div for animations
-  const CardWrapper = animationType !== 'none' ? motion.div : 'div';
+  const CardWrapper = animationType !== 'none' || isDealing ? motion.div : 'div';
+  
+  // Animation props for dealing
+  const animationProps = isDealing ? {
+    initial: { opacity: 0, y: -100, scale: 0.8, rotate: 180 },
+    animate: { 
+      opacity: 1, 
+      y: 0, 
+      scale: 1,
+      rotate: 0,
+      transition: { duration: 0.8, delay: dealDelay * 0.2 }
+    }
+  } : animationType !== 'none' ? {
+    initial: selectedAnimation.initial,
+    animate: selectedAnimation.animate
+  } : {};
 
   return (
     <CardWrapper
       onClick={onClick}
       style={style}
       className={cn(
-        "w-16 h-24 rounded-md border border-gray-500 shadow cursor-pointer transition-transform duration-200",
-        isTable ? "card-shadow" : "hover:scale-105",
-        isDealing ? "opacity-0" : "",
+        "w-16 h-24 rounded-md border shadow cursor-pointer transition-transform duration-200",
+        isTable ? "card-shadow border-white" : "hover:scale-105 border-gray-300",
+        isDealing ? "animate-card-deal" : "",
         faceDown ? "card-back" : "bg-white",
         className
       )}
-      initial={animationType !== 'none' ? selectedAnimation.initial : undefined}
-      animate={animationType !== 'none' ? selectedAnimation.animate : undefined}
+      {...animationProps}
     >
       {!faceDown && (
         <div className="flex flex-col h-full p-1">

@@ -16,6 +16,8 @@ interface PlayerAreaProps {
   orientation: 'horizontal' | 'vertical';
   onCardHitDone?: () => void;
   lastActionType?: 'none' | 'hit' | 'capture';
+  isDealing?: boolean;
+  positionClass?: string;
 }
 
 const PlayerArea = ({
@@ -26,7 +28,9 @@ const PlayerArea = ({
   timeRemaining,
   orientation,
   onCardHitDone,
-  lastActionType = 'none'
+  lastActionType = 'none',
+  isDealing = false,
+  positionClass = ''
 }: PlayerAreaProps) => {
   const { name, cards, shufflesRemaining, status } = player;
   const topCard = cards[0];
@@ -46,9 +50,9 @@ const PlayerArea = ({
 
   return (
     <div className={cn(
-      "flex items-center gap-3 p-3 rounded-lg bg-casino-dark border",
+      "flex gap-3 p-3 rounded-lg bg-casino-dark/80 border max-w-xs",
       isCurrentPlayer ? "border-casino-accent animate-pulse" : "border-casino-dark",
-      orientation === 'vertical' ? "flex-col" : "flex-row"
+      orientation === 'vertical' ? "flex-col items-center" : "flex-row items-center"
     )}>
       {/* Avatar */}
       <div className="flex flex-col items-center gap-1">
@@ -69,6 +73,7 @@ const PlayerArea = ({
             <CardComponent 
               card={topCard} 
               faceDown={true}
+              isDealing={isDealing}
               animationType={lastActionType === 'capture' ? 'capture' : 'none'}
               className={cn(
                 cards.length > 1 ? "after:content-[''] after:absolute after:top-1 after:left-1 after:w-full after:h-full after:bg-casino-dark after:rounded-md after:-z-10" : ""
@@ -79,7 +84,11 @@ const PlayerArea = ({
             <motion.div 
               className="absolute top-0 left-0"
               initial={{ opacity: 1, y: 0, x: 0 }}
-              animate={{ opacity: 0, y: -30, x: 80 }}
+              animate={{ 
+                opacity: 0, 
+                y: positionClass === 'top' ? 120 : positionClass === 'bottom' ? -120 : 0,
+                x: positionClass === 'left' ? 120 : positionClass === 'right' ? -120 : 0
+              }}
               transition={{ duration: 0.4 }}
             >
               <CardComponent 
@@ -109,19 +118,19 @@ const PlayerArea = ({
         <Button
           variant="default"
           size="sm"
-          disabled={!isCurrentPlayer || cards.length === 0 || status !== 'active' || isAnimating}
+          disabled={!isCurrentPlayer || cards.length === 0 || status !== 'active' || isAnimating || isDealing}
           onClick={handleHit}
           className={cn(
             "bg-casino-accent hover:bg-casino-accent/90 text-white",
             isCurrentPlayer && "animate-pulse"
           )}
         >
-          Hit
+          Play
         </Button>
         <Button
           variant="outline"
           size="sm"
-          disabled={!isCurrentPlayer || shufflesRemaining <= 0 || cards.length === 0 || status !== 'active'}
+          disabled={!isCurrentPlayer || shufflesRemaining <= 0 || cards.length === 0 || status !== 'active' || isDealing}
           onClick={onShuffle}
           className="border-casino-table"
         >

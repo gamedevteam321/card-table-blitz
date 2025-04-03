@@ -27,22 +27,36 @@ const GameTable = ({ cards, orientation }: GameTableProps) => {
   };
 
   return (
-    <div className={cn(
-      "table-surface rounded-xl relative overflow-hidden p-8",
-      "border-2 border-casino-table shadow-lg flex justify-center items-center",
-      orientation === 'vertical' ? "h-56 w-full" : "h-80 w-full"
-    )}>
-      <div className="absolute inset-0 table-surface"></div>
+    <div className="relative w-full h-64 flex items-center justify-center">
+      <div className="absolute inset-0 bg-casino-dark rounded-xl opacity-90 z-0"></div>
+      
+      {/* Circular direction indicators */}
+      <div className="absolute top-1/3 left-1/4 z-10">
+        <div className="w-12 h-12 rounded-full bg-casino-dark/50 border border-gray-600 flex items-center justify-center">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 12L14 18V13H4V11H14V6L20 12Z" fill="#6b7280" />
+          </svg>
+        </div>
+      </div>
+      
+      <div className="absolute bottom-1/3 right-1/4 z-10">
+        <div className="w-12 h-12 rounded-full bg-casino-dark/50 border border-gray-600 flex items-center justify-center">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 12L10 6V11H20V13H10V18L4 12Z" fill="#6b7280" />
+          </svg>
+        </div>
+      </div>
+      
       <div className={cn(
         "relative z-10 flex flex-col items-center justify-center gap-4 w-full"
       )}>
         {cards.length === 0 ? (
           <div className="text-gray-400 text-sm">
-            No cards on the table
+            Waiting for players...
           </div>
         ) : (
           <>
-            <div className="relative h-24 w-16">
+            <div className="relative h-32 w-24">
               {cards.map((card, index) => (
                 <CardComponent 
                   key={card.id} 
@@ -51,7 +65,7 @@ const GameTable = ({ cards, orientation }: GameTableProps) => {
                   style={{
                     position: 'absolute',
                     zIndex: index + 1,
-                    transform: `translateX(${index % 3 - 1}px) translateY(${index % 2}px) rotate(${(index % 5 - 2) * 1}deg)`
+                    transform: `translateX(${index % 3 - 1}px) translateY(${index % 2}px) rotate(${(index % 5 - 2) * 3}deg)`
                   }}
                   className={index === cards.length - 1 ? "shadow-lg" : ""}
                 />
