@@ -55,11 +55,11 @@ const PlayerArea = ({
 
   // Calculate the color values based on active/inactive state
   const cardBgGradient = isCurrentPlayer 
-    ? "bg-gradient-to-b from-purple-500/95 to-purple-700/95" 
+    ? "bg-gradient-to-b from-indigo-600/95 to-purple-800/95" 
     : "bg-gradient-to-b from-gray-800/90 to-gray-900/90";
 
   const avatarBg = isCurrentPlayer ? player.avatarColor : `${player.avatarColor.split('-')[0]}-700`;
-  const avatarRingColor = isCurrentPlayer ? "ring-purple-300" : "ring-gray-700";
+  const avatarRingColor = isCurrentPlayer ? "ring-indigo-300" : "ring-gray-700";
 
   return (
     <Card className={cn(
@@ -68,17 +68,18 @@ const PlayerArea = ({
       isCapturing && "ring-2 ring-yellow-400 shadow-lg",
       cardBgGradient,
       orientation === 'vertical' ? "p-2" : "p-3",
-      isCurrentPlayer ? "shadow-purple-500/20 shadow-lg" : "shadow-gray-900/10"
+      isCurrentPlayer ? "shadow-purple-500/20 shadow-lg" : "shadow-gray-900/10",
+      "max-w-[220px]" // Added max width to make cards more compact
     )}>
       <CardContent className={cn(
         "p-2",
-        "flex gap-3 items-center",
-        orientation === 'vertical' ? "flex-col" : "flex-row",
+        "flex gap-2", // Reduced gap
+        orientation === 'vertical' ? "flex-col items-center" : "flex-row items-center",
       )}>
         {/* Avatar Section */}
         <div className={cn(
-          "flex flex-col items-center gap-2",
-          isCurrentPlayer ? "w-full" : "w-auto"
+          "flex flex-col items-center",
+          orientation === 'vertical' ? "mb-1" : "mr-2"
         )}>
           <div className={cn(
             "rounded-full flex items-center justify-center font-bold text-white",
@@ -87,32 +88,25 @@ const PlayerArea = ({
             avatarRingColor,
             "shadow-inner",
             isCurrentPlayer 
-              ? "w-12 h-12 sm:w-14 sm:h-14 text-base sm:text-lg" 
-              : "w-8 h-8 text-sm transition-all"
+              ? "w-10 h-10 sm:w-12 sm:h-12 text-sm sm:text-base" 
+              : "w-8 h-8 text-xs transition-all"
           )}>
             {name[0].toUpperCase()}
           </div>
           
           <div className="flex flex-col items-center">
             <span className={cn(
-              "font-medium truncate",
+              "font-medium truncate mt-1",
               isCurrentPlayer ? "text-sm sm:text-base text-white" : "text-xs text-gray-300 max-w-[40px] sm:max-w-[60px]"
             )}>
               {name}
             </span>
-            
-            <div className={cn(
-              "rounded-full px-2 py-0.5 text-center text-xs",
-              isCurrentPlayer ? "bg-purple-600/60 text-white" : "bg-gray-800 text-gray-400"
-            )}>
-              {cards.length} cards
-            </div>
           </div>
         </div>
 
-        {/* Card stack */}
+        {/* Middle section with card stack */}
         <div className={cn(
-          "relative",
+          "relative flex-shrink-0",
           isCurrentPlayer ? "scale-100" : "scale-90"
         )} ref={cardRef}>
           <div className="relative">
@@ -124,13 +118,13 @@ const PlayerArea = ({
                   isDealing={isDealing}
                   animationType={lastActionType === 'capture' ? 'capture' : 'none'}
                   className={cn(
-                    cards.length > 1 ? "after:content-[''] after:absolute after:top-1 after:left-1 after:w-full after:h-full after:bg-casino-dark after:rounded-md after:-z-10" : "",
+                    cards.length > 1 ? "after:content-[''] after:absolute after:top-1 after:left-1 after:w-full after:h-full after:bg-indigo-900 after:rounded-md after:-z-10" : "",
                     isCapturing && "shadow-glow-card",
                     isMobile ? "scale-75" : ""
                   )}
                 />
                 {isCurrentPlayer && (
-                  <div className="absolute -top-2 -right-2 bg-purple-500 text-white font-bold rounded-full flex items-center justify-center shadow-md w-6 h-6 text-xs border-2 border-white">
+                  <div className="absolute -top-2 -right-2 bg-amber-500 text-white font-bold rounded-full flex items-center justify-center shadow-md w-6 h-6 text-xs border-2 border-white">
                     {cards.length}
                   </div>
                 )}
@@ -138,10 +132,10 @@ const PlayerArea = ({
             ) : (
               <div className={cn(
                 "border border-dashed rounded-md flex items-center justify-center",
-                isCurrentPlayer ? "border-purple-300" : "border-gray-600",
+                isCurrentPlayer ? "border-indigo-300" : "border-gray-600",
                 isMobile ? "w-8 h-12 text-[8px]" : "w-12 h-18 sm:w-16 sm:h-24 text-xs",
               )}>
-                <span className={isCurrentPlayer ? "text-purple-200" : "text-gray-500"}>No cards</span>
+                <span className={isCurrentPlayer ? "text-indigo-200" : "text-gray-500"}>No cards</span>
               </div>
             )}
           </div>
@@ -150,7 +144,7 @@ const PlayerArea = ({
         {/* Controls - Only show for current player or in compact form for others */}
         {isCurrentPlayer ? (
           <div className={cn(
-            "flex gap-2 mt-2",
+            "flex gap-2",
             orientation === 'vertical' ? "flex-row" : "flex-col"
           )}>
             <Button
@@ -159,12 +153,12 @@ const PlayerArea = ({
               disabled={!isCurrentPlayer || cards.length === 0 || status !== 'active' || isAnimating || isDealing}
               onClick={handleHit}
               className={cn(
-                "bg-gradient-to-b from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800 text-white transition-all shadow-md shadow-purple-500/20",
+                "bg-emerald-600 hover:bg-emerald-700 text-white transition-all shadow-md",
                 isMobile ? "text-[10px] px-2 py-1 h-7" : "text-xs sm:text-sm px-3 py-1.5",
                 isCurrentPlayer && status === 'active' && "animate-pulse"
               )}
             >
-              Play Card
+              Play
             </Button>
             <Button
               variant="outline"
@@ -172,7 +166,7 @@ const PlayerArea = ({
               disabled={!isCurrentPlayer || shufflesRemaining <= 0 || cards.length === 0 || status !== 'active' || isDealing}
               onClick={onShuffle}
               className={cn(
-                "border-purple-300 bg-purple-500/10 hover:bg-purple-500/20",
+                "border-amber-400 bg-amber-500/20 text-amber-100 hover:bg-amber-500/30",
                 isMobile ? "text-[10px] px-2 py-1 h-7" : "text-xs sm:text-sm px-2 py-1"
               )}
             >
@@ -192,15 +186,16 @@ const PlayerArea = ({
                 <span>{shufflesRemaining}</span>
               </>
             )}
+            <span className="text-gray-300">{cards.length}c</span>
           </div>
         )}
 
         {/* Turn timer - Only shown for active player */}
         {isCurrentPlayer && status === 'active' && (
-          <div className="w-full mt-2 relative">
-            <div className="w-full bg-purple-900/50 h-1.5 rounded-full overflow-hidden">
+          <div className="w-full mt-1 relative">
+            <div className="w-full bg-indigo-900/50 h-1.5 rounded-full overflow-hidden">
               <div 
-                className="bg-gradient-to-r from-purple-300 to-purple-500 h-1.5 rounded-full transition-all duration-100"
+                className="bg-gradient-to-r from-amber-300 to-amber-500 h-1.5 rounded-full transition-all duration-100"
                 style={{ width: `${(timeRemaining / 10) * 100}%` }}
               />
             </div>

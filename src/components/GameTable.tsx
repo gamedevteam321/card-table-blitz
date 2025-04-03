@@ -30,46 +30,17 @@ const GameTable = ({ cards }: GameTableProps) => {
 
   return (
     <div className="relative w-full h-64 flex items-center justify-center">
-      <div className="absolute inset-0 bg-casino-dark rounded-xl opacity-90 z-0"></div>
+      <div className="absolute inset-0 bg-casino-dark rounded-xl opacity-90 z-0">
+        {/* Decorative pattern for the table */}
+        <div className="w-full h-full opacity-30" 
+          style={{
+            backgroundImage: 'radial-gradient(circle at 20% 35%, rgba(76, 29, 149, 0.2) 0%, transparent 60%), radial-gradient(circle at 80% 30%, rgba(29, 78, 216, 0.2) 0%, transparent 60%)',
+            backgroundSize: '100% 100%'
+          }}>
+        </div>
+      </div>
       
-      {/* Circular direction indicators */}
-      {!isMobile ? (
-        <>
-          <div className="absolute top-1/3 left-1/4 z-10">
-            <div className="w-12 h-12 rounded-full bg-casino-dark/50 border border-gray-600 flex items-center justify-center">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M20 12L14 18V13H4V11H14V6L20 12Z" fill="#6b7280" />
-              </svg>
-            </div>
-          </div>
-          
-          <div className="absolute bottom-1/3 right-1/4 z-10">
-            <div className="w-12 h-12 rounded-full bg-casino-dark/50 border border-gray-600 flex items-center justify-center">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M4 12L10 6V11H20V13H10V18L4 12Z" fill="#6b7280" />
-              </svg>
-            </div>
-          </div>
-        </>
-      ) : (
-        <>
-          <div className="absolute top-1/4 left-1/3 z-10">
-            <div className="w-8 h-8 rounded-full bg-casino-dark/50 border border-gray-600 flex items-center justify-center">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M20 12L14 18V13H4V11H14V6L20 12Z" fill="#6b7280" />
-              </svg>
-            </div>
-          </div>
-          
-          <div className="absolute bottom-1/4 right-1/3 z-10">
-            <div className="w-8 h-8 rounded-full bg-casino-dark/50 border border-gray-600 flex items-center justify-center">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M4 12L10 6V11H20V13H10V18L4 12Z" fill="#6b7280" />
-              </svg>
-            </div>
-          </div>
-        </>
-      )}
+      {/* No more directional arrows - removed as requested */}
       
       <div className="relative z-10 flex flex-col items-center justify-center gap-4 w-full">
         {cards.length === 0 ? (
