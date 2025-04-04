@@ -62,124 +62,53 @@ const CardComponent = ({
 
   // Custom throw animation based on player position
   const getThrowAnimation = () => {
-    // Get the position of the player's card element if it exists
-    let startPosition = { x: 0, y: 0 };
-    if (playerCardElement && typeof window !== 'undefined') {
-      const element = document.getElementById(playerCardElement);
-      if (element) {
-        const rect = element.getBoundingClientRect();
-        const centerX = window.innerWidth / 2;
-        const centerY = window.innerHeight / 2;
-        
-        // Calculate the starting position relative to the center of the screen
-        startPosition.x = rect.left + rect.width / 2 - centerX;
-        startPosition.y = rect.top + rect.height / 2 - centerY;
-      }
-    }
-
-    // Adjust the animation based on player position
+    // Calculate starting position based on player position
+    let startY = 0;
+    let startX = 0;
+    let rotation = 0;
+    
+    // Adjust animation path based on player position
     switch (playerPosition) {
       case 'bottom':
-        return {
-          initial: { 
-            y: startPosition.y || 150, 
-            x: startPosition.x || 0, 
-            scale: 0.9, 
-            rotate: 0, 
-            zIndex: 100,
-            opacity: 1
-          },
-          animate: { 
-            y: [startPosition.y || 150, 80, 0], 
-            x: [startPosition.x || 0, startPosition.x / 3 || 0, 0], 
-            scale: [0.9, 1, 1],
-            rotate: [0, -5, 0],
-            zIndex: 100,
-            opacity: [1, 1, 0],
-            transition: { duration: 2, ease: "easeOut" } 
-          }
-        };
+        startY = 200;
+        rotation = -10;
+        break;
       case 'top':
-        return {
-          initial: { 
-            y: startPosition.y || -150, 
-            x: startPosition.x || 0, 
-            scale: 0.9, 
-            rotate: 0, 
-            zIndex: 100,
-            opacity: 1
-          },
-          animate: { 
-            y: [startPosition.y || -150, -80, 0], 
-            x: [startPosition.x || 0, startPosition.x / 3 || 0, 0], 
-            scale: [0.9, 1, 1],
-            rotate: [0, 5, 0],
-            zIndex: 100,
-            opacity: [1, 1, 0],
-            transition: { duration: 2, ease: "easeOut" } 
-          }
-        };
+        startY = -200;
+        rotation = 10;
+        break;
       case 'left':
-        return {
-          initial: { 
-            y: startPosition.y || 0, 
-            x: startPosition.x || -150, 
-            scale: 0.9, 
-            rotate: 0, 
-            zIndex: 100,
-            opacity: 1
-          },
-          animate: { 
-            y: [startPosition.y || 0, startPosition.y / 2 || 0, 0], 
-            x: [startPosition.x || -150, -70, 0], 
-            scale: [0.9, 1, 1],
-            rotate: [0, 5, 0],
-            zIndex: 100,
-            opacity: [1, 1, 0],
-            transition: { duration: 2, ease: "easeOut" } 
-          }
-        };
+        startX = -200;
+        rotation = 15;
+        break;
       case 'right':
-        return {
-          initial: { 
-            y: startPosition.y || 0, 
-            x: startPosition.x || 150, 
-            scale: 0.9, 
-            rotate: 0, 
-            zIndex: 100,
-            opacity: 1
-          },
-          animate: { 
-            y: [startPosition.y || 0, startPosition.y / 2 || 0, 0], 
-            x: [startPosition.x || 150, 70, 0], 
-            scale: [0.9, 1, 1],
-            rotate: [0, -5, 0],
-            zIndex: 100,
-            opacity: [1, 1, 0],
-            transition: { duration: 2, ease: "easeOut" } 
-          }
-        };
+        startX = 200;
+        rotation = -15;
+        break;
       default:
-        return {
-          initial: { 
-            y: startPosition.y || -50, 
-            x: startPosition.x || 0, 
-            scale: 0.9, 
-            rotate: 0, 
-            zIndex: 100,
-            opacity: 1
-          },
-          animate: { 
-            y: [startPosition.y || -50, -20, 0], 
-            x: [startPosition.x || 0, startPosition.x / 3 || 0, 0], 
-            scale: [0.9, 1, 1],
-            rotate: [0, -5, 0],
-            zIndex: 100,
-            opacity: [1, 1, 0],
-            transition: { duration: 2, ease: "easeOut" } 
-          }
-        };
+        startY = 200;
+        rotation = 0;
     }
+
+    return {
+      initial: { 
+        y: startY, 
+        x: startX, 
+        scale: 0.8, 
+        rotate: rotation, 
+        zIndex: 1000,
+        opacity: 1
+      },
+      animate: { 
+        y: [startY, startY/2, 0], 
+        x: [startX, startX/2, 0], 
+        scale: [0.8, 0.9, 1],
+        rotate: [rotation, rotation/2, 0],
+        zIndex: 1000,
+        opacity: [1, 1, 0], // Fade out at the end
+        transition: { duration: 0.7, ease: "easeOut" } 
+      }
+    };
   };
 
   // Animation variants based on type
@@ -247,7 +176,7 @@ const CardComponent = ({
         isTable ? "card-shadow border-white" : "hover:scale-105 border-gray-300",
         isDealing ? "animate-card-deal" : "",
         faceDown ? "card-back" : "bg-white",
-        animationType === 'throw' ? "z-50 table-center" : "",
+        animationType === 'throw' ? "flying-card" : "",
         className
       )}
       {...animationProps}

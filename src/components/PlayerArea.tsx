@@ -5,7 +5,6 @@ import CardComponent from "./Card";
 import { cn } from "@/lib/utils";
 import { RotateCcw } from "lucide-react";
 import { useRef, useState, useEffect } from "react";
-import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface PlayerAreaProps {
@@ -51,7 +50,7 @@ const PlayerArea = ({
       setHideTopCard(true);
       const timer = setTimeout(() => {
         setHideTopCard(false);
-      }, 2000); // Match animation duration
+      }, 700); // Match animation duration in Card component
       return () => clearTimeout(timer);
     }
   }, [isAnimating, lastActionType]);
@@ -67,7 +66,7 @@ const PlayerArea = ({
       setTimeout(() => {
         setLocalAnimating(false);
         setHideTopCard(false);
-      }, 2000); // Increased timeout to match longer animation
+      }, 700); // Match animation duration in Card component
     }, 300);
   };
 
@@ -160,10 +159,7 @@ const PlayerArea = ({
                     isMobile ? "scale-75" : "",
                     isCurrentPlayer && "hover:scale-105 transition-transform"
                   )}
-                  playerPosition={positionClass === 'top' ? 'top' : 
-                                 positionClass === 'left' ? 'left' : 
-                                 positionClass === 'right' ? 'right' : 'bottom'}
-                  playerCardElement={`player-card-${player.id}`}
+                  playerPosition={positionClass}
                 />
               </div>
             ) : (
@@ -252,4 +248,3 @@ const PlayerArea = ({
 };
 
 export default PlayerArea;
-

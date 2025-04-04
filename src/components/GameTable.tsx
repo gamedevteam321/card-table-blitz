@@ -24,7 +24,7 @@ const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: Gam
       const timer = setTimeout(() => {
         setShowAnimatedCard(false);
         setDisplayedCard(animatingCard);
-      }, 1900); // Slightly less than animation duration
+      }, 600); // Match the animation duration from Card component
       
       return () => clearTimeout(timer);
     } else {
@@ -53,7 +53,7 @@ const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: Gam
 
   return (
     <div className="relative w-full h-64 flex items-center justify-center overflow-visible">
-      <div className="absolute inset-0 bg-casino-dark rounded-xl opacity-90 z-0">
+      <div className="absolute inset-0 bg-casino-dark rounded-xl opacity-90 z-0 table-surface">
         {/* Decorative pattern for the table */}
         <div className="w-full h-full opacity-30" 
           style={{
@@ -70,7 +70,7 @@ const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: Gam
           </div>
         ) : (
           <>
-            <div className="relative h-32 w-24">
+            <div className="relative h-32 w-24 center-card-area">
               {/* Display the stack of cards */}
               {cards.map((card, index) => (
                 <CardComponent 
@@ -97,7 +97,6 @@ const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: Gam
                   animationType="throw"
                   playerPosition={animatingPlayerPosition}
                   className="shadow-lg"
-                  playerCardElement={`player-card-${playerPositionToPlayerId(animatingPlayerPosition)}`}
                   style={{
                     position: 'absolute',
                     zIndex: 999,
@@ -116,17 +115,6 @@ const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: Gam
       </div>
     </div>
   );
-};
-
-// Helper function to convert position to player ID format
-const playerPositionToPlayerId = (position: 'top' | 'left' | 'right' | 'bottom' | null): string => {
-  switch (position) {
-    case 'bottom': return 'player-0';
-    case 'left': return 'player-1';
-    case 'top': return 'player-2';
-    case 'right': return 'player-3';
-    default: return '';
-  }
 };
 
 export default GameTable;

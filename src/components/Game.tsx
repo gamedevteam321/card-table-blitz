@@ -15,7 +15,7 @@ import { X } from 'lucide-react';
 
 const TURN_TIME_LIMIT = 10; // seconds
 const GAME_TIME_LIMIT = 120; // seconds (2 minutes)
-const ANIMATION_DURATION = 800; // milliseconds
+const ANIMATION_DURATION = 700; // milliseconds - match with Card component
 
 const Game = () => {
   const [gameState, setGameState] = useState<GameState>({
@@ -54,12 +54,23 @@ const Game = () => {
     gameState.players.forEach((player, index) => {
       if (index === 0) {
         playerPositions[player.id] = 'bottom';
-      } else if (index === 1) {
-        playerPositions[player.id] = 'left';
-      } else if (index === 2) {
-        playerPositions[player.id] = 'top';
-      } else if (index === 3) {
-        playerPositions[player.id] = 'right';
+      } else if (gameState.players.length <= 4) {
+        // For 2-4 players, distribute evenly
+        if (index === 1) {
+          playerPositions[player.id] = gameState.players.length === 2 ? 'top' : 'left';
+        } else if (index === 2) {
+          playerPositions[player.id] = gameState.players.length === 3 ? 'right' : 'top';
+        } else if (index === 3) {
+          playerPositions[player.id] = 'right';
+        }
+      } else {
+        // For 5+ players, use a more complex layout
+        if (index === 1) playerPositions[player.id] = 'left';
+        else if (index === 2) playerPositions[player.id] = 'top-left';
+        else if (index === 3) playerPositions[player.id] = 'top';
+        else if (index === 4) playerPositions[player.id] = 'top-right';
+        else if (index === 5) playerPositions[player.id] = 'right';
+        else playerPositions[player.id] = 'spectator';
       }
     });
     
@@ -636,6 +647,7 @@ const Game = () => {
           let positionClass = '';
           
           if (isMobile) {
+            // Mobile positioning
             if (position === 'top') {
               positionClass = 'top-2 left-1/2 transform -translate-x-1/2';
             } else if (position === 'right') {
@@ -644,8 +656,13 @@ const Game = () => {
               positionClass = 'bottom-2 left-1/2 transform -translate-x-1/2';
             } else if (position === 'left') {
               positionClass = 'left-1 top-1/2 transform -translate-y-1/2';
+            } else if (position === 'top-left') {
+              positionClass = 'top-2 left-4';
+            } else if (position === 'top-right') {
+              positionClass = 'top-2 right-4';
             }
           } else {
+            // Desktop positioning
             if (position === 'top') {
               positionClass = 'top-8 left-1/2 transform -translate-x-1/2';
             } else if (position === 'right') {
@@ -654,6 +671,10 @@ const Game = () => {
               positionClass = 'bottom-8 left-1/2 transform -translate-x-1/2';
             } else if (position === 'left') {
               positionClass = 'left-8 top-1/2 transform -translate-y-1/2';
+            } else if (position === 'top-left') {
+              positionClass = 'top-8 left-1/4 transform -translate-x-1/2';
+            } else if (position === 'top-right') {
+              positionClass = 'top-8 right-1/4 transform translate-x-1/2';
             }
           }
           
@@ -676,7 +697,7 @@ const Game = () => {
                 orientation={position === 'left' || position === 'right' ? 'vertical' : 'horizontal'}
                 lastActionType={isCurrentPlayer ? lastActionType : 'none'}
                 isDealing={isDealing}
-                positionClass={position}
+                positionClass={position as any}
                 isCapturing={isCapturing}
                 isMobile={isMobile}
                 isAnimating={gameState.isAnimating}
