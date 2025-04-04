@@ -2,151 +2,186 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
- 
+
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 210 33% 9%;
+    --foreground: 0 0% 90%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
- 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
- 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
- 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
- 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
- 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
- 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --card: 210 33% 14%;
+    --card-foreground: 0 0% 90%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
- 
+    --popover: 210 33% 14%;
+    --popover-foreground: 0 0% 90%;
+
+    --primary: 142 70% 45%;
+    --primary-foreground: 210 33% 9%;
+
+    --secondary: 210 33% 18%;
+    --secondary-foreground: 0 0% 90%;
+
+    --muted: 210 33% 18%;
+    --muted-foreground: 0 0% 60%;
+
+    --accent: 25 100% 50%;
+    --accent-foreground: 0 0% 90%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 210 33% 18%;
+    --input: 210 33% 18%;
+    --ring: 142 70% 45%;
+
     --radius: 0.5rem;
   }
- 
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
- 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
- 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
- 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
- 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
- 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
- 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
- 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
- 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-  }
 }
- 
+
 @layer base {
   * {
     @apply border-border;
   }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-casino-dark text-foreground;
   }
 }
 
 .card-back {
-  background-color: #0d1321;
-  background-image: linear-gradient(45deg, #3700b3 25%, transparent 25%, transparent 75%, #3700b3 75%, #3700b3),
-                    linear-gradient(45deg, #3700b3 25%, transparent 25%, transparent 75%, #3700b3 75%, #3700b3);
-  background-size: 16px 16px;
-  background-position: 0 0, 8px 8px;
-  border-color: #6200ee;
+  background-image: 
+    linear-gradient(135deg, rgba(79, 70, 229, 0.4) 25%, transparent 25%),
+    linear-gradient(225deg, rgba(79, 70, 229, 0.4) 25%, transparent 25%),
+    linear-gradient(315deg, rgba(79, 70, 229, 0.4) 25%, transparent 25%),
+    linear-gradient(45deg, rgba(79, 70, 229, 0.4) 25%, transparent 25%);
+  background-size: 12px 12px;
+  background-position: 0 0, 6px 0, 6px -6px, 0px 6px;
+  background-color: #1e1b4b;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  box-shadow: inset 0 0 10px rgba(139, 92, 246, 0.2);
+}
+
+.table-surface {
+  background: linear-gradient(to right, rgba(25, 52, 65, 0.9), rgba(25, 52, 65, 1), rgba(25, 52, 65, 0.9));
+  box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.5);
 }
 
 .card-shadow {
-  box-shadow: 0 0 10px rgba(98, 0, 238, 0.3);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 
+              0 2px 4px -1px rgba(0, 0, 0, 0.1);
 }
 
-.bg-casino {
-  background-color: #0d1321;
-  background-image: linear-gradient(135deg, #1d1135 0%, #0d1321 100%);
+.shadow-glow {
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.7);
+  animation: pulse-gold 1.5s infinite;
 }
 
-.bg-casino-dark {
-  background-color: #0d1321;
-}
-
-.bg-casino-table {
-  background-color: #18392b;
-}
-
-.text-casino-gold {
-  color: #ffc107;
-}
-
-/* Shadow effect for captured cards */
 .shadow-glow-card {
-  box-shadow: 0 0 15px #ffc107;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+  animation: pulse-gold 1.5s infinite;
 }
 
-/* Animation for card dealing */
-.animate-card-deal {
-  animation: card-deal 0.5s ease-out forwards;
+@keyframes pulse-gold {
+  0% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.7); }
+  50% { box-shadow: 0 0 25px rgba(255, 215, 0, 0.9); }
+  100% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.7); }
 }
 
-@keyframes card-deal {
-  0% {
-    opacity: 0;
-    transform: translateY(-50px) rotate(-10deg);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) rotate(0);
-  }
+.confetti {
+  position: absolute;
+  width: 10px;
+  height: 20px;
 }
 
-/* Animation for card throwing */
-.animate-card-throw {
-  animation: card-throw 2s ease-out forwards;
-  z-index: 100;
+@keyframes card-hit {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-50px) rotate(10deg); }
+  100% { transform: translateY(0) translateX(100px) rotate(0); }
+}
+
+@keyframes card-capture {
+  0% { transform: translateX(0); opacity: 1; }
+  50% { transform: translateX(50px) scale(0.8); opacity: 0.7; }
+  100% { transform: translateX(0) scale(1); opacity: 1; }
 }
 
 @keyframes card-throw {
-  0% {
-    transform: scale(1) rotate(0);
-  }
-  50% {
-    transform: scale(1.1) translateY(-20px) rotate(5deg);
-  }
-  100% {
-    transform: scale(1) translateY(0) rotate(0);
-  }
+  0% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 1; z-index: 1000; }
+  40% { transform: translateY(-30px) translateX(20px) rotate(-10deg); opacity: 1; z-index: 1000; }
+  80% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 1; z-index: 1000; }
+  100% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0; z-index: 1000; }
 }
 
-/* For targeting the table center position */
-.table-center {
-  position: relative;
+@keyframes card-arrive {
+  0% { transform: translateY(-100px) translateX(-200px) rotate(-20deg); opacity: 0; }
+  70% { transform: translateY(10px) translateX(10px) rotate(5deg); opacity: 1; }
+  85% { transform: translateY(-5px) translateX(-5px) rotate(-2deg); opacity: 1; }
+  100% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 1; }
+}
+
+@keyframes card-capture-stack {
+  0% { transform: translateY(0) translateX(0) scale(1); opacity: 1; }
+  60% { transform: translateY(-30px) translateX(-80px) scale(0.7) rotate(-10deg); opacity: 0.9; }
+  100% { transform: translateY(-50px) translateX(-150px) scale(0.5) rotate(-20deg); opacity: 0; }
+}
+
+@keyframes card-deal {
+  0% { transform: translateY(-100px) translateX(-100px) rotate(180deg); opacity: 0; }
+  100% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 1; }
+}
+
+.animate-card-hit {
+  animation: card-hit 0.5s ease-out forwards;
+}
+
+.animate-card-capture {
+  animation: card-capture 0.5s ease-out forwards;
+}
+
+.animate-card-throw {
+  animation: card-throw 2s ease-out forwards;
+  z-index: 1000 !important;
+}
+
+.animate-card-arrive {
+  animation: card-arrive 0.6s ease-out forwards;
+}
+
+.animate-card-capture-stack {
+  animation: card-capture-stack 0.8s ease-out forwards;
+}
+
+.animate-card-deal {
+  animation: card-deal 0.8s ease-out forwards;
+}
+
+.card-distribution {
+  position: absolute;
+  z-index: 30;
+  pointer-events: none;
+}
+
+.top-card {
+  position: absolute;
   z-index: 10;
+}
+
+.player-card-stack {
+  position: relative;
+}
+
+/* New class for table center positioning */
+.table-center {
+  position: absolute !important;
+  z-index: 1000 !important;
+}
+
+/* Enhanced container for the table cards */
+.table-card-container {
+  position: relative;
+  z-index: 20;
+}
+
+@keyframes confetti {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
 }
