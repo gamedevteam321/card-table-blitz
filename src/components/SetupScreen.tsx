@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -50,7 +49,7 @@ const SetupScreen = ({
         </div>
         
         <div className="space-y-4 mb-6">
-          <h3 className="text-sm font-medium mb-2">Player Names</h3>
+          <h3 className="text-sm font-medium mb-2 text-zinc-50">Player Names</h3>
           
           {Array.from({
           length: playerCount
