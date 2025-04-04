@@ -7,9 +7,10 @@ import { useIsMobile } from "@/hooks/use-mobile";
 
 interface GameTableProps {
   cards: Card[];
+  animatingCard: Card | null;
 }
 
-const GameTable = ({ cards }: GameTableProps) => {
+const GameTable = ({ cards, animatingCard }: GameTableProps) => {
   const isMobile = useIsMobile();
   
   // Helper function to get the full name of a card
@@ -28,6 +29,9 @@ const GameTable = ({ cards }: GameTableProps) => {
     return `${rankNames[card.rank]} of ${suitNames[card.suit]}`;
   };
 
+  // Get the latest card to display
+  const latestCard = animatingCard || (cards.length > 0 ? cards[cards.length - 1] : null);
+
   return (
     <div className="relative w-full h-64 flex items-center justify-center">
       <div className="absolute inset-0 bg-casino-dark rounded-xl opacity-90 z-0">
@@ -40,16 +44,15 @@ const GameTable = ({ cards }: GameTableProps) => {
         </div>
       </div>
       
-      {/* No more directional arrows - removed as requested */}
-      
       <div className="relative z-10 flex flex-col items-center justify-center gap-4 w-full">
-        {cards.length === 0 ? (
+        {cards.length === 0 && !animatingCard ? (
           <div className="text-gray-400 text-sm">
             Waiting for players...
           </div>
         ) : (
           <>
             <div className="relative h-32 w-24">
+              {/* Display the stack of cards */}
               {cards.map((card, index) => (
                 <CardComponent 
                   key={card.id} 
@@ -60,13 +63,29 @@ const GameTable = ({ cards }: GameTableProps) => {
                     zIndex: index + 1,
                     transform: `translateX(${index % 3 - 1}px) translateY(${index % 2}px) rotate(${(index % 5 - 2) * 3}deg)`
                   }}
-                  className={index === cards.length - 1 ? "shadow-lg" : ""}
+                  className={index === cards.length - 1 && !animatingCard ? "shadow-lg" : ""}
                 />
               ))}
+              
+              {/* Display the animating card on top */}
+              {animatingCard && (
+                <CardComponent 
+                  key={animatingCard.id} 
+                  card={animatingCard} 
+                  isTable={true}
+                  animationType="throw"
+                  className="shadow-lg animate-card-arrive"
+                  style={{
+                    position: 'absolute',
+                    zIndex: cards.length + 10,
+                  }}
+                />
+              )}
             </div>
-            {cards.length > 0 && (
+            
+            {latestCard && (
               <div className="text-casino-gold text-sm font-medium bg-casino-dark/80 px-3 py-1 rounded-full mt-2">
-                {getCardName(cards[cards.length - 1])}
+                {getCardName(latestCard)}
               </div>
             )}
           </>

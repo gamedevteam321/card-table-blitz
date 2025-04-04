@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Player } from "@/models/game";
+import { Player, Card as CardType } from "@/models/game";
 import CardComponent from "./Card";
 import { cn } from "@/lib/utils";
 import { RotateCcw } from "lucide-react";
@@ -21,6 +21,7 @@ interface PlayerAreaProps {
   positionClass?: string;
   isCapturing?: boolean;
   isMobile?: boolean;
+  isAnimating?: boolean;
 }
 
 const PlayerArea = ({
@@ -35,22 +36,23 @@ const PlayerArea = ({
   isDealing = false,
   positionClass = '',
   isCapturing = false,
-  isMobile = false
+  isMobile = false,
+  isAnimating = false
 }: PlayerAreaProps) => {
   const { name, cards, shufflesRemaining, status } = player;
   const topCard = cards[0];
   const restOfCards = cards.slice(1);
   const cardRef = useRef<HTMLDivElement>(null);
-  const [isAnimating, setIsAnimating] = useState(false);
+  const [localAnimating, setLocalAnimating] = useState(false);
 
   const handleHit = () => {
-    if (isAnimating || !isCurrentPlayer || cards.length === 0 || status !== 'active' || isDealing) return;
+    if (localAnimating || isAnimating || !isCurrentPlayer || cards.length === 0 || status !== 'active' || isDealing) return;
     
-    setIsAnimating(true);
+    setLocalAnimating(true);
     // Let the animation play before actually executing the hit logic
     setTimeout(() => {
       onHit();
-      setTimeout(() => setIsAnimating(false), 500);
+      setTimeout(() => setLocalAnimating(false), 500);
     }, 300);
   };
 
@@ -171,7 +173,7 @@ const PlayerArea = ({
             <Button
               variant="default"
               size={isMobile ? "sm" : "default"}
-              disabled={!isCurrentPlayer || cards.length === 0 || status !== 'active' || isAnimating || isDealing}
+              disabled={!isCurrentPlayer || cards.length === 0 || status !== 'active' || localAnimating || isAnimating || isDealing}
               onClick={handleHit}
               className={cn(
                 "bg-emerald-600 hover:bg-emerald-700 text-white transition-all shadow-md",
@@ -184,7 +186,7 @@ const PlayerArea = ({
             <Button
               variant="outline"
               size={isMobile ? "sm" : "default"}
-              disabled={!isCurrentPlayer || shufflesRemaining <= 0 || cards.length === 0 || status !== 'active' || isDealing}
+              disabled={!isCurrentPlayer || shufflesRemaining <= 0 || cards.length === 0 || status !== 'active' || isDealing || isAnimating}
               onClick={onShuffle}
               className={cn(
                 "border-amber-400 bg-amber-500/20 text-amber-100 hover:bg-amber-500/30",

@@ -15,6 +15,7 @@ import { X } from 'lucide-react';
 
 const TURN_TIME_LIMIT = 10; // seconds
 const GAME_TIME_LIMIT = 120; // seconds (2 minutes)
+const ANIMATION_DURATION = 800; // milliseconds
 
 const Game = () => {
   const [gameState, setGameState] = useState<GameState>({
@@ -26,6 +27,8 @@ const Game = () => {
     message: '',
     turnStartTime: 0,
     gameStartTime: 0,
+    animatingCard: null,
+    isAnimating: false,
   });
 
   const [timeRemaining, setTimeRemaining] = useState(TURN_TIME_LIMIT);
@@ -77,6 +80,8 @@ const Game = () => {
       message: `${players[firstPlayerIndex].name}'s turn`,
       turnStartTime: 0,
       gameStartTime: 0,
+      animatingCard: null,
+      isAnimating: false,
     });
     
     setIsDealing(true);
@@ -152,122 +157,138 @@ const Game = () => {
   };
 
   const handleHit = useCallback(() => {
+    if (gameState.isAnimating) return;
+    
     setLastActionType('throw');
+    setGameState(prev => ({ ...prev, isAnimating: true }));
     
     setTimeout(() => {
       setGameState(prev => {
         const currentPlayer = prev.players[prev.currentPlayerIndex];
         
         if (currentPlayer.cards.length === 0) {
-          return prev;
+          return { ...prev, isAnimating: false };
         }
         
         const [playedCard, ...remainingCards] = currentPlayer.cards;
         
-        const isMatch = checkCardMatch(playedCard, prev.tableCards);
-        
-        const updatedPlayers = [...prev.players];
-        
-        if (isMatch && prev.tableCards.length > 0) {
-          displayMessage('Cards matched!', 'success');
-          setLastActionType('capture');
+        // First step: Move card to animation state
+        return {
+          ...prev,
+          players: prev.players.map((p, i) => 
+            i === prev.currentPlayerIndex ? { ...p, cards: remainingCards } : p
+          ),
+          animatingCard: { ...playedCard },
+        };
+      });
+      
+      // Let the animation play, then handle the card placement
+      setTimeout(() => {
+        setGameState(prev => {
+          if (!prev.animatingCard) return prev;
           
-          setCapturingPlayerId(currentPlayer.id);
-          setShowCaptureConfetti(true);
+          const currentPlayer = prev.players[prev.currentPlayerIndex];
+          const isMatch = checkCardMatch(prev.animatingCard!, prev.tableCards);
+          const updatedPlayers = [...prev.players];
           
-          const position = getPositionForPlayer(currentPlayer.id);
-          if (position) {
-            setCapturePosition(position);
-          }
-          
-          setTimeout(() => {
-            setShowCaptureConfetti(false);
-            setCapturingPlayerId(null);
-            setCapturePosition(null);
-          }, 1500);
-          
-          updatedPlayers[prev.currentPlayerIndex] = {
-            ...currentPlayer,
-            cards: [...remainingCards, ...prev.tableCards, playedCard],
-          };
-          
-          if (remainingCards.length === 0) {
-            const winner = updatedPlayers
-              .filter(p => p.id !== currentPlayer.id)
-              .reduce((prev, curr) => 
-                (prev.cards.length > curr.cards.length) ? prev : curr
-              );
-              
-            return {
-              ...prev,
-              players: updatedPlayers.map(p => ({
-                ...p,
-                status: p.id === winner.id ? 'winner' : 'loser'
-              })),
-              tableCards: [],
-              status: 'finished',
-              winner,
+          // Handle match case
+          if (isMatch && prev.tableCards.length > 0) {
+            displayMessage('Cards matched!', 'success');
+            setLastActionType('capture');
+            
+            setCapturingPlayerId(currentPlayer.id);
+            setShowCaptureConfetti(true);
+            
+            const position = getPositionForPlayer(currentPlayer.id);
+            if (position) {
+              setCapturePosition(position);
+            }
+            
+            setTimeout(() => {
+              setShowCaptureConfetti(false);
+              setCapturingPlayerId(null);
+              setCapturePosition(null);
+            }, 1500);
+            
+            updatedPlayers[prev.currentPlayerIndex] = {
+              ...currentPlayer,
+              cards: [...currentPlayer.cards, ...prev.tableCards, prev.animatingCard],
             };
-          }
-          
-          return {
-            ...prev,
-            players: updatedPlayers,
-            tableCards: [],
-            turnStartTime: Date.now(),
-          };
-        } else {
-          updatedPlayers[prev.currentPlayerIndex] = {
-            ...currentPlayer,
-            cards: remainingCards,
-          };
-          
-          if (remainingCards.length === 0) {
-            updatedPlayers[prev.currentPlayerIndex].status = 'inactive';
-            displayMessage(`${currentPlayer.name} is out of cards!`, 'warning');
             
-            const activePlayers = updatedPlayers.filter(
-              p => p.status === 'active' && p.cards.length > 0
-            );
-            
-            if (activePlayers.length === 1) {
+            if (currentPlayer.cards.length === 0) {
+              const winner = updatedPlayers
+                .filter(p => p.id !== currentPlayer.id)
+                .reduce((prev, curr) => 
+                  (prev.cards.length > curr.cards.length) ? prev : curr
+                );
+                
               return {
                 ...prev,
                 players: updatedPlayers.map(p => ({
                   ...p,
-                  status: p.id === activePlayers[0].id ? 'winner' : 'loser'
+                  status: p.id === winner.id ? 'winner' : 'loser'
                 })),
-                tableCards: [...prev.tableCards, playedCard],
+                tableCards: [],
                 status: 'finished',
-                winner: activePlayers[0],
+                winner,
+                animatingCard: null,
+                isAnimating: false,
               };
             }
-          }
-          
-          const nextPlayerIndex = getNextPlayerIndex(updatedPlayers, prev.currentPlayerIndex);
-          
-          setTimeout(() => {
-            setGameState(state => ({
-              ...state,
-              tableCards: [...state.tableCards, playedCard],
-            }));
             
-            setTimeout(() => {
-              setLastActionType('none');
-            }, 100);
-          }, 550);
-          
-          return {
-            ...prev,
-            players: updatedPlayers,
-            currentPlayerIndex: nextPlayerIndex,
-            turnStartTime: Date.now(),
-            message: `${updatedPlayers[nextPlayerIndex].name}'s turn`,
-          };
-        }
-      });
+            return {
+              ...prev,
+              players: updatedPlayers,
+              tableCards: [],
+              turnStartTime: Date.now(),
+              animatingCard: null,
+              isAnimating: false,
+            };
+          } else {
+            // No match, add card to table
+            if (currentPlayer.cards.length === 0) {
+              updatedPlayers[prev.currentPlayerIndex].status = 'inactive';
+              displayMessage(`${currentPlayer.name} is out of cards!`, 'warning');
+              
+              const activePlayers = updatedPlayers.filter(
+                p => p.status === 'active' && p.cards.length > 0
+              );
+              
+              if (activePlayers.length === 1) {
+                return {
+                  ...prev,
+                  players: updatedPlayers.map(p => ({
+                    ...p,
+                    status: p.id === activePlayers[0].id ? 'winner' : 'loser'
+                  })),
+                  tableCards: [...prev.tableCards, prev.animatingCard!],
+                  status: 'finished',
+                  winner: activePlayers[0],
+                  animatingCard: null,
+                  isAnimating: false,
+                };
+              }
+            }
+            
+            const nextPlayerIndex = getNextPlayerIndex(updatedPlayers, prev.currentPlayerIndex);
+            
+            return {
+              ...prev,
+              players: updatedPlayers,
+              currentPlayerIndex: nextPlayerIndex,
+              tableCards: [...prev.tableCards, prev.animatingCard!],
+              turnStartTime: Date.now(),
+              message: `${updatedPlayers[nextPlayerIndex].name}'s turn`,
+              animatingCard: null,
+              isAnimating: false,
+            };
+          }
+        });
+        
+        setLastActionType('none');
+      }, ANIMATION_DURATION);
     }, 100);
-  }, [displayMessage]);
+  }, [displayMessage, gameState.isAnimating]);
 
   const getNextPlayerIndex = (players: Player[], currentIndex: number) => {
     let nextIndex = (currentIndex + 1) % players.length;
@@ -287,7 +308,11 @@ const Game = () => {
   };
 
   const handleAutoPlay = useCallback(() => {
+    if (gameState.isAnimating) return;
+    
     setGameState(prev => {
+      if (prev.isAnimating) return prev;
+      
       const currentPlayer = prev.players[prev.currentPlayerIndex];
       const updatedPlayers = [...prev.players];
       
@@ -332,30 +357,49 @@ const Game = () => {
           cards: remainingCards,
         };
         
-        const isMatch = checkCardMatch(playedCard, prev.tableCards);
+        // Set up animation
+        const newState = {
+          ...prev,
+          players: updatedPlayers,
+          isAnimating: true,
+          animatingCard: playedCard
+        };
         
-        if (isMatch && prev.tableCards.length > 0) {
-          updatedPlayers[prev.currentPlayerIndex] = {
-            ...updatedPlayers[prev.currentPlayerIndex],
-            cards: [...remainingCards, ...prev.tableCards, playedCard],
-          };
-          
-          return {
-            ...prev,
-            players: updatedPlayers,
-            tableCards: [],
-            currentPlayerIndex: getNextPlayerIndex(updatedPlayers, prev.currentPlayerIndex),
-            turnStartTime: Date.now(),
-          };
-        } else {
-          return {
-            ...prev,
-            players: updatedPlayers,
-            tableCards: [...prev.tableCards, playedCard],
-            currentPlayerIndex: getNextPlayerIndex(updatedPlayers, prev.currentPlayerIndex),
-            turnStartTime: Date.now(),
-          };
-        }
+        // We'll handle the rest with a setTimeout like in handleHit
+        setTimeout(() => {
+          setGameState(autoState => {
+            const isMatch = checkCardMatch(playedCard, autoState.tableCards);
+            
+            if (isMatch && autoState.tableCards.length > 0) {
+              updatedPlayers[autoState.currentPlayerIndex] = {
+                ...updatedPlayers[autoState.currentPlayerIndex],
+                cards: [...remainingCards, ...autoState.tableCards, playedCard],
+              };
+              
+              return {
+                ...autoState,
+                players: updatedPlayers,
+                tableCards: [],
+                currentPlayerIndex: getNextPlayerIndex(updatedPlayers, autoState.currentPlayerIndex),
+                turnStartTime: Date.now(),
+                animatingCard: null,
+                isAnimating: false,
+              };
+            } else {
+              return {
+                ...autoState,
+                players: updatedPlayers,
+                tableCards: [...autoState.tableCards, playedCard],
+                currentPlayerIndex: getNextPlayerIndex(updatedPlayers, autoState.currentPlayerIndex),
+                turnStartTime: Date.now(),
+                animatingCard: null,
+                isAnimating: false,
+              };
+            }
+          });
+        }, ANIMATION_DURATION);
+        
+        return newState;
       }
       
       return {
@@ -367,9 +411,11 @@ const Game = () => {
         turnStartTime: Date.now(),
       };
     });
-  }, [displayMessage]);
+  }, [displayMessage, gameState.isAnimating]);
 
   const handleShuffle = useCallback(() => {
+    if (gameState.isAnimating) return;
+    
     setGameState(prev => {
       const currentPlayer = prev.players[prev.currentPlayerIndex];
       
@@ -393,7 +439,7 @@ const Game = () => {
         players: updatedPlayers,
       };
     });
-  }, [displayMessage]);
+  }, [displayMessage, gameState.isAnimating]);
 
   const handleQuitGame = useCallback(() => {
     setGameState({
@@ -405,6 +451,8 @@ const Game = () => {
       message: '',
       turnStartTime: 0,
       gameStartTime: 0,
+      animatingCard: null,
+      isAnimating: false,
     });
     setTimeRemaining(TURN_TIME_LIMIT);
     setGameTimeRemaining(GAME_TIME_LIMIT);
@@ -425,6 +473,8 @@ const Game = () => {
       message: '',
       turnStartTime: 0,
       gameStartTime: 0,
+      animatingCard: null,
+      isAnimating: false,
     });
     setTimeRemaining(TURN_TIME_LIMIT);
     setGameTimeRemaining(GAME_TIME_LIMIT);
@@ -563,7 +613,10 @@ const Game = () => {
       
       <div className="relative flex-grow min-h-[calc(100vh-160px)] bg-casino-dark rounded-xl overflow-hidden">
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full sm:w-4/5 px-2 sm:px-0">
-          <GameTable cards={gameState.tableCards} />
+          <GameTable 
+            cards={gameState.tableCards} 
+            animatingCard={gameState.animatingCard}
+          />
         </div>
         
         {gameState.players.map((player, index) => {
@@ -617,6 +670,7 @@ const Game = () => {
                 positionClass={position}
                 isCapturing={isCapturing}
                 isMobile={isMobile}
+                isAnimating={gameState.isAnimating}
               />
             </div>
           );

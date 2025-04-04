@@ -6,6 +6,7 @@ export interface Card {
   suit: CardSuit;
   rank: CardRank;
   id: string; // unique identifier for animation purposes
+  animationState?: 'throwing' | 'capturing' | 'placed' | 'none';
 }
 
 export type PlayerStatus = 'active' | 'inactive' | 'kicked' | 'winner' | 'loser';
@@ -29,6 +30,8 @@ export interface GameState {
   message: string;
   turnStartTime: number;
   gameStartTime: number;
+  animatingCard: Card | null;
+  isAnimating: boolean;
 }
 
 // Utility functions
@@ -43,7 +46,8 @@ export const createDeck = (): Card[] => {
       deck.push({
         suit,
         rank,
-        id: `${rank}-${suit}-${Math.random().toString(36).substring(2, 9)}`
+        id: `${rank}-${suit}-${Math.random().toString(36).substring(2, 9)}`,
+        animationState: 'none'
       });
     });
   });
