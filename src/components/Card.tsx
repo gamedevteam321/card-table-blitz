@@ -1,6 +1,7 @@
 import { Card as CardType } from '../models/game';
 import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useSpring, animated } from '@react-spring/web';
 
 interface CardProps {
   card?: CardType;
@@ -13,7 +14,7 @@ interface CardProps {
   style?: React.CSSProperties;
   animationType?: 'deal' | 'hit' | 'capture' | 'throw' | 'none';
   playerPosition?: 'top' | 'left' | 'right' | 'bottom' | null;
-  playerCardElement?: string; // Added this property to fix the TypeScript error
+  playerCardElement?: string;
 }
 
 const CardComponent = ({ 
@@ -29,6 +30,13 @@ const CardComponent = ({
   playerPosition = null,
   playerCardElement
 }: CardProps) => {
+  // Spring animation for hover effect
+  const [springProps, setSpringProps] = useSpring(() => ({
+    scale: 1,
+    y: 0,
+    config: { tension: 300, friction: 10 }
+  }));
+
   if (!card) {
     return (
       <div 
@@ -59,9 +67,8 @@ const CardComponent = ({
     return rank === '10' ? '10' : rank.charAt(0);
   };
 
-  // Custom throw animation based on player position
+  // Enhanced throw animation using Framer Motion
   const getThrowAnimation = () => {
-    // Get the position of the player's card element if it exists
     let startPosition = { x: 0, y: 0 };
     if (playerCardElement && typeof window !== 'undefined') {
       const element = document.getElementById(playerCardElement);
@@ -69,117 +76,86 @@ const CardComponent = ({
         const rect = element.getBoundingClientRect();
         const centerX = window.innerWidth / 2;
         const centerY = window.innerHeight / 2;
-        
-        // Calculate the starting position relative to the center of the screen
         startPosition.x = rect.left + rect.width / 2 - centerX;
         startPosition.y = rect.top + rect.height / 2 - centerY;
       }
     }
 
-    // Common animation properties
     const commonProps = {
       zIndex: 50,
       transition: {
         duration: 0.6,
-        ease: [0.2, 0.8, 0.2, 1],
-        rotate: { duration: 0.5 }
+        ease: "easeOut"
       }
+    };
+
+    // Enhanced throw animation with Framer Motion
+    const getThrowPath = (startX: number, startY: number) => {
+      return {
+        initial: { 
+          y: startY, 
+          x: startX, 
+          scale: 1, 
+          rotate: 0,
+          opacity: 0,
+          ...commonProps
+        },
+        animate: { 
+          y: [startY, 0],
+          x: [startX, 0],
+          scale: [1, 1],
+          rotate: [0, 0],
+          opacity: [0, 1],
+       
+        },
+        exit: {
+          opacity: 0,
+          scale: 0.8,
+        
+        }
+      };
     };
 
     switch (playerPosition) {
       case 'bottom':
-        return {
-          initial: { 
-            y: startPosition.y || 200, 
-            x: startPosition.x || 0, 
-            scale: 1, 
-            rotate: 0,
-            ...commonProps
-          },
-          animate: { 
-            y: [startPosition.y || 200, 50, 0],
-            x: [startPosition.x || 0, startPosition.x / 2 || 0, 0], 
-            scale: [1, 1.2, 1],
-            rotate: [0, -20, 0],
-            ...commonProps
-          }
-        };
+        return getThrowPath(
+          startPosition.x || 0,
+          startPosition.y || 200
+        );
       case 'top':
-        return {
-          initial: { 
-            y: startPosition.y || -200, 
-            x: startPosition.x || 0, 
-            scale: 1, 
-            rotate: 0,
-            ...commonProps
-          },
-          animate: { 
-            y: [startPosition.y || -200, -50, 0], 
-            x: [startPosition.x || 0, startPosition.x / 2 || 0, 0], 
-            scale: [1, 1.2, 1],
-            rotate: [0, 20, 0],
-            ...commonProps
-          }
-        };
+        return getThrowPath(
+          startPosition.x || 0,
+          startPosition.y || -200
+        );
       case 'left':
-        return {
-          initial: { 
-            y: startPosition.y || 0, 
-            x: startPosition.x || -200, 
-            scale: 1, 
-            rotate: 0,
-            ...commonProps
-          },
-          animate: { 
-            y: [startPosition.y || 0, startPosition.y / 2 || 0, 0], 
-            x: [startPosition.x || -200, -50, 0], 
-            scale: [1, 1.2, 1],
-            rotate: [0, 20, 0],
-            ...commonProps
-          }
-        };
+        return getThrowPath(
+          startPosition.x || -200,
+          startPosition.y || 0
+        );
       case 'right':
-        return {
-          initial: { 
-            y: startPosition.y || 0, 
-            x: startPosition.x || 200, 
-            scale: 1, 
-            rotate: 0,
-            ...commonProps
-          },
-          animate: { 
-            y: [startPosition.y || 0, startPosition.y / 2 || 0, 0], 
-            x: [startPosition.x || 200, 50, 0], 
-            scale: [1, 1.2, 1],
-            rotate: [0, -20, 0],
-            ...commonProps
-          }
-        };
+        return getThrowPath(
+          startPosition.x || 200,
+          startPosition.y || 0
+        );
       default:
-        return {
-          initial: { 
-            y: startPosition.y || -100, 
-            x: startPosition.x || 0, 
-            scale: 1, 
-            rotate: 0,
-            ...commonProps
-          },
-          animate: { 
-            y: [startPosition.y || -100, -25, 0], 
-            x: [startPosition.x || 0, startPosition.x / 2 || 0, 0], 
-            scale: [1, 1.2, 1],
-            rotate: [0, -20, 0],
-            ...commonProps
-          }
-        };
+        return getThrowPath(
+          startPosition.x || 0,
+          startPosition.y || -100
+        );
     }
   };
 
-  // Animation variants based on type
+  // Animation variants using Framer Motion
   const animationVariants = {
     deal: {
       initial: { opacity: 0, y: -100, rotate: -10, scale: 0.8 },
-      animate: { opacity: 1, y: 0, rotate: 0, scale: 1, transition: { duration: 0.5, delay: dealDelay } }
+      animate: { 
+        opacity: 1, 
+        y: 0, 
+        rotate: 0, 
+        scale: 1, 
+       
+      }
     },
     hit: {
       initial: { y: 0, x: 0, scale: 1, rotate: 0 },
@@ -188,7 +164,7 @@ const CardComponent = ({
         x: [0, 80], 
         scale: [0.9, 1],
         rotate: [0, 5, 0],
-        transition: { duration: 0.4, ease: "easeOut" } 
+       
       }
     },
     throw: getThrowAnimation(),
@@ -199,7 +175,7 @@ const CardComponent = ({
         scale: [1, 0.85, 1], 
         x: [0, 20, -80],
         rotate: [0, -5, 0], 
-        transition: { duration: 0.5 } 
+       
       }
     },
     none: {
@@ -210,55 +186,49 @@ const CardComponent = ({
 
   const selectedAnimation = animationVariants[animationType];
 
-  // Use motion.div for animations
-  const CardWrapper = animationType !== 'none' || isDealing ? motion.div : 'div';
-  
-  // Animation props for dealing
-  const animationProps = isDealing ? {
-    initial: { opacity: 0, y: -100, scale: 0.8, rotate: 180 },
-    animate: { 
-      opacity: 1, 
-      y: 0, 
-      scale: 1,
-      rotate: 0,
-      transition: { duration: 0.8, delay: dealDelay * 0.2 }
-    }
-  } : animationType !== 'none' ? {
-    initial: selectedAnimation.initial,
-    animate: selectedAnimation.animate
-  } : {};
-
   return (
-    <CardWrapper
-      onClick={onClick}
-      style={style}
-      className={cn(
-        "w-16 h-24 rounded-md border shadow cursor-pointer transition-transform duration-200",
-        isTable ? "card-shadow border-white" : "hover:scale-105 border-gray-300",
-        isDealing ? "animate-card-deal" : "",
-        faceDown ? "card-back" : "bg-white",
-        className
-      )}
-      {...animationProps}
-    >
-      {!faceDown && (
-        <div className="flex flex-col h-full p-1">
-          <div className={cn("text-sm font-bold", getSuitColor(card.suit))}>
-            {getRankDisplay(card.rank)}
-            <span className="ml-1">{getSuitSymbol(card.suit)}</span>
+    <AnimatePresence>
+      <motion.div
+        onClick={onClick}
+        style={style}
+        className={cn(
+          "w-16 h-24 rounded-md border shadow cursor-pointer transition-transform duration-200",
+          isTable ? "card-shadow border-white" : "hover:scale-105 border-gray-300",
+          isDealing ? "animate-card-deal" : "",
+          faceDown ? "card-back" : "bg-white",
+          className
+        )}
+        initial={selectedAnimation.initial}
+        animate={selectedAnimation.animate}
+        exit={{ opacity: 0, scale: 0.8, transition: { duration: 0, ease: "easeOut" } }}
+        whileHover={{ 
+          scale: 1.05,
+          transition: { duration: 0, ease: "easeOut" }
+        }}
+        whileTap={{ 
+          scale: 0.95,
+          transition: { duration: 0, ease: "easeOut" }
+        }}
+      >
+        {!faceDown && (
+          <div className="flex flex-col h-full p-1">
+            <div className={cn("text-sm font-bold", getSuitColor(card.suit))}>
+              {getRankDisplay(card.rank)}
+              <span className="ml-1">{getSuitSymbol(card.suit)}</span>
+            </div>
+            <div className="flex-1 flex items-center justify-center">
+              <span className={cn("text-3xl", getSuitColor(card.suit))}>
+                {getSuitSymbol(card.suit)}
+              </span>
+            </div>
+            <div className={cn("text-sm font-bold self-end rotate-180", getSuitColor(card.suit))}>
+              {getRankDisplay(card.rank)}
+              <span className="ml-1">{getSuitSymbol(card.suit)}</span>
+            </div>
           </div>
-          <div className="flex-1 flex items-center justify-center">
-            <span className={cn("text-3xl", getSuitColor(card.suit))}>
-              {getSuitSymbol(card.suit)}
-            </span>
-          </div>
-          <div className={cn("text-sm font-bold self-end rotate-180", getSuitColor(card.suit))}>
-            {getRankDisplay(card.rank)}
-            <span className="ml-1">{getSuitSymbol(card.suit)}</span>
-          </div>
-        </div>
-      )}
-    </CardWrapper>
+        )}
+      </motion.div>
+    </AnimatePresence>
   );
 };
 

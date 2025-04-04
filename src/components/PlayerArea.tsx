@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Player, Card as CardType } from "@/models/game";
 import CardComponent from "./Card";
@@ -58,24 +57,24 @@ const PlayerArea = ({
 
   // Calculate the color values based on active/inactive state
   const cardBgGradient = isCurrentPlayer 
-    ? "bg-gradient-to-b from-indigo-600/95 to-purple-800/95" 
-    : "bg-gradient-to-b from-gray-800/90 to-gray-900/90";
+    ? "bg-transparent" 
+    : "bg-transparent";
 
   const avatarBg = isCurrentPlayer ? player.avatarColor : `${player.avatarColor.split('-')[0]}-700`;
   const avatarRingColor = isCurrentPlayer ? "ring-yellow-300" : "ring-white";
 
   return (
     <Card className={cn(
-      "transition-all duration-500 ease-in-out border-0 shadow-md overflow-hidden",
-      isCurrentPlayer ? "scale-105" : "scale-95 opacity-90",
+      "transition-all duration-500 ease-in-out border-0 shadow-none overflow-hidden select-none",
+      isCurrentPlayer ? "" : "opacity-90",
       isCapturing && "ring-2 ring-yellow-400 shadow-lg",
       cardBgGradient,
       orientation === 'vertical' ? "p-2" : "p-3",
-      isCurrentPlayer ? "shadow-purple-500/20 shadow-lg" : "shadow-gray-900/10",
+      isCurrentPlayer ? "shadow-purple-500/20" : "shadow-gray-900/10",
       "max-w-[220px]" // Added max width to make cards more compact
     )}>
       <CardContent className={cn(
-        "p-2",
+        "p-2 select-none",
         "flex gap-2", // Reduced gap
         orientation === 'vertical' ? "flex-col items-center" : "flex-row items-center",
       )}>
@@ -91,7 +90,7 @@ const PlayerArea = ({
             avatarRingColor,
             "shadow-inner",
             isCurrentPlayer 
-              ? "w-10 h-10 sm:w-12 sm:h-12 text-sm sm:text-base" 
+              ? "w-8 h-8 text-xs transition-all" 
               : "w-8 h-8 text-xs transition-all"
           )}>
             {name[0].toUpperCase()}
@@ -100,7 +99,7 @@ const PlayerArea = ({
           <div className="flex flex-col items-center">
             <span className={cn(
               "font-medium truncate mt-1",
-              isCurrentPlayer ? "text-sm sm:text-base text-white" : "text-xs text-gray-300 max-w-[40px] sm:max-w-[60px]"
+              isCurrentPlayer ? "text-sm sm:text-base text-white" : "text-sm sm:text-base text-white"
             )}>
               {name}
             </span>
@@ -110,7 +109,7 @@ const PlayerArea = ({
         {/* Middle section with card stack */}
         <div className={cn(
           "relative flex-shrink-0 player-card-stack",
-          isCurrentPlayer ? "scale-100" : "scale-90"
+          isCurrentPlayer ? "" : "scale-90"
         )} ref={cardRef}>
           <div className="relative">
             {/* Card stack representation (excluding top card) */}
@@ -119,7 +118,7 @@ const PlayerArea = ({
                 className={cn(
                   "w-16 h-24 rounded-md card-back",
                   isMobile ? "scale-75" : "",
-                  "after:content-[''] after:absolute after:top-1 after:left-1 after:w-full after:h-full after:bg-indigo-900 after:rounded-md after:-z-10"
+                  "after:content-[''] after:absolute after:top-1 after:left-1 after:w-full after:h-full after:bg-transparent after:rounded-md after:-z-10"
                 )}
               />
             )}
@@ -164,7 +163,7 @@ const PlayerArea = ({
             )}
             
             {isCurrentPlayer && cards.length > 0 && (
-              <div className="absolute -top-2 -right-2 bg-amber-500 text-white font-bold rounded-full flex items-center justify-center shadow-md w-6 h-6 text-xs border-2 border-white z-20">
+              <div className="absolute -top-2 -right-2 bg-transparent text-white font-bold rounded-full flex items-center justify-center shadow-md w-6 h-6 text-xs border-2 border-white z-20">
                 {cards.length}
               </div>
             )}
@@ -183,7 +182,7 @@ const PlayerArea = ({
               disabled={!isCurrentPlayer || cards.length === 0 || status !== 'active' || localAnimating || isAnimating || isDealing}
               onClick={handleHit}
               className={cn(
-                "bg-emerald-600 hover:bg-emerald-700 text-white transition-all shadow-md",
+                "bg-transparent hover:bg-transparent text-white transition-all shadow-md",
                 isMobile ? "text-[10px] px-2 py-1 h-7" : "text-xs sm:text-sm px-3 py-1.5",
                 isCurrentPlayer && status === 'active' && "animate-pulse"
               )}
@@ -196,7 +195,7 @@ const PlayerArea = ({
               disabled={!isCurrentPlayer || shufflesRemaining <= 0 || cards.length === 0 || status !== 'active' || isDealing || isAnimating}
               onClick={onShuffle}
               className={cn(
-                "border-amber-400 bg-amber-500/20 text-amber-100 hover:bg-amber-500/30",
+                "border-amber-400 bg-transparent text-amber-100 hover:bg-transparent",
                 isMobile ? "text-[10px] px-2 py-1 h-7" : "text-xs sm:text-sm px-2 py-1"
               )}
             >
@@ -208,7 +207,7 @@ const PlayerArea = ({
           </div>
         ) : (
           <div className={cn(
-            "text-[10px] text-gray-400 flex items-center gap-1 mt-1 bg-gray-800/50 px-2 py-0.5 rounded-full",
+            "text-[10px] text-gray-400 flex items-center gap-1 mt-1 bg-transparent px-2 py-0.5 rounded-full",
           )}>
             {shufflesRemaining > 0 && (
               <>
@@ -223,9 +222,9 @@ const PlayerArea = ({
         {/* Turn timer - Only shown for active player */}
         {isCurrentPlayer && status === 'active' && (
           <div className="w-full mt-1 relative">
-            <div className="w-full bg-indigo-900/50 h-1.5 rounded-full overflow-hidden">
+            <div className="w-full bg-transparent h-1.5 rounded-full overflow-hidden">
               <div 
-                className="bg-gradient-to-r from-amber-300 to-amber-500 h-1.5 rounded-full transition-all duration-100"
+                className="bg-transparent h-1.5 rounded-full transition-all duration-100"
                 style={{ width: `${(timeRemaining / 10) * 100}%` }}
               />
             </div>
