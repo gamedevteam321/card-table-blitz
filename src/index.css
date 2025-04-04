@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -104,9 +105,10 @@
 }
 
 @keyframes card-throw {
-  0% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 1; z-index: 100; }
-  40% { transform: translateY(-30px) translateX(20px) rotate(-10deg); opacity: 1; z-index: 100; }
-  100% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 1; z-index: 100; }
+  0% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 1; z-index: 1000; }
+  40% { transform: translateY(-30px) translateX(20px) rotate(-10deg); opacity: 1; z-index: 1000; }
+  80% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 1; z-index: 1000; }
+  100% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0; z-index: 1000; }
 }
 
 @keyframes card-arrive {
@@ -136,8 +138,8 @@
 }
 
 .animate-card-throw {
-  animation: card-throw 1.2s ease-out forwards;
-  z-index: 100 !important;
+  animation: card-throw 2s ease-out forwards;
+  z-index: 1000 !important;
 }
 
 .animate-card-arrive {
@@ -165,6 +167,18 @@
 
 .player-card-stack {
   position: relative;
+}
+
+/* New class for table center positioning */
+.table-center {
+  position: absolute !important;
+  z-index: 1000 !important;
+}
+
+/* Enhanced container for the table cards */
+.table-card-container {
+  position: relative;
+  z-index: 20;
 }
 
 @keyframes confetti {

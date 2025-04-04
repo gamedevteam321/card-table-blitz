@@ -95,8 +95,8 @@ const CardComponent = ({
             scale: [0.9, 1, 1],
             rotate: [0, -5, 0],
             zIndex: 100,
-            opacity: 1,
-            transition: { duration: 1.6, ease: "easeOut" } 
+            opacity: [1, 1, 0],
+            transition: { duration: 2, ease: "easeOut" } 
           }
         };
       case 'top':
@@ -115,8 +115,8 @@ const CardComponent = ({
             scale: [0.9, 1, 1],
             rotate: [0, 5, 0],
             zIndex: 100,
-            opacity: 1,
-            transition: { duration: 1.6, ease: "easeOut" } 
+            opacity: [1, 1, 0],
+            transition: { duration: 2, ease: "easeOut" } 
           }
         };
       case 'left':
@@ -135,8 +135,8 @@ const CardComponent = ({
             scale: [0.9, 1, 1],
             rotate: [0, 5, 0],
             zIndex: 100,
-            opacity: 1,
-            transition: { duration: 1.6, ease: "easeOut" } 
+            opacity: [1, 1, 0],
+            transition: { duration: 2, ease: "easeOut" } 
           }
         };
       case 'right':
@@ -155,8 +155,8 @@ const CardComponent = ({
             scale: [0.9, 1, 1],
             rotate: [0, -5, 0],
             zIndex: 100,
-            opacity: 1,
-            transition: { duration: 1.6, ease: "easeOut" } 
+            opacity: [1, 1, 0],
+            transition: { duration: 2, ease: "easeOut" } 
           }
         };
       default:
@@ -175,8 +175,8 @@ const CardComponent = ({
             scale: [0.9, 1, 1],
             rotate: [0, -5, 0],
             zIndex: 100,
-            opacity: 1,
-            transition: { duration: 1.6, ease: "easeOut" } 
+            opacity: [1, 1, 0],
+            transition: { duration: 2, ease: "easeOut" } 
           }
         };
     }
@@ -240,14 +240,14 @@ const CardComponent = ({
       onClick={onClick}
       style={{
         ...style,
-        zIndex: animationType === 'throw' ? 100 : (style.zIndex || 'auto')
+        zIndex: animationType === 'throw' ? 1000 : (style.zIndex || 'auto')
       }}
       className={cn(
         "w-16 h-24 rounded-md border shadow cursor-pointer transition-transform duration-200",
         isTable ? "card-shadow border-white" : "hover:scale-105 border-gray-300",
         isDealing ? "animate-card-deal" : "",
         faceDown ? "card-back" : "bg-white",
-        animationType === 'throw' ? "z-50" : "",
+        animationType === 'throw' ? "z-50 table-center" : "",
         className
       )}
       {...animationProps}

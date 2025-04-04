@@ -13,7 +13,24 @@ interface GameTableProps {
 
 const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: GameTableProps) => {
   const isMobile = useIsMobile();
-  const [cardPosition, setCardPosition] = useState({ x: 0, y: 0 });
+  const [displayedCard, setDisplayedCard] = useState<Card | null>(null);
+  const [showAnimatedCard, setShowAnimatedCard] = useState(true);
+  
+  // When animation completes, show the card in the deck
+  useEffect(() => {
+    if (animatingCard) {
+      setShowAnimatedCard(true);
+      // After animation completes, remove the animated card and update displayed card
+      const timer = setTimeout(() => {
+        setShowAnimatedCard(false);
+        setDisplayedCard(animatingCard);
+      }, 1900); // Slightly less than animation duration
+      
+      return () => clearTimeout(timer);
+    } else {
+      setDisplayedCard(cards.length > 0 ? cards[cards.length - 1] : null);
+    }
+  }, [animatingCard, cards]);
   
   // Helper function to get the full name of a card
   const getCardName = (card: Card) => {
@@ -32,7 +49,7 @@ const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: Gam
   };
 
   // Get the latest card to display
-  const latestCard = animatingCard || (cards.length > 0 ? cards[cards.length - 1] : null);
+  const latestCard = displayedCard || (cards.length > 0 ? cards[cards.length - 1] : null);
 
   return (
     <div className="relative w-full h-64 flex items-center justify-center overflow-visible">
@@ -46,7 +63,7 @@ const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: Gam
         </div>
       </div>
       
-      <div className="relative z-10 flex flex-col items-center justify-center gap-4 w-full">
+      <div className="relative z-10 flex flex-col items-center justify-center gap-4 w-full table-card-container">
         {cards.length === 0 && !animatingCard ? (
           <div className="text-gray-400 text-sm">
             Waiting for players...
@@ -71,10 +88,10 @@ const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: Gam
             </div>
             
             {/* Display the animating card on top with enhanced animation */}
-            {animatingCard && (
+            {animatingCard && showAnimatedCard && (
               <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center pointer-events-none z-50">
                 <CardComponent 
-                  key={animatingCard.id} 
+                  key={`animating-${animatingCard.id}`} 
                   card={animatingCard} 
                   isTable={true}
                   animationType="throw"

@@ -4,7 +4,7 @@ import { Player, Card as CardType } from "@/models/game";
 import CardComponent from "./Card";
 import { cn } from "@/lib/utils";
 import { RotateCcw } from "lucide-react";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -44,15 +44,30 @@ const PlayerArea = ({
   const restOfCards = cards.slice(1);
   const cardRef = useRef<HTMLDivElement>(null);
   const [localAnimating, setLocalAnimating] = useState(false);
+  const [hideTopCard, setHideTopCard] = useState(false);
+  
+  useEffect(() => {
+    if (isAnimating && lastActionType === 'throw') {
+      setHideTopCard(true);
+      const timer = setTimeout(() => {
+        setHideTopCard(false);
+      }, 2000); // Match animation duration
+      return () => clearTimeout(timer);
+    }
+  }, [isAnimating, lastActionType]);
 
   const handleHit = () => {
     if (localAnimating || isAnimating || !isCurrentPlayer || cards.length === 0 || status !== 'active' || isDealing) return;
     
     setLocalAnimating(true);
+    setHideTopCard(true);
     // Let the animation play before actually executing the hit logic
     setTimeout(() => {
       onHit();
-      setTimeout(() => setLocalAnimating(false), 1000); // Increased timeout to match longer animation
+      setTimeout(() => {
+        setLocalAnimating(false);
+        setHideTopCard(false);
+      }, 2000); // Increased timeout to match longer animation
     }, 300);
   };
 
@@ -130,8 +145,7 @@ const PlayerArea = ({
                 className={cn(
                   "cursor-pointer",
                   cards.length > 1 ? "absolute top-0 left-0" : "relative",
-                  isAnimating && lastActionType === 'throw' ? "opacity-0" : "opacity-100",
-                  isAnimating ? "invisible" : "visible" // Hide the card completely when animating
+                  (isAnimating && lastActionType === 'throw') || hideTopCard ? "opacity-0 pointer-events-none" : "opacity-100",
                 )}
                 onClick={handleHit}
                 data-player-position={positionClass}
@@ -238,3 +252,4 @@ const PlayerArea = ({
 };
 
 export default PlayerArea;
+
