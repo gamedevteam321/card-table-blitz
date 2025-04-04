@@ -8,7 +8,7 @@ import { useScreenSize } from "@/hooks/use-screen-size";
 interface GameTableProps {
   cards: Card[];
   animatingCard: Card | null;
-  animatingPlayerPosition?: 'top' | 'left' | 'right' | 'bottom' | 'top-left' | 'top-right' | null;
+  animatingPlayerPosition?: 'top' | 'left' | 'right' | 'bottom' | null;
 }
 
 const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: GameTableProps) => {
@@ -108,12 +108,9 @@ const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: Gam
               ))}
             </div>
             
-            {/* Display the animating card on top, always starting from the player position */}
+            {/* Display the animating card on top with enhanced animation */}
             {animatingCard && showAnimatedCard && (
-              <div 
-                className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none z-50"
-                style={{ width: '100%', height: '100%' }}
-              >
+              <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center pointer-events-none z-50">
                 <CardComponent 
                   key={`animating-${animatingCard.id}`} 
                   card={animatingCard} 
@@ -121,6 +118,10 @@ const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: Gam
                   animationType="throw"
                   playerPosition={animatingPlayerPosition}
                   className={cn("shadow-lg", cardScale)}
+                  style={{
+                    position: 'absolute',
+                    zIndex: 999,
+                  }}
                 />
               </div>
             )}
