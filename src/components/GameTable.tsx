@@ -68,9 +68,11 @@ const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: Gam
                   className={index === cards.length - 1 && !animatingCard ? "shadow-lg" : ""}
                 />
               ))}
-              
-              {/* Display the animating card on top with enhanced animation */}
-              {animatingCard && (
+            </div>
+            
+            {/* Display the animating card on top with enhanced animation */}
+            {animatingCard && (
+              <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center pointer-events-none z-50">
                 <CardComponent 
                   key={animatingCard.id} 
                   card={animatingCard} 
@@ -81,14 +83,14 @@ const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: Gam
                   playerCardElement={`player-card-${playerPositionToPlayerId(animatingPlayerPosition)}`}
                   style={{
                     position: 'absolute',
-                    zIndex: cards.length + 10,
+                    zIndex: 100,
                   }}
                 />
-              )}
-            </div>
+              </div>
+            )}
             
             {latestCard && (
-              <div className="text-casino-gold text-sm font-medium bg-casino-dark/80 px-3 py-1 rounded-full mt-2">
+              <div className="text-casino-gold text-sm font-medium bg-casino-dark/80 px-3 py-1 rounded-full mt-2 z-20">
                 {getCardName(latestCard)}
               </div>
             )}

@@ -14,7 +14,7 @@ interface CardProps {
   style?: React.CSSProperties;
   animationType?: 'deal' | 'hit' | 'capture' | 'throw' | 'none';
   playerPosition?: 'top' | 'left' | 'right' | 'bottom' | null;
-  playerCardElement?: string; // Added this property to fix the TypeScript error
+  playerCardElement?: string;
 }
 
 const CardComponent = ({ 
@@ -85,14 +85,14 @@ const CardComponent = ({
             x: startPosition.x || 0, 
             scale: 1, 
             rotate: 0, 
-            zIndex: 50 
+            zIndex: 100 
           },
           animate: { 
             y: [startPosition.y || 150, 50, 0], 
             x: [startPosition.x || 0, startPosition.x / 2 || 0, 0], 
             scale: [1, 1.1, 1],
             rotate: [0, -5, 0],
-            transition: { duration: 0.8, ease: "easeOut" } 
+            transition: { duration: 1.2, ease: "easeOut" } 
           }
         };
       case 'top':
@@ -102,14 +102,14 @@ const CardComponent = ({
             x: startPosition.x || 0, 
             scale: 1, 
             rotate: 0, 
-            zIndex: 50 
+            zIndex: 100 
           },
           animate: { 
             y: [startPosition.y || -150, -50, 0], 
             x: [startPosition.x || 0, startPosition.x / 2 || 0, 0], 
             scale: [1, 1.1, 1],
             rotate: [0, 5, 0],
-            transition: { duration: 0.8, ease: "easeOut" } 
+            transition: { duration: 1.2, ease: "easeOut" } 
           }
         };
       case 'left':
@@ -119,14 +119,14 @@ const CardComponent = ({
             x: startPosition.x || -150, 
             scale: 1, 
             rotate: 0, 
-            zIndex: 50 
+            zIndex: 100 
           },
           animate: { 
             y: [startPosition.y || 0, startPosition.y / 2 || 0, 0], 
             x: [startPosition.x || -150, -50, 0], 
             scale: [1, 1.1, 1],
             rotate: [0, 5, 0],
-            transition: { duration: 0.8, ease: "easeOut" } 
+            transition: { duration: 1.2, ease: "easeOut" } 
           }
         };
       case 'right':
@@ -136,14 +136,14 @@ const CardComponent = ({
             x: startPosition.x || 150, 
             scale: 1, 
             rotate: 0, 
-            zIndex: 50 
+            zIndex: 100 
           },
           animate: { 
             y: [startPosition.y || 0, startPosition.y / 2 || 0, 0], 
             x: [startPosition.x || 150, 50, 0], 
             scale: [1, 1.1, 1],
             rotate: [0, -5, 0],
-            transition: { duration: 0.8, ease: "easeOut" } 
+            transition: { duration: 1.2, ease: "easeOut" } 
           }
         };
       default:
@@ -153,14 +153,14 @@ const CardComponent = ({
             x: startPosition.x || 0, 
             scale: 1, 
             rotate: 0, 
-            zIndex: 50 
+            zIndex: 100 
           },
           animate: { 
             y: [startPosition.y || -50, -20, 0], 
             x: [startPosition.x || 0, startPosition.x / 2 || 0, 0], 
             scale: [1, 1.1, 1],
             rotate: [0, -5, 0],
-            transition: { duration: 0.8, ease: "easeOut" } 
+            transition: { duration: 1.2, ease: "easeOut" } 
           }
         };
     }
@@ -222,12 +222,16 @@ const CardComponent = ({
   return (
     <CardWrapper
       onClick={onClick}
-      style={style}
+      style={{
+        ...style,
+        zIndex: animationType === 'throw' ? 100 : (style.zIndex || 'auto')
+      }}
       className={cn(
         "w-16 h-24 rounded-md border shadow cursor-pointer transition-transform duration-200",
         isTable ? "card-shadow border-white" : "hover:scale-105 border-gray-300",
         isDealing ? "animate-card-deal" : "",
         faceDown ? "card-back" : "bg-white",
+        animationType === 'throw' ? "z-50" : "",
         className
       )}
       {...animationProps}
