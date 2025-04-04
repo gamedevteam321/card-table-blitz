@@ -14,7 +14,7 @@ interface CardProps {
   style?: React.CSSProperties;
   animationType?: 'deal' | 'hit' | 'capture' | 'throw' | 'none';
   playerPosition?: 'top' | 'left' | 'right' | 'bottom' | null;
-  playerCardElement?: string;
+  playerCardElement?: string; // Added this property to fix the TypeScript error
 }
 
 const CardComponent = ({ 
@@ -77,26 +77,22 @@ const CardComponent = ({
       }
     }
 
-    // Adjust the animation based on player position
     switch (playerPosition) {
       case 'bottom':
         return {
           initial: { 
             y: startPosition.y || 150, 
             x: startPosition.x || 0, 
-            scale: 0.9, 
+            scale: 1, 
             rotate: 0, 
-            zIndex: 100,
-            opacity: 1
+            zIndex: 50 
           },
           animate: { 
-            y: [startPosition.y || 150, 80, 0], 
-            x: [startPosition.x || 0, startPosition.x / 3 || 0, 0], 
-            scale: [0.9, 1, 1],
+            y: [startPosition.y || 150, 50, 0], 
+            x: [startPosition.x || 0, startPosition.x / 2 || 0, 0], 
+            scale: [1, 1.1, 1],
             rotate: [0, -5, 0],
-            zIndex: 100,
-            opacity: [1, 1, 0],
-            transition: { duration: 2, ease: "easeOut" } 
+            transition: { duration: 0.8, ease: "easeOut" } 
           }
         };
       case 'top':
@@ -104,19 +100,16 @@ const CardComponent = ({
           initial: { 
             y: startPosition.y || -150, 
             x: startPosition.x || 0, 
-            scale: 0.9, 
+            scale: 1, 
             rotate: 0, 
-            zIndex: 100,
-            opacity: 1
+            zIndex: 50 
           },
           animate: { 
-            y: [startPosition.y || -150, -80, 0], 
-            x: [startPosition.x || 0, startPosition.x / 3 || 0, 0], 
-            scale: [0.9, 1, 1],
+            y: [startPosition.y || -150, -50, 0], 
+            x: [startPosition.x || 0, startPosition.x / 2 || 0, 0], 
+            scale: [1, 1.1, 1],
             rotate: [0, 5, 0],
-            zIndex: 100,
-            opacity: [1, 1, 0],
-            transition: { duration: 2, ease: "easeOut" } 
+            transition: { duration: 0.8, ease: "easeOut" } 
           }
         };
       case 'left':
@@ -124,19 +117,16 @@ const CardComponent = ({
           initial: { 
             y: startPosition.y || 0, 
             x: startPosition.x || -150, 
-            scale: 0.9, 
+            scale: 1, 
             rotate: 0, 
-            zIndex: 100,
-            opacity: 1
+            zIndex: 50 
           },
           animate: { 
             y: [startPosition.y || 0, startPosition.y / 2 || 0, 0], 
-            x: [startPosition.x || -150, -70, 0], 
-            scale: [0.9, 1, 1],
+            x: [startPosition.x || -150, -50, 0], 
+            scale: [1, 1.1, 1],
             rotate: [0, 5, 0],
-            zIndex: 100,
-            opacity: [1, 1, 0],
-            transition: { duration: 2, ease: "easeOut" } 
+            transition: { duration: 0.8, ease: "easeOut" } 
           }
         };
       case 'right':
@@ -144,19 +134,16 @@ const CardComponent = ({
           initial: { 
             y: startPosition.y || 0, 
             x: startPosition.x || 150, 
-            scale: 0.9, 
+            scale: 1, 
             rotate: 0, 
-            zIndex: 100,
-            opacity: 1
+            zIndex: 50 
           },
           animate: { 
             y: [startPosition.y || 0, startPosition.y / 2 || 0, 0], 
-            x: [startPosition.x || 150, 70, 0], 
-            scale: [0.9, 1, 1],
+            x: [startPosition.x || 150, 50, 0], 
+            scale: [1, 1.1, 1],
             rotate: [0, -5, 0],
-            zIndex: 100,
-            opacity: [1, 1, 0],
-            transition: { duration: 2, ease: "easeOut" } 
+            transition: { duration: 0.8, ease: "easeOut" } 
           }
         };
       default:
@@ -164,19 +151,16 @@ const CardComponent = ({
           initial: { 
             y: startPosition.y || -50, 
             x: startPosition.x || 0, 
-            scale: 0.9, 
+            scale: 1, 
             rotate: 0, 
-            zIndex: 100,
-            opacity: 1
+            zIndex: 50 
           },
           animate: { 
             y: [startPosition.y || -50, -20, 0], 
-            x: [startPosition.x || 0, startPosition.x / 3 || 0, 0], 
-            scale: [0.9, 1, 1],
+            x: [startPosition.x || 0, startPosition.x / 2 || 0, 0], 
+            scale: [1, 1.1, 1],
             rotate: [0, -5, 0],
-            zIndex: 100,
-            opacity: [1, 1, 0],
-            transition: { duration: 2, ease: "easeOut" } 
+            transition: { duration: 0.8, ease: "easeOut" } 
           }
         };
     }
@@ -186,7 +170,7 @@ const CardComponent = ({
   const animationVariants = {
     deal: {
       initial: { opacity: 0, y: -100, rotate: -10, scale: 0.8 },
-      animate: { opacity: 1, y: 0, rotate: 0, scale: 1, transition: { duration: 0.8, delay: dealDelay } }
+      animate: { opacity: 1, y: 0, rotate: 0, scale: 1, transition: { duration: 0.5, delay: dealDelay } }
     },
     hit: {
       initial: { y: 0, x: 0, scale: 1, rotate: 0 },
@@ -195,7 +179,7 @@ const CardComponent = ({
         x: [0, 80], 
         scale: [0.9, 1],
         rotate: [0, 5, 0],
-        transition: { duration: 0.6, ease: "easeOut" } 
+        transition: { duration: 0.4, ease: "easeOut" } 
       }
     },
     throw: getThrowAnimation(),
@@ -238,16 +222,12 @@ const CardComponent = ({
   return (
     <CardWrapper
       onClick={onClick}
-      style={{
-        ...style,
-        zIndex: animationType === 'throw' ? 1000 : (style.zIndex || 'auto')
-      }}
+      style={style}
       className={cn(
         "w-16 h-24 rounded-md border shadow cursor-pointer transition-transform duration-200",
         isTable ? "card-shadow border-white" : "hover:scale-105 border-gray-300",
         isDealing ? "animate-card-deal" : "",
         faceDown ? "card-back" : "bg-white",
-        animationType === 'throw' ? "z-50 table-center" : "",
         className
       )}
       {...animationProps}
