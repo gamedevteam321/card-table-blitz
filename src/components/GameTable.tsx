@@ -13,7 +13,6 @@ interface GameTableProps {
 
 const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: GameTableProps) => {
   const isMobile = useIsMobile();
-  const [cardPosition, setCardPosition] = useState({ x: 0, y: 0 });
   
   // Helper function to get the full name of a card
   const getCardName = (card: Card) => {
@@ -35,7 +34,7 @@ const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: Gam
   const latestCard = animatingCard || (cards.length > 0 ? cards[cards.length - 1] : null);
 
   return (
-    <div className="relative w-full h-64 flex items-center justify-center">
+    <div className="relative w-full h-64 flex items-center justify-center table-center" id="table-center">
       <div className="absolute inset-0 bg-casino-dark rounded-xl opacity-90 z-0">
         {/* Decorative pattern for the table */}
         <div className="w-full h-full opacity-30" 
@@ -53,7 +52,7 @@ const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: Gam
           </div>
         ) : (
           <>
-            <div className="relative h-32 w-24">
+            <div className="relative h-32 w-24" id="card-target-area">
               {/* Display the stack of cards */}
               {cards.map((card, index) => (
                 <CardComponent 
@@ -81,7 +80,7 @@ const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: Gam
                   playerCardElement={`player-card-${playerPositionToPlayerId(animatingPlayerPosition)}`}
                   style={{
                     position: 'absolute',
-                    zIndex: cards.length + 10,
+                    zIndex: cards.length + 50,
                   }}
                 />
               )}
