@@ -75,11 +75,6 @@ const PlayerArea = ({
     }, 300);
   };
 
-  // Calculate the color values based on active/inactive state
-  const cardBgGradient = isCurrentPlayer 
-    ? "bg-gradient-to-b from-blue-800/95 to-blue-950/95" 
-    : "bg-gradient-to-b from-gray-800/90 to-gray-900/90";
-
   const avatarBg = isCurrentPlayer ? player.avatarColor : `${player.avatarColor.split('-')[0]}-700`;
   const avatarRingColor = isCurrentPlayer ? "ring-yellow-300" : "ring-white";
 
@@ -88,12 +83,10 @@ const PlayerArea = ({
 
   return (
     <Card className={cn(
-      "transition-all duration-500 ease-in-out border-0 shadow-md overflow-hidden",
+      "transition-all duration-500 ease-in-out border-0 shadow-none overflow-hidden bg-transparent",
       isCurrentPlayer ? "opacity-100" : "opacity-90",
       isCapturing && "ring-2 ring-yellow-400 shadow-lg",
-      cardBgGradient,
       useCompactMode ? "p-1" : orientation === 'vertical' ? "p-2" : "p-3",
-      isCurrentPlayer ? "shadow-blue-500/20 shadow-lg" : "shadow-gray-900/10",
       useCompactMode ? "max-w-[180px]" : "max-w-[220px]",
     )}>
       <CardContent className={cn(
@@ -115,7 +108,7 @@ const PlayerArea = ({
         </div>
 
         <div className={cn(
-          "relative flex-shrink-0 player-card-stack",
+          "relative flex-shrink-0 player-card-stack flex flex-col items-center gap-2",
         )} ref={cardRef}>
           <div className="relative">
             {cards.length > 1 && (
@@ -170,19 +163,19 @@ const PlayerArea = ({
               </div>
             )}
           </div>
+          
+          <PlayerControls
+            isCurrentPlayer={isCurrentPlayer}
+            onHit={handleHit}
+            onShuffle={onShuffle}
+            shufflesRemaining={shufflesRemaining}
+            cardsCount={cards.length}
+            isDisabled={status !== 'active'}
+            isAnimating={localAnimating || isAnimating}
+            isDealing={isDealing}
+            isCompact={useCompactMode}
+          />
         </div>
-
-        <PlayerControls
-          isCurrentPlayer={isCurrentPlayer}
-          onHit={handleHit}
-          onShuffle={onShuffle}
-          shufflesRemaining={shufflesRemaining}
-          cardsCount={cards.length}
-          isDisabled={status !== 'active'}
-          isAnimating={localAnimating || isAnimating}
-          isDealing={isDealing}
-          isCompact={useCompactMode}
-        />
 
         {isCurrentPlayer && status === 'active' && (
           <div className={cn(

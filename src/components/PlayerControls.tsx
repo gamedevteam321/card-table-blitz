@@ -30,8 +30,8 @@ const PlayerControls = ({
   if (isCurrentPlayer) {
     return (
       <div className={cn(
-        "flex gap-1",
-        isCompact ? "flex-row" : "flex-col"
+        "flex gap-1 w-full justify-center",
+        isCompact ? "flex-row" : "flex-row"
       )}>
         <Button
           variant="default"
@@ -67,7 +67,7 @@ const PlayerControls = ({
   
   return (
     <div className={cn(
-      "text-[10px] text-gray-400 flex items-center gap-1 mt-1 bg-gray-800/50 px-2 py-0.5 rounded-full",
+      "text-[10px] text-gray-400 flex items-center justify-center gap-1 mt-1 bg-gray-800/50 px-2 py-0.5 rounded-full",
     )}>
       {shufflesRemaining > 0 && (
         <>
