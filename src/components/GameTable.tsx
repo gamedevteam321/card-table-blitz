@@ -74,7 +74,7 @@ const GameTable = ({ cards, animatingCard }: GameTableProps) => {
                   card={animatingCard} 
                   isTable={true}
                   animationType="throw"
-                  className="shadow-lg animate-card-arrive"
+                  className="shadow-lg animate-card-arrive z-50"
                   style={{
                     position: 'absolute',
                     zIndex: cards.length + 10,

@@ -75,10 +75,10 @@ const CardComponent = ({
     throw: {
       initial: { y: 0, x: 0, scale: 1, rotate: 0, zIndex: 50 },
       animate: { 
-        y: [0, -50, 0], 
-        x: [0, 0, 150], 
+        y: [-20, -100, 0], 
+        x: [0, -50, 0], 
         scale: [1, 1.1, 1],
-        rotate: [0, -5, 5],
+        rotate: [0, -10, 5],
         transition: { duration: 0.6, ease: "easeOut" } 
       }
     },

@@ -129,7 +129,8 @@ const PlayerArea = ({
               <div 
                 className={cn(
                   "cursor-pointer",
-                  cards.length > 1 ? "absolute top-0 left-0" : "relative"
+                  cards.length > 1 ? "absolute top-0 left-0" : "relative",
+                  isAnimating && lastActionType === 'throw' ? "opacity-0" : "opacity-100"
                 )}
                 onClick={handleHit}
               >
