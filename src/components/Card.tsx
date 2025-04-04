@@ -37,8 +37,9 @@ const CardComponent = ({
     return (
       <div 
         className={cn(
-          "w-16 h-24 flex items-center justify-center rounded-md border border-casino-table bg-casino-dark",
+          "rounded-md border shadow cursor-pointer transition-transform duration-200",
           isSmallMobile ? "w-12 h-18" : "w-16 h-24",
+          isTable ? "card-shadow border-white" : "hover:scale-105 border-gray-300",
           className
         )}
         style={style}
@@ -64,58 +65,69 @@ const CardComponent = ({
     return rank === '10' ? '10' : rank.charAt(0);
   };
 
-  // Optimize throw animation for mobile
+  // Enhanced throw animation that always starts from player position and goes to center
   const getThrowAnimation = () => {
-    // Calculate starting position based on player position
-    // Smaller animations for mobile
-    const distanceMultiplier = isSmallMobile ? 0.7 : 1;
+    // Calculate positions based on player position - consistent across all screen sizes
     let startY = 0;
     let startX = 0;
     let rotation = 0;
     
-    // Adjust animation path based on player position
+    // Adjust starting position based on player position
     switch (playerPosition) {
       case 'bottom':
-        startY = 200 * distanceMultiplier;
-        rotation = -10;
+        startY = isSmallMobile ? 150 : 200;
+        rotation = -5;
         break;
       case 'top':
-        startY = -200 * distanceMultiplier;
-        rotation = 10;
+        startY = isSmallMobile ? -150 : -200;
+        rotation = 5;
         break;
       case 'left':
-        startX = -200 * distanceMultiplier;
-        rotation = 15;
+        startX = isSmallMobile ? -150 : -200;
+        rotation = 10;
         break;
       case 'right':
-        startX = 200 * distanceMultiplier;
+        startX = isSmallMobile ? 150 : 200;
+        rotation = -10;
+        break;
+      case 'top-left':
+        startY = isSmallMobile ? -100 : -150;
+        startX = isSmallMobile ? -100 : -150;
+        rotation = 15;
+        break;
+      case 'top-right':
+        startY = isSmallMobile ? -100 : -150;
+        startX = isSmallMobile ? 100 : 150;
         rotation = -15;
         break;
       default:
-        startY = 200 * distanceMultiplier;
+        startY = isSmallMobile ? 150 : 200;
         rotation = 0;
     }
 
-    // Faster animations on mobile
+    // Animation duration - slightly faster on mobile for better UX
     const duration = isSmallMobile ? 0.5 : 0.7;
 
     return {
       initial: { 
         y: startY, 
         x: startX, 
-        scale: isSmallMobile ? 0.7 : 0.8, 
+        scale: isSmallMobile ? 0.7 : 0.9,
         rotate: rotation, 
         zIndex: 1000,
         opacity: 1
       },
       animate: { 
-        y: [startY, startY/2, 0], 
-        x: [startX, startX/2, 0], 
-        scale: isSmallMobile ? [0.7, 0.8, 0.9] : [0.8, 0.9, 1],
-        rotate: [rotation, rotation/2, 0],
+        y: 0, 
+        x: 0, 
+        scale: 1,
+        rotate: 0,
         zIndex: 1000,
         opacity: [1, 1, 0], // Fade out at the end
-        transition: { duration: duration, ease: "easeOut" } 
+        transition: { 
+          duration: duration, 
+          ease: "easeOut" 
+        } 
       }
     };
   };

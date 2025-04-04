@@ -82,14 +82,14 @@ const PlayerArea = ({
   const cardScale = useCompactMode ? "scale-65" : isMobile ? "scale-75" : "";
 
   return (
-    <Card className={cn(
-      "transition-all duration-500 ease-in-out border-0 shadow-none overflow-hidden bg-transparent",
+    <div className={cn(
+      "transition-all duration-500 ease-in-out bg-transparent overflow-hidden",
       isCurrentPlayer ? "opacity-100" : "opacity-90",
       isCapturing && "ring-2 ring-yellow-400 shadow-lg",
       useCompactMode ? "p-1" : orientation === 'vertical' ? "p-2" : "p-3",
       useCompactMode ? "max-w-[180px]" : "max-w-[220px]",
     )}>
-      <CardContent className={cn(
+      <div className={cn(
         useCompactMode ? "p-1" : "p-2",
         "flex gap-1",
         orientation === 'vertical' ? "flex-col items-center" : "flex-row items-center",
@@ -108,7 +108,7 @@ const PlayerArea = ({
         </div>
 
         <div className={cn(
-          "relative flex-shrink-0 player-card-stack flex flex-col items-center gap-2",
+          "relative flex-shrink-0 player-card-stack flex flex-col items-center",
         )} ref={cardRef}>
           <div className="relative">
             {cards.length > 1 && (
@@ -164,34 +164,36 @@ const PlayerArea = ({
             )}
           </div>
           
-          <PlayerControls
-            isCurrentPlayer={isCurrentPlayer}
-            onHit={handleHit}
-            onShuffle={onShuffle}
-            shufflesRemaining={shufflesRemaining}
-            cardsCount={cards.length}
-            isDisabled={status !== 'active'}
-            isAnimating={localAnimating || isAnimating}
-            isDealing={isDealing}
-            isCompact={useCompactMode}
-          />
-        </div>
-
-        {isCurrentPlayer && status === 'active' && (
-          <div className={cn(
-            "w-full relative",
-            useCompactMode ? "mt-0.5" : "mt-1"
-          )}>
-            <div className="w-full bg-blue-900/50 h-1.5 rounded-full overflow-hidden">
-              <div 
-                className="bg-gradient-to-r from-amber-300 to-amber-500 h-1.5 rounded-full transition-all duration-100"
-                style={{ width: `${(timeRemaining / 10) * 100}%` }}
-              />
-            </div>
+          <div className="mt-2">
+            <PlayerControls
+              isCurrentPlayer={isCurrentPlayer}
+              onHit={handleHit}
+              onShuffle={onShuffle}
+              shufflesRemaining={shufflesRemaining}
+              cardsCount={cards.length}
+              isDisabled={status !== 'active'}
+              isAnimating={localAnimating || isAnimating}
+              isDealing={isDealing}
+              isCompact={useCompactMode}
+            />
           </div>
-        )}
-      </CardContent>
-    </Card>
+          
+          {isCurrentPlayer && status === 'active' && (
+            <div className={cn(
+              "w-full relative",
+              useCompactMode ? "mt-0.5" : "mt-1"
+            )}>
+              <div className="w-full bg-blue-900/50 h-1.5 rounded-full overflow-hidden">
+                <div 
+                  className="bg-gradient-to-r from-amber-300 to-amber-500 h-1.5 rounded-full transition-all duration-100"
+                  style={{ width: `${(timeRemaining / 10) * 100}%` }}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 };
 
