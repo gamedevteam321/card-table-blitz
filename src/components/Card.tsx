@@ -1,4 +1,3 @@
-
 import { Card as CardType } from '../models/game';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
@@ -77,90 +76,100 @@ const CardComponent = ({
       }
     }
 
+    // Common animation properties
+    const commonProps = {
+      zIndex: 50,
+      transition: {
+        duration: 0.6,
+        ease: [0.2, 0.8, 0.2, 1],
+        rotate: { duration: 0.5 }
+      }
+    };
+
     switch (playerPosition) {
       case 'bottom':
         return {
           initial: { 
-            y: startPosition.y || 150, 
+            y: startPosition.y || 200, 
             x: startPosition.x || 0, 
             scale: 1, 
-            rotate: 0, 
-            zIndex: 50 
+            rotate: 0,
+            ...commonProps
           },
           animate: { 
-            y: [startPosition.y || 150, 50, 0], 
+            y: [startPosition.y || 200, 50, 0],
             x: [startPosition.x || 0, startPosition.x / 2 || 0, 0], 
-            scale: [1, 1.1, 1],
-            rotate: [0, -5, 0],
-            transition: { duration: 0.8, ease: "easeOut" } 
+            scale: [1, 1.2, 1],
+            rotate: [0, -20, 0],
+            ...commonProps
           }
         };
       case 'top':
         return {
           initial: { 
-            y: startPosition.y || -150, 
+            y: startPosition.y || -200, 
             x: startPosition.x || 0, 
             scale: 1, 
-            rotate: 0, 
-            zIndex: 50 
+            rotate: 0,
+            ...commonProps
           },
           animate: { 
-            y: [startPosition.y || -150, -50, 0], 
+            y: [startPosition.y || -200, -50, 0], 
             x: [startPosition.x || 0, startPosition.x / 2 || 0, 0], 
-            scale: [1, 1.1, 1],
-            rotate: [0, 5, 0],
-            transition: { duration: 0.8, ease: "easeOut" } 
+            scale: [1, 1.2, 1],
+            rotate: [0, 20, 0],
+            ...commonProps
           }
         };
       case 'left':
         return {
           initial: { 
             y: startPosition.y || 0, 
-            x: startPosition.x || -150, 
+            x: startPosition.x || -200, 
             scale: 1, 
-            rotate: 0, 
-            zIndex: 50 
+            rotate: 0,
+            ...commonProps
           },
           animate: { 
             y: [startPosition.y || 0, startPosition.y / 2 || 0, 0], 
-            x: [startPosition.x || -150, -50, 0], 
-            scale: [1, 1.1, 1],
-            rotate: [0, 5, 0],
-            transition: { duration: 0.8, ease: "easeOut" } 
+            x: [startPosition.x || -200, -50, 0], 
+            scale: [1, 1.2, 1],
+            rotate: [0, 20, 0],
+            ...commonProps
           }
         };
       case 'right':
         return {
           initial: { 
             y: startPosition.y || 0, 
-            x: startPosition.x || 150, 
+            x: startPosition.x || 200, 
             scale: 1, 
-            rotate: 0, 
-            zIndex: 50 
+            rotate: 0,
+            ...commonProps
           },
           animate: { 
             y: [startPosition.y || 0, startPosition.y / 2 || 0, 0], 
-            x: [startPosition.x || 150, 50, 0], 
-            scale: [1, 1.1, 1],
-            rotate: [0, -5, 0],
-            transition: { duration: 0.8, ease: "easeOut" } 
+            x: [startPosition.x || 200, 50, 0], 
+            scale: [1, 1.2, 1],
+            rotate: [0, -20, 0],
+            ...commonProps
           }
         };
       default:
         return {
           initial: { 
-            y: startPosition.y || -50, 
+            y: startPosition.y || -100, 
             x: startPosition.x || 0, 
             scale: 1, 
-            rotate: 0, 
-            zIndex: 50 
+            rotate: 0,
+            ...commonProps
           },
           animate: { 
-            y: [startPosition.y || -50, -20, 0], 
+            y: [startPosition.y || -100, -25, 0], 
             x: [startPosition.x || 0, startPosition.x / 2 || 0, 0], 
-            scale: [1, 1.1, 1],
-            rotate: [0, -5, 0],
-            transition: { duration: 0.8, ease: "easeOut" } 
+            scale: [1, 1.2, 1],
+            rotate: [0, -20, 0],
+            ...commonProps
           }
         };
     }

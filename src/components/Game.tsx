@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Card, GameState, Player, checkCardMatch, createDeck, generatePlayerColors, shuffleDeck } from '@/models/game';
 import { useToast } from '@/hooks/use-toast';
@@ -272,48 +271,56 @@ const Game = () => {
               animatingCard: null,
               isAnimating: false,
             };
-          } else {
-            // No match, add card to table
-            if (currentPlayer.cards.length === 0) {
-              updatedPlayers[prev.currentPlayerIndex].status = 'inactive';
-              displayMessage(`${currentPlayer.name} is out of cards!`, 'warning');
-              
-              const activePlayers = updatedPlayers.filter(
-                p => p.status === 'active' && p.cards.length > 0
-              );
-              
-              if (activePlayers.length === 1) {
-                return {
-                  ...prev,
-                  players: updatedPlayers.map(p => ({
-                    ...p,
-                    status: p.id === activePlayers[0].id ? 'winner' : 'loser'
-                  })),
-                  tableCards: [...prev.tableCards, prev.animatingCard!],
-                  status: 'finished',
-                  winner: activePlayers[0],
-                  animatingCard: null,
-                  isAnimating: false,
-                };
-              }
-            }
-            
-            const nextPlayerIndex = getNextPlayerIndex(updatedPlayers, prev.currentPlayerIndex);
-            
-            return {
-              ...prev,
-              players: updatedPlayers,
-              currentPlayerIndex: nextPlayerIndex,
-              tableCards: [...prev.tableCards, prev.animatingCard!],
-              turnStartTime: Date.now(),
-              message: `${updatedPlayers[nextPlayerIndex].name}'s turn`,
-              animatingCard: null,
-              isAnimating: false,
-            };
           }
+          
+          // No match, add card to table
+          if (currentPlayer.cards.length === 0) {
+            updatedPlayers[prev.currentPlayerIndex].status = 'inactive';
+            displayMessage(`${currentPlayer.name} is out of cards!`, 'warning');
+            
+            const activePlayers = updatedPlayers.filter(
+              p => p.status === 'active' && p.cards.length > 0
+            );
+            
+            if (activePlayers.length === 1) {
+              return {
+                ...prev,
+                players: updatedPlayers.map(p => ({
+                  ...p,
+                  status: p.id === activePlayers[0].id ? 'winner' : 'loser'
+                })),
+                tableCards: [...prev.tableCards, prev.animatingCard!],
+                status: 'finished',
+                winner: activePlayers[0],
+                animatingCard: null,
+                isAnimating: false,
+              };
+            }
+          }
+          
+          const nextPlayerIndex = getNextPlayerIndex(updatedPlayers, prev.currentPlayerIndex);
+          
+          // Keep the animation going until it's complete
+          return {
+            ...prev,
+            players: updatedPlayers,
+            currentPlayerIndex: nextPlayerIndex,
+            tableCards: [...prev.tableCards, prev.animatingCard!],
+            turnStartTime: Date.now(),
+            message: `${updatedPlayers[nextPlayerIndex].name}'s turn`,
+            // Don't reset animatingCard and isAnimating here
+          };
         });
         
-        setLastActionType('none');
+        // Reset animation state after a delay to ensure the animation completes
+        setTimeout(() => {
+          setGameState(prev => ({
+            ...prev,
+            animatingCard: null,
+            isAnimating: false
+          }));
+          setLastActionType('none');
+        }, 500); // Add a small delay to ensure smooth transition
       }, ANIMATION_DURATION);
     }, 100);
   }, [displayMessage, gameState.isAnimating, playerPositions]);
