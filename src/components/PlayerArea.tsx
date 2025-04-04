@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Player, Card as CardType } from "@/models/game";
 import CardComponent from "./Card";
@@ -17,7 +16,7 @@ interface PlayerAreaProps {
   onCardHitDone?: () => void;
   lastActionType?: 'none' | 'hit' | 'capture' | 'throw';
   isDealing?: boolean;
-  positionClass?: string;
+  positionClass?: 'top' | 'left' | 'right' | 'bottom' | 'top-left' | 'top-right' | string;
   isCapturing?: boolean;
   isMobile?: boolean;
   isAnimating?: boolean;
@@ -81,19 +80,18 @@ const PlayerArea = ({
   return (
     <Card className={cn(
       "transition-all duration-500 ease-in-out border-0 shadow-md overflow-hidden",
-      isCurrentPlayer ? "scale-105" : "scale-95 opacity-90",
+      isCurrentPlayer ? "opacity-100" : "opacity-90",
       isCapturing && "ring-2 ring-yellow-400 shadow-lg",
       cardBgGradient,
       orientation === 'vertical' ? "p-2" : "p-3",
       isCurrentPlayer ? "shadow-purple-500/20 shadow-lg" : "shadow-gray-900/10",
-      "max-w-[220px]" // Added max width to make cards more compact
+      "max-w-[220px]"
     )}>
       <CardContent className={cn(
         "p-2",
-        "flex gap-2", // Reduced gap
+        "flex gap-2",
         orientation === 'vertical' ? "flex-col items-center" : "flex-row items-center",
       )}>
-        {/* Avatar Section */}
         <div className={cn(
           "flex flex-col items-center",
           orientation === 'vertical' ? "mb-1" : "mr-2"
@@ -104,9 +102,7 @@ const PlayerArea = ({
             "ring-2",
             avatarRingColor,
             "shadow-inner",
-            isCurrentPlayer 
-              ? "w-10 h-10 sm:w-12 sm:h-12 text-sm sm:text-base" 
-              : "w-8 h-8 text-xs transition-all"
+            "w-8 h-8 text-xs"
           )}>
             {name[0].toUpperCase()}
           </div>
@@ -114,20 +110,17 @@ const PlayerArea = ({
           <div className="flex flex-col items-center">
             <span className={cn(
               "font-medium truncate mt-1",
-              isCurrentPlayer ? "text-sm sm:text-base text-white" : "text-xs text-gray-300 max-w-[40px] sm:max-w-[60px]"
+              isCurrentPlayer ? "text-sm text-white" : "text-xs text-gray-300 max-w-[60px]"
             )}>
               {name}
             </span>
           </div>
         </div>
 
-        {/* Middle section with card stack */}
         <div className={cn(
           "relative flex-shrink-0 player-card-stack",
-          isCurrentPlayer ? "scale-100" : "scale-90"
         )} ref={cardRef}>
           <div className="relative">
-            {/* Card stack representation (excluding top card) */}
             {cards.length > 1 && (
               <div 
                 className={cn(
@@ -138,7 +131,6 @@ const PlayerArea = ({
               />
             )}
             
-            {/* Top card - separate entity for animations */}
             {cards.length > 0 ? (
               <div 
                 className={cn(
@@ -157,9 +149,9 @@ const PlayerArea = ({
                   className={cn(
                     isCapturing && "shadow-glow-card",
                     isMobile ? "scale-75" : "",
-                    isCurrentPlayer && "hover:scale-105 transition-transform"
+                    isCurrentPlayer && "hover:translate-y-[-5px] transition-transform"
                   )}
-                  playerPosition={positionClass}
+                  playerPosition={positionClass as 'top' | 'left' | 'right' | 'bottom' | null}
                 />
               </div>
             ) : (
@@ -180,7 +172,6 @@ const PlayerArea = ({
           </div>
         </div>
 
-        {/* Controls - Only show for current player or in compact form for others */}
         <div className={cn(
           "flex gap-2",
           orientation === 'vertical' ? "flex-row" : "flex-col"
@@ -231,7 +222,6 @@ const PlayerArea = ({
           )}
         </div>
 
-        {/* Turn timer - Only shown for active player */}
         {isCurrentPlayer && status === 'active' && (
           <div className="w-full mt-1 relative">
             <div className="w-full bg-indigo-900/50 h-1.5 rounded-full overflow-hidden">
