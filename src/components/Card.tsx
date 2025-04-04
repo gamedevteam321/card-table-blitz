@@ -12,7 +12,7 @@ interface CardProps {
   dealDelay?: number;
   faceDown?: boolean;
   style?: React.CSSProperties;
-  animationType?: 'deal' | 'hit' | 'capture' | 'none';
+  animationType?: 'deal' | 'hit' | 'capture' | 'throw' | 'none';
 }
 
 const CardComponent = ({ 
