@@ -64,122 +64,92 @@ const CardComponent = ({
   const getThrowAnimation = () => {
     // Get the position of the player's card element if it exists
     let startPosition = { x: 0, y: 0 };
+    
     if (playerCardElement && typeof window !== 'undefined') {
       const element = document.getElementById(playerCardElement);
       if (element) {
         const rect = element.getBoundingClientRect();
-        const centerX = window.innerWidth / 2;
-        const centerY = window.innerHeight / 2;
+        const tableCenter = document.querySelector('.table-center');
+        let centerX = window.innerWidth / 2;
+        let centerY = window.innerHeight / 2;
         
-        // Calculate the starting position relative to the center of the screen
+        // If we can find the table center element, use its position instead
+        if (tableCenter) {
+          const tableRect = tableCenter.getBoundingClientRect();
+          centerX = tableRect.left + tableRect.width / 2;
+          centerY = tableRect.top + tableRect.height / 2;
+        }
+        
+        // Calculate the starting position relative to the center
         startPosition.x = rect.left + rect.width / 2 - centerX;
         startPosition.y = rect.top + rect.height / 2 - centerY;
       }
     }
 
-    // Adjust the animation based on player position
-    switch (playerPosition) {
-      case 'bottom':
-        return {
-          initial: { 
-            y: startPosition.y || 150, 
-            x: startPosition.x || 0, 
-            scale: 0.9, 
-            rotate: 0, 
-            zIndex: 100,
-            opacity: 1
-          },
-          animate: { 
-            y: [startPosition.y || 150, 80, 0], 
-            x: [startPosition.x || 0, startPosition.x / 3 || 0, 0], 
-            scale: [0.9, 1, 1],
-            rotate: [0, -5, 0],
-            zIndex: 100,
-            opacity: 1,
-            transition: { duration: 1.6, ease: "easeOut" } 
-          }
-        };
-      case 'top':
-        return {
-          initial: { 
-            y: startPosition.y || -150, 
-            x: startPosition.x || 0, 
-            scale: 0.9, 
-            rotate: 0, 
-            zIndex: 100,
-            opacity: 1
-          },
-          animate: { 
-            y: [startPosition.y || -150, -80, 0], 
-            x: [startPosition.x || 0, startPosition.x / 3 || 0, 0], 
-            scale: [0.9, 1, 1],
-            rotate: [0, 5, 0],
-            zIndex: 100,
-            opacity: 1,
-            transition: { duration: 1.6, ease: "easeOut" } 
-          }
-        };
-      case 'left':
-        return {
-          initial: { 
-            y: startPosition.y || 0, 
-            x: startPosition.x || -150, 
-            scale: 0.9, 
-            rotate: 0, 
-            zIndex: 100,
-            opacity: 1
-          },
-          animate: { 
-            y: [startPosition.y || 0, startPosition.y / 2 || 0, 0], 
-            x: [startPosition.x || -150, -70, 0], 
-            scale: [0.9, 1, 1],
-            rotate: [0, 5, 0],
-            zIndex: 100,
-            opacity: 1,
-            transition: { duration: 1.6, ease: "easeOut" } 
-          }
-        };
-      case 'right':
-        return {
-          initial: { 
-            y: startPosition.y || 0, 
-            x: startPosition.x || 150, 
-            scale: 0.9, 
-            rotate: 0, 
-            zIndex: 100,
-            opacity: 1
-          },
-          animate: { 
-            y: [startPosition.y || 0, startPosition.y / 2 || 0, 0], 
-            x: [startPosition.x || 150, 70, 0], 
-            scale: [0.9, 1, 1],
-            rotate: [0, -5, 0],
-            zIndex: 100,
-            opacity: 1,
-            transition: { duration: 1.6, ease: "easeOut" } 
-          }
-        };
-      default:
-        return {
-          initial: { 
-            y: startPosition.y || -50, 
-            x: startPosition.x || 0, 
-            scale: 0.9, 
-            rotate: 0, 
-            zIndex: 100,
-            opacity: 1
-          },
-          animate: { 
+    const getAnimationForPosition = (pos: 'top' | 'left' | 'right' | 'bottom' | null) => {
+      // Base animation settings that will be consistent
+      const baseAnimation = {
+        scale: [0.9, 1, 1],
+        zIndex: 1000, // Ensure the card is always on top
+        opacity: [1, 1],
+        transition: { 
+          duration: 2, 
+          ease: [0.16, 1, 0.3, 1], // Use a nice ease-out cubic bezier
+          times: [0, 0.7, 1] // Control timing of the animation sequence
+        }
+      };
+
+      // Position specific animation paths
+      switch (pos) {
+        case 'bottom':
+          return {
+            y: [startPosition.y || 150, 70, 0], 
+            x: [startPosition.x || 0, startPosition.x / 3 || 0, 0],
+            rotate: [0, -10, 0],
+            ...baseAnimation
+          };
+        case 'top':
+          return {
+            y: [startPosition.y || -150, -70, 0], 
+            x: [startPosition.x || 0, startPosition.x / 3 || 0, 0],
+            rotate: [0, 10, 0],
+            ...baseAnimation
+          };
+        case 'left':
+          return {
+            y: [startPosition.y || 0, startPosition.y / 3 || -20, 0], 
+            x: [startPosition.x || -150, -70, 0],
+            rotate: [0, 10, 0],
+            ...baseAnimation
+          };
+        case 'right':
+          return {
+            y: [startPosition.y || 0, startPosition.y / 3 || -20, 0], 
+            x: [startPosition.x || 150, 70, 0],
+            rotate: [0, -10, 0],
+            ...baseAnimation
+          };
+        default:
+          return {
             y: [startPosition.y || -50, -20, 0], 
-            x: [startPosition.x || 0, startPosition.x / 3 || 0, 0], 
-            scale: [0.9, 1, 1],
+            x: [startPosition.x || 0, startPosition.x / 3 || 0, 0],
             rotate: [0, -5, 0],
-            zIndex: 100,
-            opacity: 1,
-            transition: { duration: 1.6, ease: "easeOut" } 
-          }
-        };
-    }
+            ...baseAnimation
+          };
+      }
+    };
+
+    return {
+      initial: { 
+        y: startPosition.y, 
+        x: startPosition.x, 
+        scale: 0.9, 
+        rotate: 0, 
+        zIndex: 1000,
+        opacity: 1
+      },
+      animate: getAnimationForPosition(playerPosition)
+    };
   };
 
   // Animation variants based on type
@@ -240,14 +210,14 @@ const CardComponent = ({
       onClick={onClick}
       style={{
         ...style,
-        zIndex: animationType === 'throw' ? 100 : (style.zIndex || 'auto')
+        zIndex: animationType === 'throw' ? 1000 : (style.zIndex || 'auto')
       }}
       className={cn(
         "w-16 h-24 rounded-md border shadow cursor-pointer transition-transform duration-200",
         isTable ? "card-shadow border-white" : "hover:scale-105 border-gray-300",
         isDealing ? "animate-card-deal" : "",
         faceDown ? "card-back" : "bg-white",
-        animationType === 'throw' ? "z-50" : "",
+        animationType === 'throw' ? "animated-card" : "",
         className
       )}
       {...animationProps}

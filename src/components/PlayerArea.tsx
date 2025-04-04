@@ -52,7 +52,7 @@ const PlayerArea = ({
     // Let the animation play before actually executing the hit logic
     setTimeout(() => {
       onHit();
-      setTimeout(() => setLocalAnimating(false), 1000); // Increased timeout to match longer animation
+      setTimeout(() => setLocalAnimating(false), 2000); // Increased timeout to match longer animation
     }, 300);
   };
 
@@ -131,7 +131,8 @@ const PlayerArea = ({
                   "cursor-pointer",
                   cards.length > 1 ? "absolute top-0 left-0" : "relative",
                   isAnimating && lastActionType === 'throw' ? "opacity-0" : "opacity-100",
-                  isAnimating ? "invisible" : "visible" // Hide the card completely when animating
+                  isAnimating ? "invisible" : "visible", // Hide the card completely when animating
+                  "transition-opacity duration-300"
                 )}
                 onClick={handleHit}
                 data-player-position={positionClass}
