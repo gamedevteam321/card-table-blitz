@@ -52,7 +52,7 @@ const PlayerArea = ({
     // Let the animation play before actually executing the hit logic
     setTimeout(() => {
       onHit();
-      setTimeout(() => setLocalAnimating(false), 500);
+      setTimeout(() => setLocalAnimating(false), 1000); // Increased timeout to match longer animation
     }, 300);
   };
 
@@ -130,7 +130,8 @@ const PlayerArea = ({
                 className={cn(
                   "cursor-pointer",
                   cards.length > 1 ? "absolute top-0 left-0" : "relative",
-                  isAnimating && lastActionType === 'throw' ? "opacity-0" : "opacity-100"
+                  isAnimating && lastActionType === 'throw' ? "opacity-0" : "opacity-100",
+                  isAnimating ? "invisible" : "visible" // Hide the card completely when animating
                 )}
                 onClick={handleHit}
                 data-player-position={positionClass}
@@ -140,12 +141,10 @@ const PlayerArea = ({
                   card={topCard} 
                   faceDown={true}
                   isDealing={isDealing}
-                  animationType={lastActionType === 'throw' ? 'throw' : (lastActionType === 'capture' ? 'capture' : 'none')}
                   className={cn(
                     isCapturing && "shadow-glow-card",
                     isMobile ? "scale-75" : "",
-                    isCurrentPlayer && "hover:scale-105 transition-transform",
-                    lastActionType === 'throw' && "animate-card-throw"
+                    isCurrentPlayer && "hover:scale-105 transition-transform"
                   )}
                   playerPosition={positionClass === 'top' ? 'top' : 
                                  positionClass === 'left' ? 'left' : 
@@ -172,53 +171,55 @@ const PlayerArea = ({
         </div>
 
         {/* Controls - Only show for current player or in compact form for others */}
-        {isCurrentPlayer ? (
-          <div className={cn(
-            "flex gap-2",
-            orientation === 'vertical' ? "flex-row" : "flex-col"
-          )}>
-            <Button
-              variant="default"
-              size={isMobile ? "sm" : "default"}
-              disabled={!isCurrentPlayer || cards.length === 0 || status !== 'active' || localAnimating || isAnimating || isDealing}
-              onClick={handleHit}
-              className={cn(
-                "bg-emerald-600 hover:bg-emerald-700 text-white transition-all shadow-md",
-                isMobile ? "text-[10px] px-2 py-1 h-7" : "text-xs sm:text-sm px-3 py-1.5",
-                isCurrentPlayer && status === 'active' && "animate-pulse"
+        <div className={cn(
+          "flex gap-2",
+          orientation === 'vertical' ? "flex-row" : "flex-col"
+        )}>
+          {isCurrentPlayer ? (
+            <>
+              <Button
+                variant="default"
+                size={isMobile ? "sm" : "default"}
+                disabled={!isCurrentPlayer || cards.length === 0 || status !== 'active' || localAnimating || isAnimating || isDealing}
+                onClick={handleHit}
+                className={cn(
+                  "bg-emerald-600 hover:bg-emerald-700 text-white transition-all shadow-md",
+                  isMobile ? "text-[10px] px-2 py-1 h-7" : "text-xs sm:text-sm px-3 py-1.5",
+                  isCurrentPlayer && status === 'active' && !isAnimating && !localAnimating && "animate-pulse"
+                )}
+              >
+                Play
+              </Button>
+              <Button
+                variant="outline"
+                size={isMobile ? "sm" : "default"}
+                disabled={!isCurrentPlayer || shufflesRemaining <= 0 || cards.length === 0 || status !== 'active' || isDealing || isAnimating}
+                onClick={onShuffle}
+                className={cn(
+                  "border-amber-400 bg-amber-500/20 text-amber-100 hover:bg-amber-500/30",
+                  isMobile ? "text-[10px] px-2 py-1 h-7" : "text-xs sm:text-sm px-2 py-1"
+                )}
+              >
+                <RotateCcw className={cn(
+                  isMobile ? "w-3 h-3 mr-1" : "w-3 h-3 sm:w-4 sm:h-4 mr-1"
+                )} />
+                {shufflesRemaining}
+              </Button>
+            </>
+          ) : (
+            <div className={cn(
+              "text-[10px] text-gray-400 flex items-center gap-1 mt-1 bg-gray-800/50 px-2 py-0.5 rounded-full",
+            )}>
+              {shufflesRemaining > 0 && (
+                <>
+                  <RotateCcw className="w-2 h-2" />
+                  <span>{shufflesRemaining}</span>
+                </>
               )}
-            >
-              Play
-            </Button>
-            <Button
-              variant="outline"
-              size={isMobile ? "sm" : "default"}
-              disabled={!isCurrentPlayer || shufflesRemaining <= 0 || cards.length === 0 || status !== 'active' || isDealing || isAnimating}
-              onClick={onShuffle}
-              className={cn(
-                "border-amber-400 bg-amber-500/20 text-amber-100 hover:bg-amber-500/30",
-                isMobile ? "text-[10px] px-2 py-1 h-7" : "text-xs sm:text-sm px-2 py-1"
-              )}
-            >
-              <RotateCcw className={cn(
-                isMobile ? "w-3 h-3 mr-1" : "w-3 h-3 sm:w-4 sm:h-4 mr-1"
-              )} />
-              {shufflesRemaining}
-            </Button>
-          </div>
-        ) : (
-          <div className={cn(
-            "text-[10px] text-gray-400 flex items-center gap-1 mt-1 bg-gray-800/50 px-2 py-0.5 rounded-full",
-          )}>
-            {shufflesRemaining > 0 && (
-              <>
-                <RotateCcw className="w-2 h-2" />
-                <span>{shufflesRemaining}</span>
-              </>
-            )}
-            <span className="text-gray-300">{cards.length}c</span>
-          </div>
-        )}
+              <span className="text-gray-300">{cards.length}c</span>
+            </div>
+          )}
+        </div>
 
         {/* Turn timer - Only shown for active player */}
         {isCurrentPlayer && status === 'active' && (

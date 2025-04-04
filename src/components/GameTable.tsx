@@ -35,7 +35,7 @@ const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: Gam
   const latestCard = animatingCard || (cards.length > 0 ? cards[cards.length - 1] : null);
 
   return (
-    <div className="relative w-full h-64 flex items-center justify-center">
+    <div className="relative w-full h-64 flex items-center justify-center overflow-visible">
       <div className="absolute inset-0 bg-casino-dark rounded-xl opacity-90 z-0">
         {/* Decorative pattern for the table */}
         <div className="w-full h-full opacity-30" 
@@ -79,11 +79,11 @@ const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: Gam
                   isTable={true}
                   animationType="throw"
                   playerPosition={animatingPlayerPosition}
-                  className="shadow-lg z-50"
+                  className="shadow-lg"
                   playerCardElement={`player-card-${playerPositionToPlayerId(animatingPlayerPosition)}`}
                   style={{
                     position: 'absolute',
-                    zIndex: 100,
+                    zIndex: 999,
                   }}
                 />
               </div>

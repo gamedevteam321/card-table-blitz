@@ -105,7 +105,7 @@
 
 @keyframes card-throw {
   0% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 1; z-index: 100; }
-  40% { transform: translateY(-50px) translateX(20px) rotate(-10deg); opacity: 1; z-index: 100; }
+  40% { transform: translateY(-30px) translateX(20px) rotate(-10deg); opacity: 1; z-index: 100; }
   100% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 1; z-index: 100; }
 }
 
