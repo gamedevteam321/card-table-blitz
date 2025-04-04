@@ -27,7 +27,8 @@ const CardComponent = ({
   faceDown = false,
   style = {},
   animationType = 'none',
-  playerPosition = null
+  playerPosition = null,
+  playerCardElement
 }: CardProps) => {
   if (!card) {
     return (
@@ -61,60 +62,105 @@ const CardComponent = ({
 
   // Custom throw animation based on player position
   const getThrowAnimation = () => {
+    // Get the position of the player's card element if it exists
+    let startPosition = { x: 0, y: 0 };
+    if (playerCardElement && typeof window !== 'undefined') {
+      const element = document.getElementById(playerCardElement);
+      if (element) {
+        const rect = element.getBoundingClientRect();
+        const centerX = window.innerWidth / 2;
+        const centerY = window.innerHeight / 2;
+        
+        // Calculate the starting position relative to the center of the screen
+        startPosition.x = rect.left + rect.width / 2 - centerX;
+        startPosition.y = rect.top + rect.height / 2 - centerY;
+      }
+    }
+
     switch (playerPosition) {
       case 'bottom':
         return {
-          initial: { y: 0, x: 0, scale: 1, rotate: 0, zIndex: 50 },
+          initial: { 
+            y: startPosition.y || 150, 
+            x: startPosition.x || 0, 
+            scale: 1, 
+            rotate: 0, 
+            zIndex: 50 
+          },
           animate: { 
-            y: [-30, -10, 0], 
-            x: [0, 0, 0], 
+            y: [startPosition.y || 150, 50, 0], 
+            x: [startPosition.x || 0, startPosition.x / 2 || 0, 0], 
             scale: [1, 1.1, 1],
             rotate: [0, -5, 0],
-            transition: { duration: 0.6, ease: "easeOut" } 
+            transition: { duration: 0.8, ease: "easeOut" } 
           }
         };
       case 'top':
         return {
-          initial: { y: 0, x: 0, scale: 1, rotate: 0, zIndex: 50 },
+          initial: { 
+            y: startPosition.y || -150, 
+            x: startPosition.x || 0, 
+            scale: 1, 
+            rotate: 0, 
+            zIndex: 50 
+          },
           animate: { 
-            y: [30, 10, 0], 
-            x: [0, 0, 0], 
+            y: [startPosition.y || -150, -50, 0], 
+            x: [startPosition.x || 0, startPosition.x / 2 || 0, 0], 
             scale: [1, 1.1, 1],
             rotate: [0, 5, 0],
-            transition: { duration: 0.6, ease: "easeOut" } 
+            transition: { duration: 0.8, ease: "easeOut" } 
           }
         };
       case 'left':
         return {
-          initial: { y: 0, x: 0, scale: 1, rotate: 0, zIndex: 50 },
+          initial: { 
+            y: startPosition.y || 0, 
+            x: startPosition.x || -150, 
+            scale: 1, 
+            rotate: 0, 
+            zIndex: 50 
+          },
           animate: { 
-            y: [0, 0, 0], 
-            x: [30, 10, 0], 
+            y: [startPosition.y || 0, startPosition.y / 2 || 0, 0], 
+            x: [startPosition.x || -150, -50, 0], 
             scale: [1, 1.1, 1],
             rotate: [0, 5, 0],
-            transition: { duration: 0.6, ease: "easeOut" } 
+            transition: { duration: 0.8, ease: "easeOut" } 
           }
         };
       case 'right':
         return {
-          initial: { y: 0, x: 0, scale: 1, rotate: 0, zIndex: 50 },
+          initial: { 
+            y: startPosition.y || 0, 
+            x: startPosition.x || 150, 
+            scale: 1, 
+            rotate: 0, 
+            zIndex: 50 
+          },
           animate: { 
-            y: [0, 0, 0], 
-            x: [-30, -10, 0], 
+            y: [startPosition.y || 0, startPosition.y / 2 || 0, 0], 
+            x: [startPosition.x || 150, 50, 0], 
             scale: [1, 1.1, 1],
             rotate: [0, -5, 0],
-            transition: { duration: 0.6, ease: "easeOut" } 
+            transition: { duration: 0.8, ease: "easeOut" } 
           }
         };
       default:
         return {
-          initial: { y: 0, x: 0, scale: 1, rotate: 0, zIndex: 50 },
+          initial: { 
+            y: startPosition.y || -50, 
+            x: startPosition.x || 0, 
+            scale: 1, 
+            rotate: 0, 
+            zIndex: 50 
+          },
           animate: { 
-            y: [-20, -10, 0], 
-            x: [0, 0, 0], 
+            y: [startPosition.y || -50, -20, 0], 
+            x: [startPosition.x || 0, startPosition.x / 2 || 0, 0], 
             scale: [1, 1.1, 1],
             rotate: [0, -5, 0],
-            transition: { duration: 0.6, ease: "easeOut" } 
+            transition: { duration: 0.8, ease: "easeOut" } 
           }
         };
     }

@@ -69,7 +69,7 @@ const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: Gam
                 />
               ))}
               
-              {/* Display the animating card on top */}
+              {/* Display the animating card on top with enhanced animation */}
               {animatingCard && (
                 <CardComponent 
                   key={animatingCard.id} 
@@ -78,6 +78,7 @@ const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: Gam
                   animationType="throw"
                   playerPosition={animatingPlayerPosition}
                   className="shadow-lg z-50"
+                  playerCardElement={`player-card-${playerPositionToPlayerId(animatingPlayerPosition)}`}
                   style={{
                     position: 'absolute',
                     zIndex: cards.length + 10,
@@ -96,6 +97,17 @@ const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: Gam
       </div>
     </div>
   );
+};
+
+// Helper function to convert position to player ID format
+const playerPositionToPlayerId = (position: 'top' | 'left' | 'right' | 'bottom' | null): string => {
+  switch (position) {
+    case 'bottom': return 'player-0';
+    case 'left': return 'player-1';
+    case 'top': return 'player-2';
+    case 'right': return 'player-3';
+    default: return '';
+  }
 };
 
 export default GameTable;
