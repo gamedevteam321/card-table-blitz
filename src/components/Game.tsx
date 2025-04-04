@@ -259,7 +259,7 @@ const Game = () => {
       setTimeout(() => {
         setLastActionType('none');
       }, 500);
-    }, 100);
+    }, 600);
   }, [displayMessage]);
 
   const getNextPlayerIndex = (players: Player[], currentIndex: number) => {
@@ -582,14 +582,14 @@ const Game = () => {
             } else if (position === 'right') {
               positionClass = 'right-8 top-1/2 transform -translate-y-1/2';
             } else if (position === 'bottom') {
-              positionClass = 'bottom-8 left-1/2 transform -translate-x-1/2';
+              positionClass = 'bottom-12 left-1/2 transform -translate-x-1/2';
             } else if (position === 'left') {
               positionClass = 'left-8 top-1/2 transform -translate-y-1/2';
             }
           }
           
           const scaleClass = isMobile ? 
-            (position === 'left' || position === 'right' ? 'scale-80' : 'scale-90') : '';
+            (position === 'left' || position === 'right' ? 'scale-75' : 'scale-85') : '';
           
           return (
             <div 
