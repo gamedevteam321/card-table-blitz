@@ -1,57 +1,67 @@
 
-import * as React from "react"
+import { useState, useEffect } from 'react';
 
-// Define breakpoints
-export const SCREEN_SIZES = {
-  SMALL: 480,    // Mobile phones
-  MEDIUM: 768,   // Tablets/small screens
-  LARGE: 1024,   // Laptops/desktops
-  XLARGE: 1280   // Large desktops
+// Interface for screen size data
+export interface ScreenSizeData {
+  width: number;
+  height: number;
+  screenSize: 'small' | 'medium' | 'large';
+  isSmallMobile: boolean;
+  isMobile: boolean;
+  isTablet: boolean;
+  isDesktop: boolean;
 }
 
-export type ScreenSize = 'small' | 'medium' | 'large' | 'xlarge';
-
-export function useScreenSize() {
-  const [screenSize, setScreenSize] = React.useState<ScreenSize>('large');
-  const [width, setWidth] = React.useState<number>(0);
-
-  React.useEffect(() => {
-    // Handle initial detection
-    const checkScreenSize = () => {
-      const currentWidth = window.innerWidth;
-      setWidth(currentWidth);
-      
-      if (currentWidth < SCREEN_SIZES.SMALL) {
-        setScreenSize('small');
-      } else if (currentWidth < SCREEN_SIZES.MEDIUM) {
-        setScreenSize('medium');
-      } else if (currentWidth < SCREEN_SIZES.LARGE) {
-        setScreenSize('large');
-      } else {
-        setScreenSize('xlarge');
-      }
-    }
-    
-    // Check immediately for first render
-    checkScreenSize();
-    
-    // Set up event listener for resize
-    window.addEventListener("resize", checkScreenSize);
-    
-    return () => window.removeEventListener("resize", checkScreenSize);
-  }, []);
-
-  const isMobile = screenSize === 'small' || screenSize === 'medium';
-  const isSmallMobile = screenSize === 'small';
-  const isMediumScreen = screenSize === 'medium';
-  const isLargeScreen = screenSize === 'large' || screenSize === 'xlarge';
+// Custom hook to track and respond to screen size changes
+export const useScreenSize = (): ScreenSizeData => {
+  // Default state based on assumptions about initial window size
+  const [screenSize, setScreenSize] = useState<ScreenSizeData>({
+    width: typeof window !== 'undefined' ? window.innerWidth : 1024,
+    height: typeof window !== 'undefined' ? window.innerHeight : 768,
+    screenSize: 'large',
+    isSmallMobile: false,
+    isMobile: false,
+    isTablet: false,
+    isDesktop: true,
+  });
   
-  return { 
-    screenSize, 
-    isMobile, 
-    isSmallMobile, 
-    isMediumScreen, 
-    isLargeScreen,
-    width
-  };
-}
+  useEffect(() => {
+    // Handler to update dimensions on resize
+    const handleResize = () => {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      
+      // Determine screen size category
+      const sizeCategory = width < 640 ? 'small' : width < 1024 ? 'medium' : 'large';
+      
+      // Determine device type categories
+      const isSmallMobile = width < 380;
+      const isMobile = width < 640;
+      const isTablet = width >= 640 && width < 1024;
+      const isDesktop = width >= 1024;
+      
+      setScreenSize({
+        width,
+        height,
+        screenSize: sizeCategory,
+        isSmallMobile,
+        isMobile,
+        isTablet,
+        isDesktop,
+      });
+    };
+    
+    // Set up resize listener
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', handleResize);
+      
+      // Initial calculation
+      handleResize();
+      
+      // Clean up
+      return () => window.removeEventListener('resize', handleResize);
+    }
+  }, []);
+  
+  return screenSize;
+};

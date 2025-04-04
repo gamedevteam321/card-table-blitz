@@ -6,22 +6,22 @@ import { cn } from "@/lib/utils";
 import { useScreenSize } from "@/hooks/use-screen-size";
 
 interface GameTableProps {
-  cards: Card[];
-  animatingCard: Card | null;
-  animatingPlayerPosition?: 'top' | 'left' | 'right' | 'bottom' | null;
+  cards: Card[];                            // Cards displayed on the table
+  animatingCard: Card | null;               // Card currently being animated
+  animatingPlayerPosition?: 'top' | 'left' | 'right' | 'bottom' | null; // Position of the player who played the animating card
 }
 
 const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: GameTableProps) => {
   const { screenSize, isSmallMobile } = useScreenSize();
-  const [displayedCard, setDisplayedCard] = useState<Card | null>(null);
-  const [showAnimatedCard, setShowAnimatedCard] = useState(true);
+  const [displayedCard, setDisplayedCard] = useState<Card | null>(null);  // Current card to display
+  const [showAnimatedCard, setShowAnimatedCard] = useState(true);         // Control visibility of animated card
   
   // Adjust table height based on screen size
   const getTableHeight = () => {
     switch(screenSize) {
-      case 'small': return 'h-48';
-      case 'medium': return 'h-56';
-      default: return 'h-64';
+      case 'small': return 'h-48';   // Small screen height
+      case 'medium': return 'h-56';  // Medium screen height
+      default: return 'h-64';        // Default/large screen height
     }
   };
   
@@ -37,6 +37,7 @@ const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: Gam
       
       return () => clearTimeout(timer);
     } else {
+      // If no card is animating, show the top card from the deck
       setDisplayedCard(cards.length > 0 ? cards[cards.length - 1] : null);
     }
   }, [animatingCard, cards]);
@@ -68,8 +69,8 @@ const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: Gam
       "relative w-full flex items-center justify-center overflow-visible",
       getTableHeight()
     )}>
+      {/* Casino table surface with decorative pattern */}
       <div className="absolute inset-0 bg-casino-dark rounded-xl opacity-90 z-0 table-surface">
-        {/* Decorative pattern for the table */}
         <div className="w-full h-full opacity-30" 
           style={{
             backgroundImage: 'radial-gradient(circle at 20% 35%, rgba(76, 29, 149, 0.2) 0%, transparent 60%), radial-gradient(circle at 80% 30%, rgba(29, 78, 216, 0.2) 0%, transparent 60%)',
@@ -80,6 +81,7 @@ const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: Gam
       
       <div className="relative z-10 flex flex-col items-center justify-center gap-4 w-full table-card-container">
         {cards.length === 0 && !animatingCard ? (
+          /* Display message when there are no cards on the table */
           <div className="text-gray-400 text-sm">
             Waiting for players...
           </div>
@@ -89,7 +91,7 @@ const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: Gam
               "relative center-card-area",
               isSmallMobile ? "h-24 w-18" : "h-32 w-24"
             )}>
-              {/* Display the stack of cards */}
+              {/* Display the stack of cards on the table */}
               {cards.map((card, index) => (
                 <CardComponent 
                   key={card.id} 
@@ -98,6 +100,7 @@ const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: Gam
                   style={{
                     position: 'absolute',
                     zIndex: index + 1,
+                    // Offset each card slightly for stack effect
                     transform: `translateX(${index % 3 - 1}px) translateY(${index % 2}px) rotate(${(index % 5 - 2) * 3}deg)`
                   }}
                   className={cn(
@@ -126,14 +129,15 @@ const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: Gam
               </div>
             )}
             
+            {/* Display the card name at the bottom */}
             {latestCard && (
               <div className={cn(
                 "text-casino-gold bg-casino-dark/80 rounded-full mt-2 z-20",
                 isSmallMobile ? "text-xs px-2 py-0.5" : "text-sm font-medium px-3 py-1"
               )}>
                 {isSmallMobile 
-                  ? `${latestCard.rank} of ${latestCard.suit.charAt(0).toUpperCase()}` 
-                  : getCardName(latestCard)}
+                  ? `${latestCard.rank} of ${latestCard.suit.charAt(0).toUpperCase()}` // Shorter text for mobile
+                  : getCardName(latestCard)} {/* Full card name for larger screens */}
               </div>
             )}
           </>

@@ -9,19 +9,19 @@ import PlayerControls from "./PlayerControls";
 import { useScreenSize } from "@/hooks/use-screen-size";
 
 interface PlayerAreaProps {
-  player: Player;
-  isCurrentPlayer: boolean;
-  onHit: () => void;
-  onShuffle: () => void;
-  timeRemaining: number;
-  orientation: 'horizontal' | 'vertical';
-  onCardHitDone?: () => void;
-  lastActionType?: 'none' | 'hit' | 'capture' | 'throw';
-  isDealing?: boolean;
-  positionClass?: 'top' | 'left' | 'right' | 'bottom' | 'top-left' | 'top-right' | string;
-  isCapturing?: boolean;
-  isMobile?: boolean;
-  isAnimating?: boolean;
+  player: Player;                          // Player data
+  isCurrentPlayer: boolean;                // Whether this is the active player
+  onHit: () => void;                       // Handler for playing a card
+  onShuffle: () => void;                   // Handler for shuffling cards
+  timeRemaining: number;                   // Time remaining for player's turn
+  orientation: 'horizontal' | 'vertical';  // Layout orientation
+  onCardHitDone?: () => void;              // Callback for when a card hit animation completes
+  lastActionType?: 'none' | 'hit' | 'capture' | 'throw'; // Type of last action performed
+  isDealing?: boolean;                     // Whether cards are being dealt
+  positionClass?: 'top' | 'left' | 'right' | 'bottom' | 'top-left' | 'top-right' | string; // Position relative to table
+  isCapturing?: boolean;                   // Whether player is capturing cards
+  isMobile?: boolean;                      // Whether we're on a mobile device
+  isAnimating?: boolean;                   // Whether animation is in progress
 }
 
 const PlayerArea = ({
@@ -40,16 +40,17 @@ const PlayerArea = ({
   isAnimating = false
 }: PlayerAreaProps) => {
   const { name, cards, shufflesRemaining, status } = player;
-  const topCard = cards[0];
-  const cardRef = useRef<HTMLDivElement>(null);
-  const [localAnimating, setLocalAnimating] = useState(false);
-  const [hideTopCard, setHideTopCard] = useState(false);
-  const { isSmallMobile } = useScreenSize();
+  const topCard = cards[0];                          // The top card in player's hand
+  const cardRef = useRef<HTMLDivElement>(null);      // Reference to the card element
+  const [localAnimating, setLocalAnimating] = useState(false); // Local animation state
+  const [hideTopCard, setHideTopCard] = useState(false);       // Whether to hide the top card during animation
+  const { isSmallMobile } = useScreenSize();                   // Screen size context
   
-  // Determine if we should use compact mode
+  // Determine if we should use compact mode based on screen size and position
   const useCompactMode = isSmallMobile || 
     (isMobile && (positionClass === 'left' || positionClass === 'right'));
   
+  // Handle card throwing animation
   useEffect(() => {
     if (isAnimating && lastActionType === 'throw') {
       setHideTopCard(true);
@@ -60,7 +61,9 @@ const PlayerArea = ({
     }
   }, [isAnimating, lastActionType]);
 
+  // Handle card hit action with animation
   const handleHit = () => {
+    // Prevent actions during animations or when not allowed
     if (localAnimating || isAnimating || !isCurrentPlayer || cards.length === 0 || status !== 'active' || isDealing) return;
     
     setLocalAnimating(true);
@@ -75,6 +78,7 @@ const PlayerArea = ({
     }, 300);
   };
 
+  // Determine avatar background and ring colors
   const avatarBg = isCurrentPlayer ? player.avatarColor : `${player.avatarColor.split('-')[0]}-700`;
   const avatarRingColor = isCurrentPlayer ? "ring-yellow-300" : "ring-white";
 
@@ -85,7 +89,7 @@ const PlayerArea = ({
     <Card className={cn(
       "transition-all duration-500 ease-in-out border-0 shadow-none overflow-hidden bg-transparent",
       isCurrentPlayer ? "opacity-100" : "opacity-90",
-      isCapturing && "ring-2 ring-yellow-400 shadow-lg",
+      isCapturing && "ring-2 ring-yellow-400 shadow-lg", // Highlight when capturing
       useCompactMode ? "p-1" : orientation === 'vertical' ? "p-2" : "p-3",
       useCompactMode ? "max-w-[180px]" : "max-w-[220px]",
     )}>
@@ -94,6 +98,7 @@ const PlayerArea = ({
         "flex gap-1",
         orientation === 'vertical' ? "flex-col items-center" : "flex-row items-center",
       )}>
+        {/* Player avatar section */}
         <div className={cn(
           "flex flex-col items-center",
           orientation === 'vertical' ? "mb-1" : "mr-2"
@@ -107,10 +112,12 @@ const PlayerArea = ({
           />
         </div>
 
+        {/* Player cards section */}
         <div className={cn(
           "relative flex-shrink-0 player-card-stack flex flex-col items-center gap-2",
         )} ref={cardRef}>
           <div className="relative">
+            {/* Show card stack if player has more than one card */}
             {cards.length > 1 && (
               <div 
                 className={cn(
@@ -122,6 +129,7 @@ const PlayerArea = ({
             )}
             
             {cards.length > 0 ? (
+              /* Display top card or empty space if animation is in progress */
               <div 
                 className={cn(
                   "cursor-pointer",
@@ -141,10 +149,11 @@ const PlayerArea = ({
                     cardScale,
                     isCurrentPlayer && "hover:translate-y-[-5px] transition-transform"
                   )}
-                  playerPosition={positionClass as 'top' | 'left' | 'right' | 'bottom' | null}
+                  playerPosition={positionClass as 'top' | 'left' | 'right' | 'bottom' | 'top-left' | 'top-right' | null}
                 />
               </div>
             ) : (
+              /* Display empty card slot if player has no cards */
               <div className={cn(
                 "border border-dashed rounded-md flex items-center justify-center",
                 isCurrentPlayer ? "border-indigo-300" : "border-gray-600",
@@ -154,6 +163,7 @@ const PlayerArea = ({
               </div>
             )}
             
+            {/* Card count badge for current player */}
             {isCurrentPlayer && cards.length > 0 && (
               <div className={cn(
                 "absolute -top-2 -right-2 bg-amber-500 text-white font-bold rounded-full flex items-center justify-center shadow-md border-2 border-white z-20",
@@ -164,6 +174,7 @@ const PlayerArea = ({
             )}
           </div>
           
+          {/* Player controls (hit/shuffle buttons) */}
           <PlayerControls
             isCurrentPlayer={isCurrentPlayer}
             onHit={handleHit}
@@ -177,6 +188,7 @@ const PlayerArea = ({
           />
         </div>
 
+        {/* Turn timer progress bar for current player */}
         {isCurrentPlayer && status === 'active' && (
           <div className={cn(
             "w-full relative",

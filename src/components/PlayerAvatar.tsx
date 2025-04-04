@@ -3,11 +3,11 @@ import React from "react";
 import { cn } from "@/lib/utils";
 
 interface PlayerAvatarProps {
-  name: string;
-  avatarBg: string;
-  ringColor: string;
-  isCurrentPlayer: boolean;
-  isCompact: boolean;
+  name: string;               // Player's name
+  avatarBg: string;           // Background color for the avatar
+  ringColor: string;          // Ring color around the avatar
+  isCurrentPlayer: boolean;   // Whether this is the active player
+  isCompact: boolean;         // Whether to use compact layout
 }
 
 const PlayerAvatar = ({
@@ -17,10 +17,12 @@ const PlayerAvatar = ({
   isCurrentPlayer,
   isCompact
 }: PlayerAvatarProps) => {
+  // Get first letter of player's name for the avatar
   const initials = name[0].toUpperCase();
   
   return (
     <div className="flex flex-col items-center">
+      {/* Avatar circle with player's initial */}
       <div className={cn(
         "rounded-full flex items-center justify-center font-bold text-white",
         isCurrentPlayer ? "player-avatar-active" : "player-avatar-inactive",
@@ -29,6 +31,7 @@ const PlayerAvatar = ({
         {initials}
       </div>
       
+      {/* Player name displayed below avatar */}
       <div className="flex flex-col items-center">
         <span className={cn(
           "font-medium truncate mt-1",

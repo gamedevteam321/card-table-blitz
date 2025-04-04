@@ -1,154 +1,97 @@
 
+/* Import Tailwind CSS utility classes */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
- 
+
+/* Global variable definitions */
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
- 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
- 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
- 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
- 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
- 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
- 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
- 
-    --radius: 0.5rem;
-  }
- 
-  .dark {
+    /* Define color scheme variables */
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
- 
     --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
- 
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
- 
-    --primary: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
     --primary-foreground: 222.2 47.4% 11.2%;
- 
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
- 
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
- 
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
- 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
- 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-  }
-}
- 
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
+    --ring: 224.3 76.3% 48%;
+    --radius: 0.5rem;
   }
 }
 
-@layer utilities {
-  .scale-65 {
-    transform: scale(0.65);
+/* Global styles */
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #0F1923; /* Casino dark background */
+  height: 100vh;
+  width: 100vw;
+  overflow-x: hidden;
+}
+
+/* Card back pattern styling */
+.card-back {
+  background-color: #1E40AF;
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23dddddd' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  border: 2px solid #2563EB;
+}
+
+/* Card shadow effect */
+.card-shadow {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Glowing effect for captured cards */
+.shadow-glow-card {
+  box-shadow: 0 0 10px 2px rgba(255, 215, 0, 0.6);
+}
+
+/* Avatar styles for active and inactive players */
+.player-avatar-active {
+  background: linear-gradient(135deg, #ff9d00, #ff6f00);
+  box-shadow: 0 0 0 2px #ffd700;
+}
+
+.player-avatar-inactive {
+  background: linear-gradient(135deg, #475569, #334155);
+  box-shadow: 0 0 0 1px #64748b;
+}
+
+/* Fix for mobile Safari to prevent unwanted touch behaviors */
+@supports (-webkit-touch-callout: none) {
+  .touch-fix {
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
   }
-  
-  .flying-card {
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+/* Additional custom animation for flying cards */
+.flying-card {
+  animation: card-fly 0.5s ease-out forwards;
+}
+
+/* Explicit animation keyframes as needed */
+@keyframes card-fly {
+  0% {
+    transform: translateY(0) scale(1);
   }
-  
-  .card-shadow {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  }
-  
-  .shadow-glow-card {
-    box-shadow: 0 0 12px 2px rgba(250, 204, 21, 0.5);
-  }
-  
-  .card-back {
-    background-color: #e6f2ff;
-    position: relative;
-    box-sizing: border-box;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    border: 2px solid #607d8b;
-  }
-  
-  .card-back::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-image: 
-      linear-gradient(45deg, transparent 0%, transparent 45%, #0077cc 45%, #0077cc 55%, transparent 55%, transparent 100%),
-      linear-gradient(-45deg, transparent 0%, transparent 45%, #e63946 45%, #e63946 55%, transparent 55%, transparent 100%);
-    background-size: 16px 16px;
-    background-position: center center;
-  }
-  
-  .bg-casino {
-    background-color: #1a1a2e;
-  }
-  
-  .bg-casino-dark {
-    background-color: #151523;
-  }
-  
-  .border-casino-table {
-    border-color: #323248;
-  }
-  
-  .text-casino-gold {
-    color: #e6b800;
-  }
-  
-  .player-avatar-active {
-    background-color: #e63946;
-    color: white;
-    border: 3px solid #ffd700;
-  }
-  
-  .player-avatar-inactive {
-    background-color: #e63946;
-    color: white;
-  }
-  
-  .btn-play {
-    background-color: #1db954;
-    color: white;
-  }
-  
-  .btn-shuffle {
-    background-color: #9370db;
-    color: white;
+  100% {
+    transform: translateY(-80px) scale(0.95);
+    opacity: 0;
   }
 }

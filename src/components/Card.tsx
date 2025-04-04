@@ -5,17 +5,17 @@ import { motion } from 'framer-motion';
 import { useScreenSize } from '@/hooks/use-screen-size';
 
 interface CardProps {
-  card?: CardType;
-  isTable?: boolean;
-  className?: string;
-  onClick?: () => void;
-  isDealing?: boolean;
-  dealDelay?: number;
-  faceDown?: boolean;
-  style?: React.CSSProperties;
-  animationType?: 'deal' | 'hit' | 'capture' | 'throw' | 'none';
-  playerPosition?: 'top' | 'left' | 'right' | 'bottom' | null;
-  playerCardElement?: string;
+  card?: CardType;                           // The card to display
+  isTable?: boolean;                         // Whether the card is on the table
+  className?: string;                        // Additional CSS classes
+  onClick?: () => void;                      // Click handler
+  isDealing?: boolean;                       // Whether the card is being dealt
+  dealDelay?: number;                        // Delay before dealing animation starts
+  faceDown?: boolean;                        // Whether to show the card face down
+  style?: React.CSSProperties;               // Additional inline styles
+  animationType?: 'deal' | 'hit' | 'capture' | 'throw' | 'none'; // Type of animation to apply
+  playerPosition?: 'top' | 'left' | 'right' | 'bottom' | 'top-left' | 'top-right' | null; // Position of the player relative to the table
+  playerCardElement?: string;                // ID of the player's card element
 }
 
 const CardComponent = ({ 
@@ -33,6 +33,7 @@ const CardComponent = ({
 }: CardProps) => {
   const { isSmallMobile } = useScreenSize();
   
+  // Render empty card placeholder if no card is provided
   if (!card) {
     return (
       <div 
@@ -46,10 +47,12 @@ const CardComponent = ({
     );
   }
 
+  // Get the text color based on card suit
   const getSuitColor = (suit: string) => {
     return suit === 'hearts' || suit === 'diamonds' ? 'text-red-500' : 'text-black';
   };
 
+  // Get the symbol for the card suit
   const getSuitSymbol = (suit: string) => {
     switch (suit) {
       case 'hearts': return '♥';
@@ -60,11 +63,12 @@ const CardComponent = ({
     }
   };
 
+  // Format the rank display (e.g. "10" stays as "10", but "J" is just "J")
   const getRankDisplay = (rank: string) => {
     return rank === '10' ? '10' : rank.charAt(0);
   };
 
-  // Optimize throw animation for mobile
+  // Configure throw animation based on player position
   const getThrowAnimation = () => {
     // Calculate starting position based on player position
     // Smaller animations for mobile
@@ -89,6 +93,16 @@ const CardComponent = ({
         break;
       case 'right':
         startX = 200 * distanceMultiplier;
+        rotation = -15;
+        break;
+      case 'top-left':
+        startY = -150 * distanceMultiplier;
+        startX = -150 * distanceMultiplier;
+        rotation = 15;
+        break;
+      case 'top-right':
+        startY = -150 * distanceMultiplier;
+        startX = 150 * distanceMultiplier;
         rotation = -15;
         break;
       default:
@@ -120,7 +134,7 @@ const CardComponent = ({
     };
   };
 
-  // Animation variants based on type
+  // Define animation variants based on type
   const animationVariants = {
     deal: {
       initial: { opacity: 0, y: isSmallMobile ? -50 : -100, rotate: -10, scale: isSmallMobile ? 0.7 : 0.8 },
@@ -164,10 +178,10 @@ const CardComponent = ({
 
   const selectedAnimation = animationVariants[animationType];
 
-  // Use motion.div for animations
+  // Use motion.div for animations, or regular div if no animation
   const CardWrapper = animationType !== 'none' || isDealing ? motion.div : 'div';
   
-  // Animation props for dealing
+  // Animation props for dealing or other animations
   const animationProps = isDealing ? {
     initial: { 
       opacity: 0, 
@@ -202,14 +216,16 @@ const CardComponent = ({
         isSmallMobile ? "w-12 h-18" : "w-16 h-24",
         isTable ? "card-shadow border-white" : "hover:scale-105 border-gray-300",
         isDealing ? "animate-card-deal" : "",
-        faceDown ? "card-back" : "bg-white",
+        faceDown ? "card-back" : "bg-white",  // Apply card back style if face down
         animationType === 'throw' ? "flying-card" : "",
         className
       )}
       {...animationProps}
     >
+      {/* Render card content only if face up */}
       {!faceDown && (
         <div className="flex flex-col h-full p-1">
+          {/* Top-left card info */}
           <div className={cn(
             "font-bold", 
             getSuitColor(card.suit),
@@ -218,6 +234,7 @@ const CardComponent = ({
             {getRankDisplay(card.rank)}
             <span className="ml-1">{getSuitSymbol(card.suit)}</span>
           </div>
+          {/* Center suit symbol */}
           <div className="flex-1 flex items-center justify-center">
             <span className={cn(
               getSuitColor(card.suit),
@@ -226,6 +243,7 @@ const CardComponent = ({
               {getSuitSymbol(card.suit)}
             </span>
           </div>
+          {/* Bottom-right card info (rotated) */}
           <div className={cn(
             "font-bold self-end rotate-180", 
             getSuitColor(card.suit),
