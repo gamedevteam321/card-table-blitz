@@ -46,14 +46,14 @@ const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: Gam
         </div>
       </div>
       
-      <div className="relative z-10 flex flex-col items-center justify-center gap-4 w-full table-center">
+      <div className="relative z-10 flex flex-col items-center justify-center gap-4 w-full">
         {cards.length === 0 && !animatingCard ? (
           <div className="text-gray-400 text-sm">
             Waiting for players...
           </div>
         ) : (
           <>
-            <div className="relative h-32 w-24 card-stack">
+            <div className="relative h-32 w-24">
               {/* Display the stack of cards */}
               {cards.map((card, index) => (
                 <CardComponent 
@@ -72,18 +72,18 @@ const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: Gam
             
             {/* Display the animating card on top with enhanced animation */}
             {animatingCard && (
-              <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center pointer-events-none z-[1000]">
+              <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center pointer-events-none z-50">
                 <CardComponent 
                   key={animatingCard.id} 
                   card={animatingCard} 
                   isTable={true}
                   animationType="throw"
                   playerPosition={animatingPlayerPosition}
-                  className="shadow-lg z-[1000]"
+                  className="shadow-lg"
                   playerCardElement={`player-card-${playerPositionToPlayerId(animatingPlayerPosition)}`}
                   style={{
                     position: 'absolute',
-                    zIndex: 1000,
+                    zIndex: 999,
                   }}
                 />
               </div>
