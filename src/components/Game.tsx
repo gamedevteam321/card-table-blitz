@@ -31,7 +31,7 @@ const Game = () => {
   const [gameTimeRemaining, setGameTimeRemaining] = useState(GAME_TIME_LIMIT);
   const [isDealing, setIsDealing] = useState(false);
   const [showStatusMessage, setShowStatusMessage] = useState(false);
-  const [statusMessage, setStatusMessage] = useState({ text: '', type: 'info' as const });
+  const [statusMessage, setStatusMessage] = useState<{ text: string; type: 'info' | 'success' | 'warning' | 'error' }>({ text: '', type: 'info' });
   const [lastActionType, setLastActionType] = useState<'none' | 'hit' | 'capture'>('none');
   const [gameActive, setGameActive] = useState(false);
   const [capturePosition, setCapturePosition] = useState<{ x: number; y: number } | null>(null);
