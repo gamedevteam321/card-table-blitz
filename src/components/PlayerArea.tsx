@@ -41,169 +41,163 @@ const PlayerArea = ({
   const topCard = cards[0];
   const cardRef = useRef<HTMLDivElement>(null);
   const [isAnimating, setIsAnimating] = useState(false);
-  const [isCardThrowing, setIsCardThrowing] = useState(false);
 
   const handleHit = () => {
     if (isAnimating || !isCurrentPlayer || cards.length === 0 || status !== 'active' || isDealing) return;
     
     setIsAnimating(true);
-    setIsCardThrowing(true);
-    
     // Let the animation play before actually executing the hit logic
     setTimeout(() => {
-      // Reset card throwing state after animation completes
-      setIsCardThrowing(false);
       onHit();
       setTimeout(() => setIsAnimating(false), 500);
-    }, 600); // Increased timeout to allow for card throwing animation
+    }, 300);
   };
 
-  // Avatar border color based on active/inactive state
-  const avatarBorderClass = isCurrentPlayer ? "ring-4 ring-yellow-400" : "ring-4 ring-white";
-  
-  // Calculate the position for the throwing card based on orientation
-  const throwingCardClass = () => {
-    if (!isCurrentPlayer || !isCardThrowing) return "";
-    
-    switch(positionClass) {
-      case 'bottom':
-        return 'animate-card-throw-bottom';
-      case 'top':
-        return 'animate-card-throw-top';
-      case 'left':
-        return 'animate-card-throw-left';
-      case 'right':
-        return 'animate-card-throw-right';
-      default:
-        return 'animate-card-throw-bottom';
-    }
-  };
+  // Calculate the color values based on active/inactive state
+  const cardBgGradient = isCurrentPlayer 
+    ? "bg-gradient-to-b from-indigo-600/95 to-purple-800/95" 
+    : "bg-gradient-to-b from-gray-800/90 to-gray-900/90";
+
+  const avatarBg = isCurrentPlayer ? player.avatarColor : `${player.avatarColor.split('-')[0]}-700`;
+  const avatarRingColor = isCurrentPlayer ? "ring-indigo-300" : "ring-gray-700";
 
   return (
-    <div className={cn(
-      "transition-all duration-300 w-full max-w-[260px] min-w-[200px]",
-      orientation === 'vertical' ? "flex flex-col items-center" : "flex flex-row items-center justify-between",
-      isCurrentPlayer ? "z-20" : "opacity-90 z-10",
+    <Card className={cn(
+      "transition-all duration-500 ease-in-out border-0 shadow-md overflow-hidden",
+      isCurrentPlayer ? "scale-105" : "scale-95 opacity-90",
+      isCapturing && "ring-2 ring-yellow-400 shadow-lg",
+      cardBgGradient,
+      orientation === 'vertical' ? "p-2" : "p-3",
+      isCurrentPlayer ? "shadow-purple-500/20 shadow-lg" : "shadow-gray-900/10",
+      "max-w-[220px]" // Added max width to make cards more compact
     )}>
-      {/* Left side with avatar and name */}
-      <div className={cn(
-        "flex flex-col items-center",
-        orientation === 'vertical' ? "mb-3" : "mr-4"
+      <CardContent className={cn(
+        "p-2",
+        "flex gap-2", // Reduced gap
+        orientation === 'vertical' ? "flex-col items-center" : "flex-row items-center",
       )}>
+        {/* Avatar Section */}
         <div className={cn(
-          "rounded-full flex items-center justify-center text-white font-bold bg-red-500",
-          avatarBorderClass,
-          "shadow-lg",
-          isCurrentPlayer 
-            ? "w-16 h-16 sm:w-20 sm:h-20 text-xl sm:text-2xl" 
-            : "w-12 h-12 sm:w-16 sm:h-16 text-lg sm:text-xl"
+          "flex flex-col items-center",
+          orientation === 'vertical' ? "mb-1" : "mr-2"
         )}>
-          {name[0].toUpperCase()}
+          <div className={cn(
+            "rounded-full flex items-center justify-center font-bold text-white",
+            avatarBg,
+            "ring-2",
+            avatarRingColor,
+            "shadow-inner",
+            isCurrentPlayer 
+              ? "w-10 h-10 sm:w-12 sm:h-12 text-sm sm:text-base" 
+              : "w-8 h-8 text-xs transition-all"
+          )}>
+            {name[0].toUpperCase()}
+          </div>
+          
+          <div className="flex flex-col items-center">
+            <span className={cn(
+              "font-medium truncate mt-1",
+              isCurrentPlayer ? "text-sm sm:text-base text-white" : "text-xs text-gray-300 max-w-[40px] sm:max-w-[60px]"
+            )}>
+              {name}
+            </span>
+          </div>
         </div>
-        
-        <span className={cn(
-          "font-medium text-white mt-2 text-center",
-          isCurrentPlayer ? "text-base sm:text-lg" : "text-sm"
-        )}>
-          {name}
-        </span>
-      </div>
 
-      {/* Right side with cards and controls */}
-      <div className={cn(
-        "flex",
-        orientation === 'vertical' ? "flex-col items-center" : "flex-col items-end"
-      )}>
-        {/* Card stack */}
-        <div className="relative mb-3" ref={cardRef}>
-          {cards.length > 0 ? (
-            <div 
-              className={cn(
-                "relative cursor-pointer transform transition-transform",
-                isCurrentPlayer && "hover:scale-105"
-              )} 
-              onClick={handleHit}
-            >
-              {/* Card stack effect - showing multiple cards */}
-              <div className="relative">
-                {/* Back cards for stack effect */}
-                {cards.length > 2 && (
-                  <div className="absolute -right-3 -bottom-3 w-16 h-24 sm:w-20 sm:h-28 rounded-md card-back transform rotate-3"></div>
-                )}
-                {cards.length > 1 && (
-                  <div className="absolute -right-1.5 -bottom-1.5 w-16 h-24 sm:w-20 sm:h-28 rounded-md card-back transform rotate-1.5"></div>
-                )}
-                
-                {/* Main visible card */}
+        {/* Middle section with card stack */}
+        <div className={cn(
+          "relative flex-shrink-0",
+          isCurrentPlayer ? "scale-100" : "scale-90"
+        )} ref={cardRef}>
+          <div className="relative">
+            {cards.length > 0 ? (
+              <div 
+                className="relative cursor-pointer" 
+                onClick={handleHit}
+              >
                 <CardComponent 
                   card={topCard} 
                   faceDown={true}
                   isDealing={isDealing}
                   animationType={lastActionType === 'capture' ? 'capture' : 'none'}
                   className={cn(
-                    "w-16 h-24 sm:w-20 sm:h-28",
-                    isCapturing && "shadow-glow-card"
+                    cards.length > 1 ? "after:content-[''] after:absolute after:top-1 after:left-1 after:w-full after:h-full after:bg-indigo-900 after:rounded-md after:-z-10" : "",
+                    isCapturing && "shadow-glow-card",
+                    isMobile ? "scale-75" : "",
+                    isCurrentPlayer && "hover:scale-105 transition-transform"
                   )}
                 />
-                
-                {/* Card count badge */}
-                <div className="absolute -top-2 -right-2 bg-blue-600 text-white font-medium rounded-full flex items-center justify-center shadow-md w-6 h-6 text-xs border-2 border-white">
-                  {cards.length}
-                </div>
+                {isCurrentPlayer && (
+                  <div className="absolute -top-2 -right-2 bg-amber-500 text-white font-bold rounded-full flex items-center justify-center shadow-md w-6 h-6 text-xs border-2 border-white">
+                    {cards.length}
+                  </div>
+                )}
               </div>
-              
-              {/* Throwing card animation */}
-              {isCardThrowing && (
-                <div className={cn(
-                  "absolute w-16 h-24 sm:w-20 sm:h-28 card-back rounded-md z-30",
-                  throwingCardClass()
-                )}></div>
-              )}
-            </div>
-          ) : (
-            <div className="border border-dashed border-gray-400 rounded-md flex items-center justify-center w-16 h-24 sm:w-20 sm:h-28 text-gray-400">
-              No cards
-            </div>
-          )}
+            ) : (
+              <div className={cn(
+                "border border-dashed rounded-md flex items-center justify-center",
+                isCurrentPlayer ? "border-indigo-300" : "border-gray-600",
+                isMobile ? "w-8 h-12 text-[8px]" : "w-12 h-18 sm:w-16 sm:h-24 text-xs",
+              )}>
+                <span className={isCurrentPlayer ? "text-indigo-200" : "text-gray-500"}>No cards</span>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Controls */}
-        <div className={cn(
-          "flex gap-2",
-          orientation === 'vertical' ? "flex-row" : "flex-row"
-        )}>
-          <Button
-            variant="default"
-            size={isMobile ? "sm" : "default"}
-            disabled={!isCurrentPlayer || cards.length === 0 || status !== 'active' || isAnimating || isDealing}
-            onClick={handleHit}
-            className={cn(
-              "bg-green-600 hover:bg-green-700 text-white font-bold transition-all shadow-md px-8",
-              isMobile ? "text-xs py-2" : "text-sm py-3 px-10",
-              isCurrentPlayer && status === 'active' && "animate-pulse"
+        {/* Controls - Only show for current player or in compact form for others */}
+        {isCurrentPlayer ? (
+          <div className={cn(
+            "flex gap-2",
+            orientation === 'vertical' ? "flex-row" : "flex-col"
+          )}>
+            <Button
+              variant="default"
+              size={isMobile ? "sm" : "default"}
+              disabled={!isCurrentPlayer || cards.length === 0 || status !== 'active' || isAnimating || isDealing}
+              onClick={handleHit}
+              className={cn(
+                "bg-emerald-600 hover:bg-emerald-700 text-white transition-all shadow-md",
+                isMobile ? "text-[10px] px-2 py-1 h-7" : "text-xs sm:text-sm px-3 py-1.5",
+                isCurrentPlayer && status === 'active' && "animate-pulse"
+              )}
+            >
+              Play
+            </Button>
+            <Button
+              variant="outline"
+              size={isMobile ? "sm" : "default"}
+              disabled={!isCurrentPlayer || shufflesRemaining <= 0 || cards.length === 0 || status !== 'active' || isDealing}
+              onClick={onShuffle}
+              className={cn(
+                "border-amber-400 bg-amber-500/20 text-amber-100 hover:bg-amber-500/30",
+                isMobile ? "text-[10px] px-2 py-1 h-7" : "text-xs sm:text-sm px-2 py-1"
+              )}
+            >
+              <RotateCcw className={cn(
+                isMobile ? "w-3 h-3 mr-1" : "w-3 h-3 sm:w-4 sm:h-4 mr-1"
+              )} />
+              {shufflesRemaining}
+            </Button>
+          </div>
+        ) : (
+          <div className={cn(
+            "text-[10px] text-gray-400 flex items-center gap-1 mt-1 bg-gray-800/50 px-2 py-0.5 rounded-full",
+          )}>
+            {shufflesRemaining > 0 && (
+              <>
+                <RotateCcw className="w-2 h-2" />
+                <span>{shufflesRemaining}</span>
+              </>
             )}
-          >
-            Play
-          </Button>
-          <Button
-            variant="default"
-            size={isMobile ? "sm" : "default"}
-            disabled={!isCurrentPlayer || shufflesRemaining <= 0 || cards.length === 0 || status !== 'active' || isDealing}
-            onClick={onShuffle}
-            className={cn(
-              "bg-blue-600 hover:bg-blue-700 text-white font-bold",
-              isMobile ? "text-xs" : "text-sm"
-            )}
-          >
-            <RotateCcw className="w-4 h-4 mr-1" />
-            {shufflesRemaining}
-          </Button>
-        </div>
-        
+            <span className="text-gray-300">{cards.length}c</span>
+          </div>
+        )}
+
         {/* Turn timer - Only shown for active player */}
         {isCurrentPlayer && status === 'active' && (
-          <div className="w-full mt-3 relative">
-            <div className="w-full bg-gray-800/50 h-1.5 rounded-full overflow-hidden">
+          <div className="w-full mt-1 relative">
+            <div className="w-full bg-indigo-900/50 h-1.5 rounded-full overflow-hidden">
               <div 
                 className="bg-gradient-to-r from-amber-300 to-amber-500 h-1.5 rounded-full transition-all duration-100"
                 style={{ width: `${(timeRemaining / 10) * 100}%` }}
@@ -211,8 +205,8 @@ const PlayerArea = ({
             </div>
           </div>
         )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 

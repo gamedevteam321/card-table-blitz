@@ -31,7 +31,7 @@ const Game = () => {
   const [gameTimeRemaining, setGameTimeRemaining] = useState(GAME_TIME_LIMIT);
   const [isDealing, setIsDealing] = useState(false);
   const [showStatusMessage, setShowStatusMessage] = useState(false);
-  const [statusMessage, setStatusMessage] = useState<{ text: string; type: 'info' | 'success' | 'warning' | 'error' }>({ text: '', type: 'info' });
+  const [statusMessage, setStatusMessage] = useState({ text: '', type: 'info' as const });
   const [lastActionType, setLastActionType] = useState<'none' | 'hit' | 'capture'>('none');
   const [gameActive, setGameActive] = useState(false);
   const [capturePosition, setCapturePosition] = useState<{ x: number; y: number } | null>(null);
@@ -259,7 +259,7 @@ const Game = () => {
       setTimeout(() => {
         setLastActionType('none');
       }, 500);
-    }, 600);
+    }, 100);
   }, [displayMessage]);
 
   const getNextPlayerIndex = (players: Player[], currentIndex: number) => {
@@ -582,14 +582,14 @@ const Game = () => {
             } else if (position === 'right') {
               positionClass = 'right-8 top-1/2 transform -translate-y-1/2';
             } else if (position === 'bottom') {
-              positionClass = 'bottom-12 left-1/2 transform -translate-x-1/2';
+              positionClass = 'bottom-8 left-1/2 transform -translate-x-1/2';
             } else if (position === 'left') {
               positionClass = 'left-8 top-1/2 transform -translate-y-1/2';
             }
           }
           
           const scaleClass = isMobile ? 
-            (position === 'left' || position === 'right' ? 'scale-75' : 'scale-85') : '';
+            (position === 'left' || position === 'right' ? 'scale-80' : 'scale-90') : '';
           
           return (
             <div 
