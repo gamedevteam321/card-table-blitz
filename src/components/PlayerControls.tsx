@@ -39,12 +39,12 @@ const PlayerControls = ({
           disabled={isDisabled || cardsCount === 0 || isAnimating || isDealing}
           onClick={onHit}
           className={cn(
-            "bg-emerald-600 hover:bg-emerald-700 text-white transition-all shadow-md",
+            "btn-play hover:bg-green-600 text-white transition-all shadow-md rounded-md",
             isCompact ? "text-[10px] px-2 py-1 h-6" : "text-xs sm:text-sm px-3 py-1.5",
             isCurrentPlayer && !isDisabled && !isAnimating && "animate-pulse"
           )}
         >
-          Play
+          Hit
         </Button>
         <Button
           variant="outline"
@@ -52,8 +52,8 @@ const PlayerControls = ({
           disabled={shufflesRemaining <= 0 || isDisabled || cardsCount === 0 || isDealing || isAnimating}
           onClick={onShuffle}
           className={cn(
-            "border-amber-400 bg-amber-500/20 text-amber-100 hover:bg-amber-500/30",
-            isCompact ? "text-[10px] px-2 py-1 h-6" : "text-xs sm:text-sm px-2 py-1"
+            "btn-shuffle hover:bg-purple-600 border-none",
+            isCompact ? "text-[10px] px-2 py-1 h-6" : "text-xs sm:text-sm px-2 py-1 rounded-md"
           )}
         >
           <RotateCcw className={cn(

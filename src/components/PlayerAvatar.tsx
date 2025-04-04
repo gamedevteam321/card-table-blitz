@@ -23,10 +23,7 @@ const PlayerAvatar = ({
     <div className="flex flex-col items-center">
       <div className={cn(
         "rounded-full flex items-center justify-center font-bold text-white",
-        avatarBg,
-        "ring-2",
-        ringColor,
-        "shadow-inner",
+        isCurrentPlayer ? "player-avatar-active" : "player-avatar-inactive",
         isCompact ? "w-6 h-6 text-[10px]" : "w-8 h-8 text-xs"
       )}>
         {initials}

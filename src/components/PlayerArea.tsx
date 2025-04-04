@@ -77,7 +77,7 @@ const PlayerArea = ({
 
   // Calculate the color values based on active/inactive state
   const cardBgGradient = isCurrentPlayer 
-    ? "bg-gradient-to-b from-indigo-600/95 to-purple-800/95" 
+    ? "bg-gradient-to-b from-blue-800/95 to-blue-950/95" 
     : "bg-gradient-to-b from-gray-800/90 to-gray-900/90";
 
   const avatarBg = isCurrentPlayer ? player.avatarColor : `${player.avatarColor.split('-')[0]}-700`;
@@ -93,7 +93,7 @@ const PlayerArea = ({
       isCapturing && "ring-2 ring-yellow-400 shadow-lg",
       cardBgGradient,
       useCompactMode ? "p-1" : orientation === 'vertical' ? "p-2" : "p-3",
-      isCurrentPlayer ? "shadow-purple-500/20 shadow-lg" : "shadow-gray-900/10",
+      isCurrentPlayer ? "shadow-blue-500/20 shadow-lg" : "shadow-gray-900/10",
       useCompactMode ? "max-w-[180px]" : "max-w-[220px]",
     )}>
       <CardContent className={cn(
@@ -189,7 +189,7 @@ const PlayerArea = ({
             "w-full relative",
             useCompactMode ? "mt-0.5" : "mt-1"
           )}>
-            <div className="w-full bg-indigo-900/50 h-1.5 rounded-full overflow-hidden">
+            <div className="w-full bg-blue-900/50 h-1.5 rounded-full overflow-hidden">
               <div 
                 className="bg-gradient-to-r from-amber-300 to-amber-500 h-1.5 rounded-full transition-all duration-100"
                 style={{ width: `${(timeRemaining / 10) * 100}%` }}

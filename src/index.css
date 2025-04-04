@@ -94,25 +94,25 @@
   }
   
   .card-back {
-    background: linear-gradient(135deg, #5046e5 0%, #7963f0 100%);
-    background-size: 100% 100%;
+    background-color: #e6f2ff;
     position: relative;
     box-sizing: border-box;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    border: 2px solid #607d8b;
   }
   
   .card-back::before {
     content: '';
     position: absolute;
-    top: 3px;
-    left: 3px;
-    right: 3px;
-    bottom: 3px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 3px;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background-image: 
-      repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0, rgba(255, 255, 255, 0.1) 2px, transparent 0, transparent 8px),
-      repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.1) 0, rgba(255, 255, 255, 0.1) 2px, transparent 0, transparent 8px);
+      linear-gradient(45deg, transparent 0%, transparent 45%, #0077cc 45%, #0077cc 55%, transparent 55%, transparent 100%),
+      linear-gradient(-45deg, transparent 0%, transparent 45%, #e63946 45%, #e63946 55%, transparent 55%, transparent 100%);
+    background-size: 16px 16px;
+    background-position: center center;
   }
   
   .bg-casino {
@@ -129,5 +129,26 @@
   
   .text-casino-gold {
     color: #e6b800;
+  }
+  
+  .player-avatar-active {
+    background-color: #e63946;
+    color: white;
+    border: 3px solid #ffd700;
+  }
+  
+  .player-avatar-inactive {
+    background-color: #e63946;
+    color: white;
+  }
+  
+  .btn-play {
+    background-color: #1db954;
+    color: white;
+  }
+  
+  .btn-shuffle {
+    background-color: #9370db;
+    color: white;
   }
 }
