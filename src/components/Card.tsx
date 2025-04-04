@@ -2,6 +2,7 @@
 import { Card as CardType } from '../models/game';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { useScreenSize } from '@/hooks/use-screen-size';
 
 interface CardProps {
   card?: CardType;
@@ -30,11 +31,14 @@ const CardComponent = ({
   playerPosition = null,
   playerCardElement
 }: CardProps) => {
+  const { isSmallMobile } = useScreenSize();
+  
   if (!card) {
     return (
       <div 
         className={cn(
           "w-16 h-24 flex items-center justify-center rounded-md border border-casino-table bg-casino-dark",
+          isSmallMobile ? "w-12 h-18" : "w-16 h-24",
           className
         )}
         style={style}
@@ -60,9 +64,11 @@ const CardComponent = ({
     return rank === '10' ? '10' : rank.charAt(0);
   };
 
-  // Custom throw animation based on player position
+  // Optimize throw animation for mobile
   const getThrowAnimation = () => {
     // Calculate starting position based on player position
+    // Smaller animations for mobile
+    const distanceMultiplier = isSmallMobile ? 0.7 : 1;
     let startY = 0;
     let startX = 0;
     let rotation = 0;
@@ -70,31 +76,34 @@ const CardComponent = ({
     // Adjust animation path based on player position
     switch (playerPosition) {
       case 'bottom':
-        startY = 200;
+        startY = 200 * distanceMultiplier;
         rotation = -10;
         break;
       case 'top':
-        startY = -200;
+        startY = -200 * distanceMultiplier;
         rotation = 10;
         break;
       case 'left':
-        startX = -200;
+        startX = -200 * distanceMultiplier;
         rotation = 15;
         break;
       case 'right':
-        startX = 200;
+        startX = 200 * distanceMultiplier;
         rotation = -15;
         break;
       default:
-        startY = 200;
+        startY = 200 * distanceMultiplier;
         rotation = 0;
     }
+
+    // Faster animations on mobile
+    const duration = isSmallMobile ? 0.5 : 0.7;
 
     return {
       initial: { 
         y: startY, 
         x: startX, 
-        scale: 0.8, 
+        scale: isSmallMobile ? 0.7 : 0.8, 
         rotate: rotation, 
         zIndex: 1000,
         opacity: 1
@@ -102,11 +111,11 @@ const CardComponent = ({
       animate: { 
         y: [startY, startY/2, 0], 
         x: [startX, startX/2, 0], 
-        scale: [0.8, 0.9, 1],
+        scale: isSmallMobile ? [0.7, 0.8, 0.9] : [0.8, 0.9, 1],
         rotate: [rotation, rotation/2, 0],
         zIndex: 1000,
         opacity: [1, 1, 0], // Fade out at the end
-        transition: { duration: 0.7, ease: "easeOut" } 
+        transition: { duration: duration, ease: "easeOut" } 
       }
     };
   };
@@ -114,17 +123,26 @@ const CardComponent = ({
   // Animation variants based on type
   const animationVariants = {
     deal: {
-      initial: { opacity: 0, y: -100, rotate: -10, scale: 0.8 },
-      animate: { opacity: 1, y: 0, rotate: 0, scale: 1, transition: { duration: 0.8, delay: dealDelay } }
+      initial: { opacity: 0, y: isSmallMobile ? -50 : -100, rotate: -10, scale: isSmallMobile ? 0.7 : 0.8 },
+      animate: { 
+        opacity: 1, 
+        y: 0, 
+        rotate: 0, 
+        scale: 1, 
+        transition: { 
+          duration: isSmallMobile ? 0.6 : 0.8, 
+          delay: isSmallMobile ? dealDelay * 0.15 : dealDelay * 0.2 
+        } 
+      }
     },
     hit: {
       initial: { y: 0, x: 0, scale: 1, rotate: 0 },
       animate: { 
-        y: [-30, 0], 
-        x: [0, 80], 
-        scale: [0.9, 1],
+        y: isSmallMobile ? [-20, 0] : [-30, 0], 
+        x: isSmallMobile ? [0, 40] : [0, 80], 
+        scale: isSmallMobile ? [0.8, 0.9] : [0.9, 1],
         rotate: [0, 5, 0],
-        transition: { duration: 0.6, ease: "easeOut" } 
+        transition: { duration: isSmallMobile ? 0.4 : 0.6, ease: "easeOut" } 
       }
     },
     throw: getThrowAnimation(),
@@ -132,10 +150,10 @@ const CardComponent = ({
       initial: { opacity: 1, scale: 1 },
       animate: { 
         opacity: [1, 0.8, 1], 
-        scale: [1, 0.85, 1], 
-        x: [0, 20, -80],
+        scale: isSmallMobile ? [1, 0.8, 0.9] : [1, 0.85, 1], 
+        x: isSmallMobile ? [0, 15, -50] : [0, 20, -80],
         rotate: [0, -5, 0], 
-        transition: { duration: 0.5 } 
+        transition: { duration: isSmallMobile ? 0.4 : 0.5 } 
       }
     },
     none: {
@@ -151,13 +169,21 @@ const CardComponent = ({
   
   // Animation props for dealing
   const animationProps = isDealing ? {
-    initial: { opacity: 0, y: -100, scale: 0.8, rotate: 180 },
+    initial: { 
+      opacity: 0, 
+      y: isSmallMobile ? -50 : -100, 
+      scale: isSmallMobile ? 0.7 : 0.8, 
+      rotate: 180 
+    },
     animate: { 
       opacity: 1, 
       y: 0, 
       scale: 1,
       rotate: 0,
-      transition: { duration: 0.8, delay: dealDelay * 0.2 }
+      transition: { 
+        duration: isSmallMobile ? 0.6 : 0.8, 
+        delay: isSmallMobile ? dealDelay * 0.15 : dealDelay * 0.2 
+      }
     }
   } : animationType !== 'none' ? {
     initial: selectedAnimation.initial,
@@ -172,7 +198,8 @@ const CardComponent = ({
         zIndex: animationType === 'throw' ? 1000 : (style.zIndex || 'auto')
       }}
       className={cn(
-        "w-16 h-24 rounded-md border shadow cursor-pointer transition-transform duration-200",
+        "rounded-md border shadow cursor-pointer transition-transform duration-200",
+        isSmallMobile ? "w-12 h-18" : "w-16 h-24",
         isTable ? "card-shadow border-white" : "hover:scale-105 border-gray-300",
         isDealing ? "animate-card-deal" : "",
         faceDown ? "card-back" : "bg-white",
@@ -183,16 +210,27 @@ const CardComponent = ({
     >
       {!faceDown && (
         <div className="flex flex-col h-full p-1">
-          <div className={cn("text-sm font-bold", getSuitColor(card.suit))}>
+          <div className={cn(
+            "font-bold", 
+            getSuitColor(card.suit),
+            isSmallMobile ? "text-xs" : "text-sm"
+          )}>
             {getRankDisplay(card.rank)}
             <span className="ml-1">{getSuitSymbol(card.suit)}</span>
           </div>
           <div className="flex-1 flex items-center justify-center">
-            <span className={cn("text-3xl", getSuitColor(card.suit))}>
+            <span className={cn(
+              getSuitColor(card.suit),
+              isSmallMobile ? "text-2xl" : "text-3xl"
+            )}>
               {getSuitSymbol(card.suit)}
             </span>
           </div>
-          <div className={cn("text-sm font-bold self-end rotate-180", getSuitColor(card.suit))}>
+          <div className={cn(
+            "font-bold self-end rotate-180", 
+            getSuitColor(card.suit),
+            isSmallMobile ? "text-xs" : "text-sm"
+          )}>
             {getRankDisplay(card.rank)}
             <span className="ml-1">{getSuitSymbol(card.suit)}</span>
           </div>

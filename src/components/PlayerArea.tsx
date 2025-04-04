@@ -1,10 +1,12 @@
-import { Button } from "@/components/ui/button";
-import { Player, Card as CardType } from "@/models/game";
+
+import { Player } from "@/models/game";
 import CardComponent from "./Card";
 import { cn } from "@/lib/utils";
-import { RotateCcw } from "lucide-react";
 import { useRef, useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import PlayerAvatar from "./PlayerAvatar";
+import PlayerControls from "./PlayerControls";
+import { useScreenSize } from "@/hooks/use-screen-size";
 
 interface PlayerAreaProps {
   player: Player;
@@ -39,10 +41,14 @@ const PlayerArea = ({
 }: PlayerAreaProps) => {
   const { name, cards, shufflesRemaining, status } = player;
   const topCard = cards[0];
-  const restOfCards = cards.slice(1);
   const cardRef = useRef<HTMLDivElement>(null);
   const [localAnimating, setLocalAnimating] = useState(false);
   const [hideTopCard, setHideTopCard] = useState(false);
+  const { isSmallMobile } = useScreenSize();
+  
+  // Determine if we should use compact mode
+  const useCompactMode = isSmallMobile || 
+    (isMobile && (positionClass === 'left' || positionClass === 'right'));
   
   useEffect(() => {
     if (isAnimating && lastActionType === 'throw') {
@@ -77,44 +83,35 @@ const PlayerArea = ({
   const avatarBg = isCurrentPlayer ? player.avatarColor : `${player.avatarColor.split('-')[0]}-700`;
   const avatarRingColor = isCurrentPlayer ? "ring-yellow-300" : "ring-white";
 
+  // Scale the card for compact mode
+  const cardScale = useCompactMode ? "scale-65" : isMobile ? "scale-75" : "";
+
   return (
     <Card className={cn(
       "transition-all duration-500 ease-in-out border-0 shadow-md overflow-hidden",
       isCurrentPlayer ? "opacity-100" : "opacity-90",
       isCapturing && "ring-2 ring-yellow-400 shadow-lg",
       cardBgGradient,
-      orientation === 'vertical' ? "p-2" : "p-3",
+      useCompactMode ? "p-1" : orientation === 'vertical' ? "p-2" : "p-3",
       isCurrentPlayer ? "shadow-purple-500/20 shadow-lg" : "shadow-gray-900/10",
-      "max-w-[220px]"
+      useCompactMode ? "max-w-[180px]" : "max-w-[220px]",
     )}>
       <CardContent className={cn(
-        "p-2",
-        "flex gap-2",
+        useCompactMode ? "p-1" : "p-2",
+        "flex gap-1",
         orientation === 'vertical' ? "flex-col items-center" : "flex-row items-center",
       )}>
         <div className={cn(
           "flex flex-col items-center",
           orientation === 'vertical' ? "mb-1" : "mr-2"
         )}>
-          <div className={cn(
-            "rounded-full flex items-center justify-center font-bold text-white",
-            avatarBg,
-            "ring-2",
-            avatarRingColor,
-            "shadow-inner",
-            "w-8 h-8 text-xs"
-          )}>
-            {name[0].toUpperCase()}
-          </div>
-          
-          <div className="flex flex-col items-center">
-            <span className={cn(
-              "font-medium truncate mt-1",
-              isCurrentPlayer ? "text-sm text-white" : "text-xs text-gray-300 max-w-[60px]"
-            )}>
-              {name}
-            </span>
-          </div>
+          <PlayerAvatar 
+            name={name}
+            avatarBg={avatarBg}
+            ringColor={avatarRingColor}
+            isCurrentPlayer={isCurrentPlayer}
+            isCompact={useCompactMode}
+          />
         </div>
 
         <div className={cn(
@@ -125,7 +122,7 @@ const PlayerArea = ({
               <div 
                 className={cn(
                   "w-16 h-24 rounded-md card-back",
-                  isMobile ? "scale-75" : "",
+                  cardScale,
                   "after:content-[''] after:absolute after:top-1 after:left-1 after:w-full after:h-full after:bg-indigo-900 after:rounded-md after:-z-10"
                 )}
               />
@@ -148,7 +145,7 @@ const PlayerArea = ({
                   isDealing={isDealing}
                   className={cn(
                     isCapturing && "shadow-glow-card",
-                    isMobile ? "scale-75" : "",
+                    cardScale,
                     isCurrentPlayer && "hover:translate-y-[-5px] transition-transform"
                   )}
                   playerPosition={positionClass as 'top' | 'left' | 'right' | 'bottom' | null}
@@ -158,72 +155,40 @@ const PlayerArea = ({
               <div className={cn(
                 "border border-dashed rounded-md flex items-center justify-center",
                 isCurrentPlayer ? "border-indigo-300" : "border-gray-600",
-                isMobile ? "w-8 h-12 text-[8px]" : "w-12 h-18 sm:w-16 sm:h-24 text-xs",
+                useCompactMode ? "w-7 h-10 text-[8px]" : isMobile ? "w-8 h-12 text-[8px]" : "w-12 h-18 sm:w-16 sm:h-24 text-xs",
               )}>
                 <span className={isCurrentPlayer ? "text-indigo-200" : "text-gray-500"}>No cards</span>
               </div>
             )}
             
             {isCurrentPlayer && cards.length > 0 && (
-              <div className="absolute -top-2 -right-2 bg-amber-500 text-white font-bold rounded-full flex items-center justify-center shadow-md w-6 h-6 text-xs border-2 border-white z-20">
+              <div className={cn(
+                "absolute -top-2 -right-2 bg-amber-500 text-white font-bold rounded-full flex items-center justify-center shadow-md border-2 border-white z-20",
+                useCompactMode ? "w-5 h-5 text-[9px]" : "w-6 h-6 text-xs"
+              )}>
                 {cards.length}
               </div>
             )}
           </div>
         </div>
 
-        <div className={cn(
-          "flex gap-2",
-          orientation === 'vertical' ? "flex-row" : "flex-col"
-        )}>
-          {isCurrentPlayer ? (
-            <>
-              <Button
-                variant="default"
-                size={isMobile ? "sm" : "default"}
-                disabled={!isCurrentPlayer || cards.length === 0 || status !== 'active' || localAnimating || isAnimating || isDealing}
-                onClick={handleHit}
-                className={cn(
-                  "bg-emerald-600 hover:bg-emerald-700 text-white transition-all shadow-md",
-                  isMobile ? "text-[10px] px-2 py-1 h-7" : "text-xs sm:text-sm px-3 py-1.5",
-                  isCurrentPlayer && status === 'active' && !isAnimating && !localAnimating && "animate-pulse"
-                )}
-              >
-                Play
-              </Button>
-              <Button
-                variant="outline"
-                size={isMobile ? "sm" : "default"}
-                disabled={!isCurrentPlayer || shufflesRemaining <= 0 || cards.length === 0 || status !== 'active' || isDealing || isAnimating}
-                onClick={onShuffle}
-                className={cn(
-                  "border-amber-400 bg-amber-500/20 text-amber-100 hover:bg-amber-500/30",
-                  isMobile ? "text-[10px] px-2 py-1 h-7" : "text-xs sm:text-sm px-2 py-1"
-                )}
-              >
-                <RotateCcw className={cn(
-                  isMobile ? "w-3 h-3 mr-1" : "w-3 h-3 sm:w-4 sm:h-4 mr-1"
-                )} />
-                {shufflesRemaining}
-              </Button>
-            </>
-          ) : (
-            <div className={cn(
-              "text-[10px] text-gray-400 flex items-center gap-1 mt-1 bg-gray-800/50 px-2 py-0.5 rounded-full",
-            )}>
-              {shufflesRemaining > 0 && (
-                <>
-                  <RotateCcw className="w-2 h-2" />
-                  <span>{shufflesRemaining}</span>
-                </>
-              )}
-              <span className="text-gray-300">{cards.length}c</span>
-            </div>
-          )}
-        </div>
+        <PlayerControls
+          isCurrentPlayer={isCurrentPlayer}
+          onHit={handleHit}
+          onShuffle={onShuffle}
+          shufflesRemaining={shufflesRemaining}
+          cardsCount={cards.length}
+          isDisabled={status !== 'active'}
+          isAnimating={localAnimating || isAnimating}
+          isDealing={isDealing}
+          isCompact={useCompactMode}
+        />
 
         {isCurrentPlayer && status === 'active' && (
-          <div className="w-full mt-1 relative">
+          <div className={cn(
+            "w-full relative",
+            useCompactMode ? "mt-0.5" : "mt-1"
+          )}>
             <div className="w-full bg-indigo-900/50 h-1.5 rounded-full overflow-hidden">
               <div 
                 className="bg-gradient-to-r from-amber-300 to-amber-500 h-1.5 rounded-full transition-all duration-100"

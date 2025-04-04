@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Card, getCardValue } from "@/models/game";
 import CardComponent from "./Card";
 import { cn } from "@/lib/utils";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useScreenSize } from "@/hooks/use-screen-size";
 
 interface GameTableProps {
   cards: Card[];
@@ -12,9 +12,18 @@ interface GameTableProps {
 }
 
 const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: GameTableProps) => {
-  const isMobile = useIsMobile();
+  const { screenSize, isSmallMobile } = useScreenSize();
   const [displayedCard, setDisplayedCard] = useState<Card | null>(null);
   const [showAnimatedCard, setShowAnimatedCard] = useState(true);
+  
+  // Adjust table height based on screen size
+  const getTableHeight = () => {
+    switch(screenSize) {
+      case 'small': return 'h-48';
+      case 'medium': return 'h-56';
+      default: return 'h-64';
+    }
+  };
   
   // When animation completes, show the card in the deck
   useEffect(() => {
@@ -51,8 +60,14 @@ const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: Gam
   // Get the latest card to display
   const latestCard = displayedCard || (cards.length > 0 ? cards[cards.length - 1] : null);
 
+  // Scale cards for small mobile devices
+  const cardScale = isSmallMobile ? "scale-75" : "";
+
   return (
-    <div className="relative w-full h-64 flex items-center justify-center overflow-visible">
+    <div className={cn(
+      "relative w-full flex items-center justify-center overflow-visible",
+      getTableHeight()
+    )}>
       <div className="absolute inset-0 bg-casino-dark rounded-xl opacity-90 z-0 table-surface">
         {/* Decorative pattern for the table */}
         <div className="w-full h-full opacity-30" 
@@ -70,7 +85,10 @@ const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: Gam
           </div>
         ) : (
           <>
-            <div className="relative h-32 w-24 center-card-area">
+            <div className={cn(
+              "relative center-card-area",
+              isSmallMobile ? "h-24 w-18" : "h-32 w-24"
+            )}>
               {/* Display the stack of cards */}
               {cards.map((card, index) => (
                 <CardComponent 
@@ -82,7 +100,10 @@ const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: Gam
                     zIndex: index + 1,
                     transform: `translateX(${index % 3 - 1}px) translateY(${index % 2}px) rotate(${(index % 5 - 2) * 3}deg)`
                   }}
-                  className={index === cards.length - 1 && !animatingCard ? "shadow-lg" : ""}
+                  className={cn(
+                    index === cards.length - 1 && !animatingCard ? "shadow-lg" : "",
+                    cardScale
+                  )}
                 />
               ))}
             </div>
@@ -96,7 +117,7 @@ const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: Gam
                   isTable={true}
                   animationType="throw"
                   playerPosition={animatingPlayerPosition}
-                  className="shadow-lg"
+                  className={cn("shadow-lg", cardScale)}
                   style={{
                     position: 'absolute',
                     zIndex: 999,
@@ -106,8 +127,13 @@ const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: Gam
             )}
             
             {latestCard && (
-              <div className="text-casino-gold text-sm font-medium bg-casino-dark/80 px-3 py-1 rounded-full mt-2 z-20">
-                {getCardName(latestCard)}
+              <div className={cn(
+                "text-casino-gold bg-casino-dark/80 rounded-full mt-2 z-20",
+                isSmallMobile ? "text-xs px-2 py-0.5" : "text-sm font-medium px-3 py-1"
+              )}>
+                {isSmallMobile 
+                  ? `${latestCard.rank} of ${latestCard.suit.charAt(0).toUpperCase()}` 
+                  : getCardName(latestCard)}
               </div>
             )}
           </>

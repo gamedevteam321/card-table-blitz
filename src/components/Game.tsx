@@ -1,8 +1,7 @@
-
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, GameState, Player, checkCardMatch, createDeck, generatePlayerColors, shuffleDeck } from '@/models/game';
 import { useToast } from '@/hooks/use-toast';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useScreenSize } from '@/hooks/use-screen-size';
 import PlayerArea from './PlayerArea';
 import GameTable from './GameTable';
 import StatusMessage from './StatusMessage';
@@ -10,8 +9,6 @@ import Confetti from './Confetti';
 import SetupScreen from './SetupScreen';
 import GameOverScreen from './GameOverScreen';
 import PauseMenu from './PauseMenu';
-import { Button } from './ui/button';
-import { X } from 'lucide-react';
 
 const TURN_TIME_LIMIT = 10; // seconds
 const GAME_TIME_LIMIT = 120; // seconds (2 minutes)
@@ -45,9 +42,8 @@ const Game = () => {
   const [throwingPlayerPosition, setThrowingPlayerPosition] = useState<'top' | 'left' | 'right' | 'bottom' | null>(null);
   
   const { toast } = useToast();
-  const isMobile = useIsMobile();
+  const { isSmallMobile, screenSize } = useScreenSize();
 
-  // Define getPlayerPositions and playerPositions early
   const getPlayerPositions = () => {
     const playerPositions: Record<string, string> = {};
     
@@ -64,13 +60,21 @@ const Game = () => {
           playerPositions[player.id] = 'right';
         }
       } else {
-        // For 5+ players, use a more complex layout
-        if (index === 1) playerPositions[player.id] = 'left';
-        else if (index === 2) playerPositions[player.id] = 'top-left';
-        else if (index === 3) playerPositions[player.id] = 'top';
-        else if (index === 4) playerPositions[player.id] = 'top-right';
-        else if (index === 5) playerPositions[player.id] = 'right';
-        else playerPositions[player.id] = 'spectator';
+        // For 5+ players, use a more compact layout on small screens
+        if (isSmallMobile) {
+          if (index === 1) playerPositions[player.id] = 'left';
+          else if (index === 2) playerPositions[player.id] = 'top';
+          else if (index === 3) playerPositions[player.id] = 'right';
+          else playerPositions[player.id] = 'top';
+        } else {
+          // Standard layout for larger screens
+          if (index === 1) playerPositions[player.id] = 'left';
+          else if (index === 2) playerPositions[player.id] = 'top-left';
+          else if (index === 3) playerPositions[player.id] = 'top';
+          else if (index === 4) playerPositions[player.id] = 'top-right';
+          else if (index === 5) playerPositions[player.id] = 'right';
+          else playerPositions[player.id] = 'spectator';
+        }
       }
     });
     
@@ -646,23 +650,38 @@ const Game = () => {
           
           let positionClass = '';
           
-          if (isMobile) {
-            // Mobile positioning
+          if (isSmallMobile) {
+            // Small mobile positioning - more compact
             if (position === 'top') {
-              positionClass = 'top-2 left-1/2 transform -translate-x-1/2';
+              positionClass = 'top-1 left-1/2 transform -translate-x-1/2';
             } else if (position === 'right') {
-              positionClass = 'right-1 top-1/2 transform -translate-y-1/2';
+              positionClass = 'right-0 top-1/2 transform -translate-y-1/2';
             } else if (position === 'bottom') {
-              positionClass = 'bottom-2 left-1/2 transform -translate-x-1/2';
+              positionClass = 'bottom-1 left-1/2 transform -translate-x-1/2';
             } else if (position === 'left') {
-              positionClass = 'left-1 top-1/2 transform -translate-y-1/2';
+              positionClass = 'left-0 top-1/2 transform -translate-y-1/2';
             } else if (position === 'top-left') {
-              positionClass = 'top-2 left-4';
+              positionClass = 'top-1 left-2';
             } else if (position === 'top-right') {
-              positionClass = 'top-2 right-4';
+              positionClass = 'top-1 right-2';
+            }
+          } else if (screenSize === 'medium') {
+            // Medium screen positioning
+            if (position === 'top') {
+              positionClass = 'top-4 left-1/2 transform -translate-x-1/2';
+            } else if (position === 'right') {
+              positionClass = 'right-4 top-1/2 transform -translate-y-1/2';
+            } else if (position === 'bottom') {
+              positionClass = 'bottom-4 left-1/2 transform -translate-x-1/2';
+            } else if (position === 'left') {
+              positionClass = 'left-4 top-1/2 transform -translate-y-1/2';
+            } else if (position === 'top-left') {
+              positionClass = 'top-4 left-1/4 transform -translate-x-1/2';
+            } else if (position === 'top-right') {
+              positionClass = 'top-4 right-1/4 transform translate-x-1/2';
             }
           } else {
-            // Desktop positioning
+            // Desktop positioning - standard
             if (position === 'top') {
               positionClass = 'top-8 left-1/2 transform -translate-x-1/2';
             } else if (position === 'right') {
@@ -678,14 +697,11 @@ const Game = () => {
             }
           }
           
-          const scaleClass = isMobile ? 
-            (position === 'left' || position === 'right' ? 'scale-80' : 'scale-90') : '';
-          
           return (
             <div 
               key={player.id} 
               id={`player-${player.id}`}
-              className={`absolute ${positionClass} ${scaleClass}`}
+              className={`absolute ${positionClass}`}
               style={{ zIndex: isCurrentPlayer ? 20 : 10 }}
             >
               <PlayerArea
@@ -699,7 +715,7 @@ const Game = () => {
                 isDealing={isDealing}
                 positionClass={position as any}
                 isCapturing={isCapturing}
-                isMobile={isMobile}
+                isMobile={screenSize !== 'large' && screenSize !== 'xlarge'}
                 isAnimating={gameState.isAnimating}
               />
             </div>
