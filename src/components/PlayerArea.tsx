@@ -16,7 +16,7 @@ interface PlayerAreaProps {
   timeRemaining: number;
   orientation: 'horizontal' | 'vertical';
   onCardHitDone?: () => void;
-  lastActionType?: 'none' | 'hit' | 'capture';
+  lastActionType?: 'none' | 'hit' | 'capture' | 'throw';
   isDealing?: boolean;
   positionClass?: string;
   isCapturing?: boolean;
@@ -39,6 +39,7 @@ const PlayerArea = ({
 }: PlayerAreaProps) => {
   const { name, cards, shufflesRemaining, status } = player;
   const topCard = cards[0];
+  const restOfCards = cards.slice(1);
   const cardRef = useRef<HTMLDivElement>(null);
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -59,7 +60,7 @@ const PlayerArea = ({
     : "bg-gradient-to-b from-gray-800/90 to-gray-900/90";
 
   const avatarBg = isCurrentPlayer ? player.avatarColor : `${player.avatarColor.split('-')[0]}-700`;
-  const avatarRingColor = isCurrentPlayer ? "ring-indigo-300" : "ring-gray-700";
+  const avatarRingColor = isCurrentPlayer ? "ring-yellow-300" : "ring-white";
 
   return (
     <Card className={cn(
@@ -106,32 +107,42 @@ const PlayerArea = ({
 
         {/* Middle section with card stack */}
         <div className={cn(
-          "relative flex-shrink-0",
+          "relative flex-shrink-0 player-card-stack",
           isCurrentPlayer ? "scale-100" : "scale-90"
         )} ref={cardRef}>
           <div className="relative">
+            {/* Card stack representation (excluding top card) */}
+            {cards.length > 1 && (
+              <div 
+                className={cn(
+                  "w-16 h-24 rounded-md card-back",
+                  isMobile ? "scale-75" : "",
+                  "after:content-[''] after:absolute after:top-1 after:left-1 after:w-full after:h-full after:bg-indigo-900 after:rounded-md after:-z-10"
+                )}
+              />
+            )}
+            
+            {/* Top card - separate entity for animations */}
             {cards.length > 0 ? (
               <div 
-                className="relative cursor-pointer" 
+                className={cn(
+                  "cursor-pointer",
+                  cards.length > 1 ? "absolute top-0 left-0" : "relative"
+                )}
                 onClick={handleHit}
               >
                 <CardComponent 
                   card={topCard} 
                   faceDown={true}
                   isDealing={isDealing}
-                  animationType={lastActionType === 'capture' ? 'capture' : 'none'}
+                  animationType={lastActionType === 'throw' ? 'throw' : (lastActionType === 'capture' ? 'capture' : 'none')}
                   className={cn(
-                    cards.length > 1 ? "after:content-[''] after:absolute after:top-1 after:left-1 after:w-full after:h-full after:bg-indigo-900 after:rounded-md after:-z-10" : "",
                     isCapturing && "shadow-glow-card",
                     isMobile ? "scale-75" : "",
-                    isCurrentPlayer && "hover:scale-105 transition-transform"
+                    isCurrentPlayer && "hover:scale-105 transition-transform",
+                    lastActionType === 'throw' && "animate-card-throw"
                   )}
                 />
-                {isCurrentPlayer && (
-                  <div className="absolute -top-2 -right-2 bg-amber-500 text-white font-bold rounded-full flex items-center justify-center shadow-md w-6 h-6 text-xs border-2 border-white">
-                    {cards.length}
-                  </div>
-                )}
               </div>
             ) : (
               <div className={cn(
@@ -140,6 +151,12 @@ const PlayerArea = ({
                 isMobile ? "w-8 h-12 text-[8px]" : "w-12 h-18 sm:w-16 sm:h-24 text-xs",
               )}>
                 <span className={isCurrentPlayer ? "text-indigo-200" : "text-gray-500"}>No cards</span>
+              </div>
+            )}
+            
+            {isCurrentPlayer && cards.length > 0 && (
+              <div className="absolute -top-2 -right-2 bg-amber-500 text-white font-bold rounded-full flex items-center justify-center shadow-md w-6 h-6 text-xs border-2 border-white z-20">
+                {cards.length}
               </div>
             )}
           </div>

@@ -151,7 +151,7 @@ const Game = () => {
   };
 
   const handleHit = useCallback(() => {
-    setLastActionType('hit');
+    setLastActionType('throw');
     
     setTimeout(() => {
       setGameState(prev => {
@@ -245,20 +245,26 @@ const Game = () => {
           
           const nextPlayerIndex = getNextPlayerIndex(updatedPlayers, prev.currentPlayerIndex);
           
+          setTimeout(() => {
+            setGameState(state => ({
+              ...state,
+              tableCards: [...state.tableCards, playedCard],
+            }));
+            
+            setTimeout(() => {
+              setLastActionType('none');
+            }, 100);
+          }, 550);
+          
           return {
             ...prev,
             players: updatedPlayers,
             currentPlayerIndex: nextPlayerIndex,
-            tableCards: [...prev.tableCards, playedCard],
             turnStartTime: Date.now(),
             message: `${updatedPlayers[nextPlayerIndex].name}'s turn`,
           };
         }
       });
-      
-      setTimeout(() => {
-        setLastActionType('none');
-      }, 500);
     }, 100);
   }, [displayMessage]);
 

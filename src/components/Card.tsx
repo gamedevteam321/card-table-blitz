@@ -12,7 +12,7 @@ interface CardProps {
   dealDelay?: number;
   faceDown?: boolean;
   style?: React.CSSProperties;
-  animationType?: 'deal' | 'hit' | 'capture' | 'none';
+  animationType?: 'deal' | 'hit' | 'capture' | 'throw' | 'none';
 }
 
 const CardComponent = ({ 
@@ -70,6 +70,16 @@ const CardComponent = ({
         scale: [0.9, 1],
         rotate: [0, 5, 0],
         transition: { duration: 0.4, ease: "easeOut" } 
+      }
+    },
+    throw: {
+      initial: { y: 0, x: 0, scale: 1, rotate: 0, zIndex: 50 },
+      animate: { 
+        y: [0, -50, 0], 
+        x: [0, 0, 150], 
+        scale: [1, 1.1, 1],
+        rotate: [0, -5, 5],
+        transition: { duration: 0.6, ease: "easeOut" } 
       }
     },
     capture: {
