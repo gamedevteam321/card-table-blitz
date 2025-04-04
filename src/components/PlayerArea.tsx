@@ -133,6 +133,8 @@ const PlayerArea = ({
                   isAnimating && lastActionType === 'throw' ? "opacity-0" : "opacity-100"
                 )}
                 onClick={handleHit}
+                data-player-position={positionClass}
+                id={`player-card-${player.id}`}
               >
                 <CardComponent 
                   card={topCard} 
@@ -148,6 +150,7 @@ const PlayerArea = ({
                   playerPosition={positionClass === 'top' ? 'top' : 
                                  positionClass === 'left' ? 'left' : 
                                  positionClass === 'right' ? 'right' : 'bottom'}
+                  playerCardElement={`player-card-${player.id}`}
                 />
               </div>
             ) : (

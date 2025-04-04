@@ -37,8 +37,18 @@ const Dealer = ({ isDealing, orientation, onDealComplete, players = [] }: Dealer
     }
   }, [isDealing, totalDeals, onDealComplete]);
   
-  // Calculate dealing targets
+  // Calculate dealing targets - get actual player positions 
   const getPlayerPosition = (playerIndex: number) => {
+    const playerElement = document.getElementById(`player-${players[playerIndex]?.id}`);
+    if (playerElement) {
+      const rect = playerElement.getBoundingClientRect();
+      return { 
+        x: rect.left - 150 + rect.width / 2, 
+        y: rect.top - 150 + rect.height / 2 
+      };
+    }
+    
+    // Fallback positions if elements not found
     if (orientation === 'vertical') {
       return { x: 0, y: 200 + (playerIndex * 50) };
     } else {

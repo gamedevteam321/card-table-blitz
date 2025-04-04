@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, getCardValue } from "@/models/game";
 import CardComponent from "./Card";
 import { cn } from "@/lib/utils";
@@ -13,6 +13,7 @@ interface GameTableProps {
 
 const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: GameTableProps) => {
   const isMobile = useIsMobile();
+  const [cardPosition, setCardPosition] = useState({ x: 0, y: 0 });
   
   // Helper function to get the full name of a card
   const getCardName = (card: Card) => {
