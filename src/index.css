@@ -109,6 +109,22 @@
   100% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 1; }
 }
 
+/* New card throw animation */
+@keyframes card-throw {
+  0% { 
+    transform: translateY(0) translateX(0) rotate(0deg); 
+    opacity: 1; 
+  }
+  50% { 
+    transform: translateY(-30px) translateX(50px) rotate(15deg); 
+    opacity: 0.9;
+  }
+  100% { 
+    transform: translateY(0) translateX(150px) rotate(0deg); 
+    opacity: 0;
+  }
+}
+
 .animate-card-hit {
   animation: card-hit 0.5s ease-out forwards;
 }
@@ -119,6 +135,10 @@
 
 .animate-card-deal {
   animation: card-deal 0.8s ease-out forwards;
+}
+
+.animate-card-throw {
+  animation: card-throw 0.7s ease-out forwards;
 }
 
 .card-distribution {

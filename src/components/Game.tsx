@@ -9,8 +9,8 @@ import Confetti from './Confetti';
 import SetupScreen from './SetupScreen';
 import GameOverScreen from './GameOverScreen';
 import PauseMenu from './PauseMenu';
+import CardWithAnimation from './CardWithAnimation';
 import { Button } from './ui/button';
-import { X } from 'lucide-react';
 
 const TURN_TIME_LIMIT = 10; // seconds
 const GAME_TIME_LIMIT = 120; // seconds (2 minutes)
@@ -31,13 +31,16 @@ const Game = () => {
   const [gameTimeRemaining, setGameTimeRemaining] = useState(GAME_TIME_LIMIT);
   const [isDealing, setIsDealing] = useState(false);
   const [showStatusMessage, setShowStatusMessage] = useState(false);
-  const [statusMessage, setStatusMessage] = useState({ text: '', type: 'info' as const });
+  const [statusMessage, setStatusMessage] = useState<{ text: string, type: 'info' | 'success' | 'warning' | 'error' }>({ text: '', type: 'info' });
   const [lastActionType, setLastActionType] = useState<'none' | 'hit' | 'capture'>('none');
   const [gameActive, setGameActive] = useState(false);
   const [capturePosition, setCapturePosition] = useState<{ x: number; y: number } | null>(null);
   const [showCaptureConfetti, setShowCaptureConfetti] = useState(false);
   const [capturingPlayerId, setCapturingPlayerId] = useState<string | null>(null);
   const [isPaused, setIsPaused] = useState(false);
+  const [cardThrowingAnimation, setCardThrowingAnimation] = useState(false);
+  const [thrownCard, setThrownCard] = useState<Card | null>(null);
+  const [throwPosition, setThrowPosition] = useState<string>('');
   
   const { toast } = useToast();
   const isMobile = useIsMobile();
@@ -153,6 +156,16 @@ const Game = () => {
   const handleHit = useCallback(() => {
     setLastActionType('hit');
     
+    const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+    if (currentPlayer && currentPlayer.cards.length > 0) {
+      const position = getPositionForPlayer(currentPlayer.id);
+      if (position) {
+        setThrowPosition(gameState.players[gameState.currentPlayerIndex].id);
+        setThrownCard(currentPlayer.cards[0]);
+        setCardThrowingAnimation(true);
+      }
+    }
+    
     setTimeout(() => {
       setGameState(prev => {
         const currentPlayer = prev.players[prev.currentPlayerIndex];
@@ -258,9 +271,11 @@ const Game = () => {
       
       setTimeout(() => {
         setLastActionType('none');
-      }, 500);
-    }, 100);
-  }, [displayMessage]);
+        setCardThrowingAnimation(false);
+        setThrownCard(null);
+      }, 700);
+    }, 700);
+  }, [gameState.players, displayMessage]);
 
   const getNextPlayerIndex = (players: Player[], currentIndex: number) => {
     let nextIndex = (currentIndex + 1) % players.length;
@@ -559,6 +574,17 @@ const Game = () => {
           <GameTable cards={gameState.tableCards} />
         </div>
         
+        {cardThrowingAnimation && thrownCard && (
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 pointer-events-none">
+            <CardWithAnimation 
+              card={thrownCard}
+              faceDown={false}
+              animationType="throw"
+              className="shadow-md"
+            />
+          </div>
+        )}
+        
         {gameState.players.map((player, index) => {
           const position = playerPositions[player.id];
           const isCurrentPlayer = index === gameState.currentPlayerIndex;
@@ -598,19 +624,21 @@ const Game = () => {
               className={`absolute ${positionClass} ${scaleClass}`}
               style={{ zIndex: isCurrentPlayer ? 20 : 10 }}
             >
-              <PlayerArea
-                player={player}
-                isCurrentPlayer={isCurrentPlayer}
-                onHit={handleHit}
-                onShuffle={handleShuffle}
-                timeRemaining={timeRemaining}
-                orientation={position === 'left' || position === 'right' ? 'vertical' : 'horizontal'}
-                lastActionType={isCurrentPlayer ? lastActionType : 'none'}
-                isDealing={isDealing}
-                positionClass={position}
-                isCapturing={isCapturing}
-                isMobile={isMobile}
-              />
+              <div className="bg-gray-900/80 backdrop-blur-sm rounded-lg p-3 border border-gray-800">
+                <PlayerArea
+                  player={player}
+                  isCurrentPlayer={isCurrentPlayer}
+                  onHit={handleHit}
+                  onShuffle={handleShuffle}
+                  timeRemaining={timeRemaining}
+                  orientation={position === 'left' || position === 'right' ? 'vertical' : 'horizontal'}
+                  lastActionType={isCurrentPlayer ? lastActionType : 'none'}
+                  isDealing={isDealing}
+                  positionClass={position}
+                  isCapturing={isCapturing}
+                  isMobile={isMobile}
+                />
+              </div>
             </div>
           );
         })}
