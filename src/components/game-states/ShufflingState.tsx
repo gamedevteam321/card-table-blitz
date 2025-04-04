@@ -21,7 +21,7 @@ const ShufflingState = ({ shuffleProgress, showShuffleAnimation }: ShufflingStat
             {Array.from({ length: 5 }).map((_, i) => (
               <motion.div
                 key={i}
-                className="absolute w-16 h-24 bg-white rounded-md shadow-lg"
+                className="absolute w-16 h-24 bg-white rounded-md shadow-lg card-back"
                 initial={{ x: 0, y: 0, rotate: 0 }}
                 animate={{
                   x: [0, 50, -50, 0],
