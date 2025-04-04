@@ -1,4 +1,3 @@
-
 import { Player } from "@/models/game";
 import CardComponent from "./Card";
 import { cn } from "@/lib/utils";
@@ -46,7 +45,6 @@ const PlayerArea = ({
   const [hideTopCard, setHideTopCard] = useState(false);
   const { isSmallMobile } = useScreenSize();
   
-  // Determine if we should use compact mode
   const useCompactMode = isSmallMobile || 
     (isMobile && (positionClass === 'left' || positionClass === 'right'));
   
@@ -65,7 +63,6 @@ const PlayerArea = ({
     
     setLocalAnimating(true);
     setHideTopCard(true);
-    // Let the animation play before actually executing the hit logic
     setTimeout(() => {
       onHit();
       setTimeout(() => {
@@ -78,7 +75,6 @@ const PlayerArea = ({
   const avatarBg = isCurrentPlayer ? player.avatarColor : `${player.avatarColor.split('-')[0]}-700`;
   const avatarRingColor = isCurrentPlayer ? "ring-yellow-300" : "ring-white";
 
-  // Scale the card for compact mode
   const cardScale = useCompactMode ? "scale-65" : isMobile ? "scale-75" : "";
 
   return (
@@ -141,7 +137,7 @@ const PlayerArea = ({
                     cardScale,
                     isCurrentPlayer && "hover:translate-y-[-5px] transition-transform"
                   )}
-                  playerPosition={positionClass as 'top' | 'left' | 'right' | 'bottom' | null}
+                  playerPosition={positionClass as 'top' | 'left' | 'right' | 'bottom' | 'top-left' | 'top-right' | null}
                 />
               </div>
             ) : (

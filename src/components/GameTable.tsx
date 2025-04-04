@@ -8,7 +8,7 @@ import { useScreenSize } from "@/hooks/use-screen-size";
 interface GameTableProps {
   cards: Card[];
   animatingCard: Card | null;
-  animatingPlayerPosition?: 'top' | 'left' | 'right' | 'bottom' | null;
+  animatingPlayerPosition?: 'top' | 'left' | 'right' | 'bottom' | 'top-left' | 'top-right' | null;
 }
 
 const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: GameTableProps) => {

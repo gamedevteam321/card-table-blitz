@@ -1,4 +1,3 @@
-
 import { Card as CardType } from '../models/game';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
@@ -14,7 +13,7 @@ interface CardProps {
   faceDown?: boolean;
   style?: React.CSSProperties;
   animationType?: 'deal' | 'hit' | 'capture' | 'throw' | 'none';
-  playerPosition?: 'top' | 'left' | 'right' | 'bottom' | null;
+  playerPosition?: 'top' | 'left' | 'right' | 'bottom' | 'top-left' | 'top-right' | null;
   playerCardElement?: string;
 }
 
