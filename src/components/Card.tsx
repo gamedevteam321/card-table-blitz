@@ -14,6 +14,7 @@ interface CardProps {
   style?: React.CSSProperties;
   animationType?: 'deal' | 'hit' | 'capture' | 'throw' | 'none';
   playerPosition?: 'top' | 'left' | 'right' | 'bottom' | null;
+  playerCardElement?: string; // Added this property to fix the TypeScript error
 }
 
 const CardComponent = ({ 
