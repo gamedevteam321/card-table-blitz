@@ -715,7 +715,7 @@ const Game = () => {
                 isDealing={isDealing}
                 positionClass={position as any}
                 isCapturing={isCapturing}
-                isMobile={screenSize !== 'large' && screenSize !== 'xlarge'}
+                isMobile={screenSize === 'small' || screenSize === 'medium'}
                 isAnimating={gameState.isAnimating}
               />
             </div>

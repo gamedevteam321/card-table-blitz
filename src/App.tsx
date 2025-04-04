@@ -1,8 +1,8 @@
 
 import { Suspense, lazy } from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import { ToastProvider } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
+import { ToastProvider } from '@/components/ui/toast'; // Import from the correct location
 
 // Lazy load pages for better performance
 const Index = lazy(() => import('@/pages/Index'));
