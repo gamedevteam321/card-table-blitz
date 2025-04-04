@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Button } from './ui/button';
 import { X } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Player, Card, createDeck, shuffleDeck, generatePlayerColors, GameState as GameStateType } from '../models/game';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -12,6 +12,7 @@ import Confetti from './Confetti';
 import SetupScreen from './SetupScreen';
 import GameOverScreen from './GameOverScreen';
 import PauseMenu from './PauseMenu';
+import CardBack from './CardBack';
 import { checkCardMatch } from '../models/game';
 
 import WaitingState from './game-states/WaitingState';
@@ -58,6 +59,22 @@ const createPlayers = (count: number, deck: Card[]): Player[] => {
   return players;
 };
 
+// Add getTargetPosition function
+const getTargetPosition = (playerPosition: string) => {
+  switch (playerPosition) {
+    case 'top':
+      return { x: 0, y: -200, rotate: 180 };
+    case 'right':
+      return { x: 200, y: 0, rotate: 90 };
+    case 'bottom':
+      return { x: 0, y: 200, rotate: 0 };
+    case 'left':
+      return { x: -200, y: 0, rotate: -90 };
+    default:
+      return { x: 0, y: 0, rotate: 0 };
+  }
+};
+
 const Game = () => {
   const [gameState, setGameState] = useState<GameState>({
     status: 'waiting',
@@ -86,6 +103,11 @@ const Game = () => {
   const [throwingPlayerPosition, setThrowingPlayerPosition] = useState<'top' | 'left' | 'right' | 'bottom' | null>(null);
   const [showShuffleAnimation, setShowShuffleAnimation] = useState(false);
   const [shuffleProgress, setShuffleProgress] = useState(0);
+  const [currentCardIndex, setCurrentCardIndex] = useState(0);
+  const [totalCards, setTotalCards] = useState(52); // Total number of cards in the deck
+  
+  // Add new state for distribution animation
+  const [isDistributing, setIsDistributing] = useState(false);
   
   const { toast } = useToast();
   const isMobile = useIsMobile();
@@ -139,35 +161,38 @@ const Game = () => {
       
       setGameState(prev => ({
         ...prev,
-        status: 'distributing',
+        status: 'playing', // Changed from 'distributing' to 'playing'
         players,
-        distributionProgress: 0,
         message: 'Distributing cards...'
       }));
 
-      // Simulate card distribution
+      // Reset card distribution state
+      setCurrentCardIndex(0);
+      setTotalCards(shuffledDeck.length);
+      setIsDistributing(true);
+
+      // Start card-by-card distribution
       const distributionInterval = setInterval(() => {
-        setGameState(prev => {
-          if (prev.distributionProgress >= 100) {
+        setCurrentCardIndex(prev => {
+          if (prev >= shuffledDeck.length) {
             clearInterval(distributionInterval);
-            return {
-              ...prev,
-              status: 'playing',
+            setIsDistributing(false);
+            // Update game state after distribution
+            setGameState(prevState => ({
+              ...prevState,
               currentPlayerIndex: 0,
               tableCards: [],
               animatingCard: null,
               isAnimating: false,
               turnStartTime: Date.now(),
-              message: `${prev.players[0].name}'s turn`,
+              message: `${prevState.players[0].name}'s turn`,
               winner: null
-            };
+            }));
+            return prev;
           }
-          return {
-            ...prev,
-            distributionProgress: prev.distributionProgress + 5
-          };
+          return prev + 1;
         });
-      }, 100);
+      }, 200); // Deal a card every 200ms
     }, 1000);
   }, []);
 
@@ -641,40 +666,95 @@ const Game = () => {
     />;
   }
 
-  if (gameState.status === 'distributing') {
-    return <DistributingState 
-      distributionProgress={gameState.distributionProgress}
-      players={gameState.players}
-      playerPositions={playerPositions}
-    />;
-  }
-
   if (gameState.status === 'playing') {
-    return <PlayingState
-      players={gameState.players}
-      currentPlayerIndex={gameState.currentPlayerIndex}
-      tableCards={gameState.tableCards}
-      animatingCard={gameState.animatingCard}
-      isAnimating={gameState.isAnimating}
-      timeRemaining={timeRemaining}
-      gameTimeRemaining={gameTimeRemaining}
-      lastActionType={lastActionType}
-      isDealing={isDealing}
-      showStatusMessage={showStatusMessage}
-      statusMessage={statusMessage}
-      showCaptureConfetti={showCaptureConfetti}
-      capturePosition={capturePosition}
-      isPaused={isPaused}
-      throwingPlayerPosition={throwingPlayerPosition}
-      playerPositions={playerPositions}
-      capturingPlayerId={capturingPlayerId}
-      onHideStatusMessage={() => setShowStatusMessage(false)}
-      onTogglePause={togglePause}
-      onResumeGame={handleResumeGame}
-      onQuitGame={handleQuitGame}
-      onHit={handleHit}
-      onShuffle={handleShuffle}
-    />;
+    return (
+      <>
+        {/* Distribution overlay */}
+        {isDistributing && (
+          <div className="absolute inset-0 z-50 pointer-events-none">
+            <div className="absolute top-4 left-1/2 transform -translate-x-1/2 text-white text-xl bg-black/50 px-4 py-2 rounded-lg">
+              Dealing cards... {Math.floor((currentCardIndex / totalCards) * 100)}%
+            </div>
+            
+            {/* Dealer position (center) */}
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+              <div className="relative w-24 h-36">
+                {/* Deck of remaining cards */}
+                {Array.from({ length: Math.min(5, totalCards - currentCardIndex) }).map((_, i) => (
+                  <motion.div
+                    key={`deck-${i}`}
+                    className="absolute inset-0 bg-white rounded-lg border-2 border-gray-300 shadow-lg"
+                    style={{
+                      zIndex: 5 - i,
+                      transform: `translateY(${i * 0.5}px)`
+                    }}
+                    animate={{
+                      y: [i * 0.5, i * 0.5 - 2, i * 0.5],
+                    }}
+                    transition={{
+                      duration: 1,
+                      repeat: Infinity,
+                      repeatType: "reverse",
+                      delay: i * 0.1
+                    }}
+                  >
+                    <CardBack />
+                  </motion.div>
+                ))}
+
+                {/* Animating card */}
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={currentCardIndex}
+                    className="absolute inset-0 bg-white rounded-lg border-2 border-gray-300 shadow-lg"
+                    initial={{ x: 0, y: 0, rotate: 0, scale: 1 }}
+                    animate={{
+                      ...getTargetPosition(playerPositions[gameState.players[Math.floor(currentCardIndex / (totalCards / gameState.players.length))]?.id] || 'bottom'),
+                      scale: 0.8,
+                    }}
+                    exit={{ opacity: 0 }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 300,
+                      damping: 25,
+                      mass: 0.5
+                    }}
+                  >
+                    <CardBack />
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        <PlayingState
+          players={gameState.players}
+          currentPlayerIndex={gameState.currentPlayerIndex}
+          tableCards={gameState.tableCards}
+          animatingCard={gameState.animatingCard}
+          isAnimating={gameState.isAnimating}
+          timeRemaining={timeRemaining}
+          gameTimeRemaining={gameTimeRemaining}
+          lastActionType={lastActionType}
+          isDealing={isDealing}
+          showStatusMessage={showStatusMessage}
+          statusMessage={statusMessage}
+          showCaptureConfetti={showCaptureConfetti}
+          capturePosition={capturePosition}
+          isPaused={isPaused}
+          throwingPlayerPosition={throwingPlayerPosition}
+          playerPositions={playerPositions}
+          capturingPlayerId={capturingPlayerId}
+          onHideStatusMessage={() => setShowStatusMessage(false)}
+          onTogglePause={togglePause}
+          onResumeGame={handleResumeGame}
+          onQuitGame={handleQuitGame}
+          onHit={handleHit}
+          onShuffle={handleShuffle}
+        />
+      </>
+    );
   }
 
   if (gameState.status === 'finished' && gameState.winner) {

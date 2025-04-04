@@ -2,6 +2,7 @@ import { Card as CardType } from '../models/game';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSpring, animated } from '@react-spring/web';
+import CardBack from './CardBack';
 
 interface CardProps {
   card?: CardType;
@@ -192,10 +193,9 @@ const CardComponent = ({
         onClick={onClick}
         style={style}
         className={cn(
-          "w-16 h-24 rounded-md border shadow cursor-pointer transition-transform duration-200",
-          isTable ? "card-shadow border-white" : "hover:scale-105 border-gray-300",
+          "w-16 h-24 rounded-md shadow cursor-pointer transition-transform duration-200",
+          isTable ? "card-shadow border-white" : "hover:scale-105",
           isDealing ? "animate-card-deal" : "",
-          faceDown ? "card-back" : "bg-white",
           className
         )}
         initial={selectedAnimation.initial}
@@ -210,8 +210,10 @@ const CardComponent = ({
           transition: { duration: 0, ease: "easeOut" }
         }}
       >
-        {!faceDown && (
-          <div className="flex flex-col h-full p-1">
+        {faceDown ? (
+          <CardBack />
+        ) : (
+          <div className="flex flex-col h-full p-1 bg-white rounded-md">
             <div className={cn("text-sm font-bold", getSuitColor(card.suit))}>
               {getRankDisplay(card.rank)}
               <span className="ml-1">{getSuitSymbol(card.suit)}</span>

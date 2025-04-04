@@ -1,8 +1,8 @@
-
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Player } from "@/models/game";
+import CardBack from './CardBack';
 
 interface DealerProps {
   isDealing: boolean;
@@ -89,7 +89,7 @@ const Dealer = ({ isDealing, orientation, onDealComplete, players = [] }: Dealer
           return isCurrentPlayerDealing && (
             <motion.div 
               key={`${player.id}-${dealIndex}`}
-              className="absolute top-0 -right-2 w-10 h-14 bg-white border border-gray-300 rounded-md card-back"
+              className="absolute top-0 -right-2 w-10 h-14 rounded-md overflow-hidden"
               initial={{ x: 0, y: 0, rotate: 0, opacity: 1 }}
               animate={{ 
                 x: target.x, 
@@ -101,7 +101,9 @@ const Dealer = ({ isDealing, orientation, onDealComplete, players = [] }: Dealer
                 duration: 0.5,
                 ease: "easeInOut"
               }}
-            />
+            >
+              <CardBack />
+            </motion.div>
           );
         })}
       </div>

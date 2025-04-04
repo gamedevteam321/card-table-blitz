@@ -46,19 +46,6 @@
   }
 }
 
-.card-back {
-  background-image: 
-    linear-gradient(135deg, rgba(79, 70, 229, 0.4) 25%, transparent 25%),
-    linear-gradient(225deg, rgba(79, 70, 229, 0.4) 25%, transparent 25%),
-    linear-gradient(315deg, rgba(79, 70, 229, 0.4) 25%, transparent 25%),
-    linear-gradient(45deg, rgba(79, 70, 229, 0.4) 25%, transparent 25%);
-  background-size: 12px 12px;
-  background-position: 0 0, 6px 0, 6px -6px, 0px 6px;
-  background-color: #1e1b4b;
-  border: 1px solid rgba(139, 92, 246, 0.3);
-  box-shadow: inset 0 0 10px rgba(139, 92, 246, 0.2);
-}
-
 .table-surface {
   background: linear-gradient(to right, rgba(25, 52, 65, 0.9), rgba(25, 52, 65, 1), rgba(25, 52, 65, 0.9));
   box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.5);

@@ -6,6 +6,7 @@ import { RotateCcw } from "lucide-react";
 import { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
+import CardBack from './CardBack';
 
 interface PlayerAreaProps {
   player: Player;
@@ -116,11 +117,13 @@ const PlayerArea = ({
             {cards.length > 1 && (
               <div 
                 className={cn(
-                  "w-16 h-24 rounded-md card-back",
+                  "w-16 h-24",
                   isMobile ? "scale-75" : "",
-                  "after:content-[''] after:absolute after:top-1 after:left-1 after:w-full after:h-full after:bg-transparent after:rounded-md after:-z-10"
+                  "relative"
                 )}
-              />
+              >
+                <CardBack />
+              </div>
             )}
             
             {/* Top card - separate entity for animations */}

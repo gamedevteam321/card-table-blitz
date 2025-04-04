@@ -1,7 +1,6 @@
-
-import { useEffect, useState } from "react";
-import { cn } from "@/lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
 interface StatusMessageProps {
   message: string;
@@ -11,41 +10,41 @@ interface StatusMessageProps {
 }
 
 const StatusMessage = ({ message, type, isVisible, onHide }: StatusMessageProps) => {
-  const [opacity, setOpacity] = useState(0);
-
   useEffect(() => {
     if (isVisible) {
-      setOpacity(0.7);
-      const timer = setTimeout(() => {
-        setOpacity(0);
-        setTimeout(onHide, 300);
-      }, 2000);
+      const timer = setTimeout(onHide, 3000);
       return () => clearTimeout(timer);
     }
   }, [isVisible, onHide]);
 
-  const bgColor = type === 'success' 
-    ? 'bg-green-500' 
-    : type === 'warning' 
-    ? 'bg-amber-500' 
-    : type === 'error' 
-    ? 'bg-red-500' 
-    : 'bg-blue-500';
+  const getTypeStyles = () => {
+    switch (type) {
+      case 'success':
+        return 'bg-emerald-500 text-white';
+      case 'warning':
+        return 'bg-yellow-500 text-black';
+      case 'error':
+        return 'bg-red-500 text-white';
+      default:
+        return 'bg-blue-500 text-white';
+    }
+  };
 
   return (
     <AnimatePresence>
       {isVisible && (
-        <motion.div 
-          className="fixed top-0 left-0 right-0 z-50 flex justify-center items-center"
-          initial={{ opacity: 0 }}
-          animate={{ opacity }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.3 }}
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 50 }}
+          className="fixed left-0 right-0 bottom-0 z-10 flex justify-center items-center pointer-events-none"
+          style={{ marginBottom: '1rem' }}
         >
-          <div 
+          <div
             className={cn(
-              "p-4 text-white text-center font-medium rounded-b-md shadow-lg w-auto max-w-xs",
-              bgColor
+              "px-6 py-3 rounded-full shadow-lg text-center font-medium",
+              "backdrop-blur-md bg-opacity-90",
+              getTypeStyles()
             )}
           >
             {message}

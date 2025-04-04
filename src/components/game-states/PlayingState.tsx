@@ -61,15 +61,8 @@ const PlayingState = ({
 
   return (
     <div className="w-full max-w-7xl mx-auto flex flex-col h-full">
-      <StatusMessage 
-        message={statusMessage.text}
-        type={statusMessage.type}
-        isVisible={showStatusMessage}
-        onHide={onHideStatusMessage}
-      />
-      
       <div className="bg-casino p-2 rounded-lg shadow-lg border border-casino-table mb-4 flex justify-between items-center">
-        <h1 className="text-base sm:text-xl font-bold text-casino-gold">Card Table Blitz</h1>
+        <h1 className="text-base sm:text-xl font-bold text-casino-gold">Satte pe Satta</h1>
         <div className="text-xs sm:text-sm text-gray-400">
           Game time: {Math.floor(gameTimeRemaining / 60)}:{(gameTimeRemaining % 60).toString().padStart(2, '0')}
         </div>
@@ -109,7 +102,7 @@ const PlayingState = ({
             } else if (position === 'right') {
               positionClass = 'right-1 top-1/2 transform -translate-y-1/2';
             } else if (position === 'bottom') {
-              positionClass = 'bottom-2 left-1/2 transform -translate-x-1/2';
+              positionClass = 'bottom-8 left-1/2 transform -translate-x-1/2';
             } else if (position === 'left') {
               positionClass = 'left-1 top-1/2 transform -translate-y-1/2';
             }
@@ -119,7 +112,7 @@ const PlayingState = ({
             } else if (position === 'right') {
               positionClass = 'right-8 top-1/2 transform -translate-y-1/2';
             } else if (position === 'bottom') {
-              positionClass = 'bottom-8 left-1/2 transform -translate-x-1/2';
+              positionClass = 'bottom-12 left-1/2 transform -translate-x-1/2';
             } else if (position === 'left') {
               positionClass = 'left-8 top-1/2 transform -translate-y-1/2';
             }
@@ -152,6 +145,16 @@ const PlayingState = ({
             </div>
           );
         })}
+
+        {/* Status message at the bottom */}
+        <div className="absolute inset-x-0 bottom-0">
+          <StatusMessage 
+            message={statusMessage.text}
+            type={statusMessage.type}
+            isVisible={showStatusMessage}
+            onHide={onHideStatusMessage}
+          />
+        </div>
       </div>
     </div>
   );
