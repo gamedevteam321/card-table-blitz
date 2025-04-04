@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Card, GameState, Player, checkCardMatch, createDeck, generatePlayerColors, shuffleDeck } from '@/models/game';
 import { useToast } from '@/hooks/use-toast';
@@ -45,6 +46,27 @@ const Game = () => {
   
   const { toast } = useToast();
   const isMobile = useIsMobile();
+
+  // Define getPlayerPositions and playerPositions early
+  const getPlayerPositions = () => {
+    const playerPositions: Record<string, string> = {};
+    
+    gameState.players.forEach((player, index) => {
+      if (index === 0) {
+        playerPositions[player.id] = 'bottom';
+      } else if (index === 1) {
+        playerPositions[player.id] = 'left';
+      } else if (index === 2) {
+        playerPositions[player.id] = 'top';
+      } else if (index === 3) {
+        playerPositions[player.id] = 'right';
+      }
+    });
+    
+    return playerPositions;
+  };
+
+  const playerPositions = getPlayerPositions();
 
   const startGame = useCallback((playerNames: string[], playerCount: number) => {
     let deck = createDeck();
@@ -556,26 +578,6 @@ const Game = () => {
       }
     }
   }, [gameState.currentPlayerIndex, gameState.status, displayMessage]);
-
-  const getPlayerPositions = () => {
-    const playerPositions: Record<string, string> = {};
-    
-    gameState.players.forEach((player, index) => {
-      if (index === 0) {
-        playerPositions[player.id] = 'bottom';
-      } else if (index === 1) {
-        playerPositions[player.id] = 'left';
-      } else if (index === 2) {
-        playerPositions[player.id] = 'top';
-      } else if (index === 3) {
-        playerPositions[player.id] = 'right';
-      }
-    });
-    
-    return playerPositions;
-  };
-
-  const playerPositions = getPlayerPositions();
 
   if (gameState.status === 'setup') {
     return <SetupScreen onStartGame={startGame} />;
