@@ -8,9 +8,10 @@ import { useIsMobile } from "@/hooks/use-mobile";
 interface GameTableProps {
   cards: Card[];
   animatingCard: Card | null;
+  animatingPlayerPosition?: 'top' | 'left' | 'right' | 'bottom' | null;
 }
 
-const GameTable = ({ cards, animatingCard }: GameTableProps) => {
+const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: GameTableProps) => {
   const isMobile = useIsMobile();
   
   // Helper function to get the full name of a card
@@ -74,7 +75,8 @@ const GameTable = ({ cards, animatingCard }: GameTableProps) => {
                   card={animatingCard} 
                   isTable={true}
                   animationType="throw"
-                  className="shadow-lg animate-card-arrive z-50"
+                  playerPosition={animatingPlayerPosition}
+                  className="shadow-lg z-50"
                   style={{
                     position: 'absolute',
                     zIndex: cards.length + 10,

@@ -13,6 +13,7 @@ interface CardProps {
   faceDown?: boolean;
   style?: React.CSSProperties;
   animationType?: 'deal' | 'hit' | 'capture' | 'throw' | 'none';
+  playerPosition?: 'top' | 'left' | 'right' | 'bottom' | null;
 }
 
 const CardComponent = ({ 
@@ -24,7 +25,8 @@ const CardComponent = ({
   dealDelay = 0,
   faceDown = false,
   style = {},
-  animationType = 'none'
+  animationType = 'none',
+  playerPosition = null
 }: CardProps) => {
   if (!card) {
     return (
@@ -56,6 +58,67 @@ const CardComponent = ({
     return rank === '10' ? '10' : rank.charAt(0);
   };
 
+  // Custom throw animation based on player position
+  const getThrowAnimation = () => {
+    switch (playerPosition) {
+      case 'bottom':
+        return {
+          initial: { y: 0, x: 0, scale: 1, rotate: 0, zIndex: 50 },
+          animate: { 
+            y: [-30, -10, 0], 
+            x: [0, 0, 0], 
+            scale: [1, 1.1, 1],
+            rotate: [0, -5, 0],
+            transition: { duration: 0.6, ease: "easeOut" } 
+          }
+        };
+      case 'top':
+        return {
+          initial: { y: 0, x: 0, scale: 1, rotate: 0, zIndex: 50 },
+          animate: { 
+            y: [30, 10, 0], 
+            x: [0, 0, 0], 
+            scale: [1, 1.1, 1],
+            rotate: [0, 5, 0],
+            transition: { duration: 0.6, ease: "easeOut" } 
+          }
+        };
+      case 'left':
+        return {
+          initial: { y: 0, x: 0, scale: 1, rotate: 0, zIndex: 50 },
+          animate: { 
+            y: [0, 0, 0], 
+            x: [30, 10, 0], 
+            scale: [1, 1.1, 1],
+            rotate: [0, 5, 0],
+            transition: { duration: 0.6, ease: "easeOut" } 
+          }
+        };
+      case 'right':
+        return {
+          initial: { y: 0, x: 0, scale: 1, rotate: 0, zIndex: 50 },
+          animate: { 
+            y: [0, 0, 0], 
+            x: [-30, -10, 0], 
+            scale: [1, 1.1, 1],
+            rotate: [0, -5, 0],
+            transition: { duration: 0.6, ease: "easeOut" } 
+          }
+        };
+      default:
+        return {
+          initial: { y: 0, x: 0, scale: 1, rotate: 0, zIndex: 50 },
+          animate: { 
+            y: [-20, -10, 0], 
+            x: [0, 0, 0], 
+            scale: [1, 1.1, 1],
+            rotate: [0, -5, 0],
+            transition: { duration: 0.6, ease: "easeOut" } 
+          }
+        };
+    }
+  };
+
   // Animation variants based on type
   const animationVariants = {
     deal: {
@@ -72,16 +135,7 @@ const CardComponent = ({
         transition: { duration: 0.4, ease: "easeOut" } 
       }
     },
-    throw: {
-      initial: { y: 0, x: 0, scale: 1, rotate: 0, zIndex: 50 },
-      animate: { 
-        y: [-20, -100, 0], 
-        x: [0, -50, 0], 
-        scale: [1, 1.1, 1],
-        rotate: [0, -10, 5],
-        transition: { duration: 0.6, ease: "easeOut" } 
-      }
-    },
+    throw: getThrowAnimation(),
     capture: {
       initial: { opacity: 1, scale: 1 },
       animate: { 

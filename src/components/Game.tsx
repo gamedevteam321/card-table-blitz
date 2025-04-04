@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Card, GameState, Player, checkCardMatch, createDeck, generatePlayerColors, shuffleDeck } from '@/models/game';
 import { useToast } from '@/hooks/use-toast';
@@ -42,6 +41,7 @@ const Game = () => {
   const [showCaptureConfetti, setShowCaptureConfetti] = useState(false);
   const [capturingPlayerId, setCapturingPlayerId] = useState<string | null>(null);
   const [isPaused, setIsPaused] = useState(false);
+  const [throwingPlayerPosition, setThrowingPlayerPosition] = useState<'top' | 'left' | 'right' | 'bottom' | null>(null);
   
   const { toast } = useToast();
   const isMobile = useIsMobile();
@@ -158,6 +158,12 @@ const Game = () => {
 
   const handleHit = useCallback(() => {
     if (gameState.isAnimating) return;
+    
+    const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+    if (currentPlayer) {
+      const position = playerPositions[currentPlayer.id] as 'top' | 'left' | 'right' | 'bottom' | null;
+      setThrowingPlayerPosition(position);
+    }
     
     setLastActionType('throw');
     setGameState(prev => ({ ...prev, isAnimating: true }));
@@ -288,7 +294,7 @@ const Game = () => {
         setLastActionType('none');
       }, ANIMATION_DURATION);
     }, 100);
-  }, [displayMessage, gameState.isAnimating]);
+  }, [displayMessage, gameState.isAnimating, playerPositions]);
 
   const getNextPlayerIndex = (players: Player[], currentIndex: number) => {
     let nextIndex = (currentIndex + 1) % players.length;
@@ -616,6 +622,7 @@ const Game = () => {
           <GameTable 
             cards={gameState.tableCards} 
             animatingCard={gameState.animatingCard}
+            animatingPlayerPosition={throwingPlayerPosition}
           />
         </div>
         

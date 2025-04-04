@@ -145,6 +145,9 @@ const PlayerArea = ({
                     isCurrentPlayer && "hover:scale-105 transition-transform",
                     lastActionType === 'throw' && "animate-card-throw"
                   )}
+                  playerPosition={positionClass === 'top' ? 'top' : 
+                                 positionClass === 'left' ? 'left' : 
+                                 positionClass === 'right' ? 'right' : 'bottom'}
                 />
               </div>
             ) : (
