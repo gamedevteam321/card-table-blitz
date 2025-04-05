@@ -170,6 +170,7 @@ const Game = () => {
       setCurrentCardIndex(0);
       setTotalCards(shuffledDeck.length);
       setIsDistributing(true);
+      setIsDealing(true); // Set isDealing to true when distribution starts
 
       // Start card-by-card distribution
       const distributionInterval = setInterval(() => {
@@ -177,6 +178,7 @@ const Game = () => {
           if (prev >= shuffledDeck.length) {
             clearInterval(distributionInterval);
             setIsDistributing(false);
+            setIsDealing(false); // Set isDealing to false when distribution completes
             // Update game state after distribution
             setGameState(prevState => ({
               ...prevState,
@@ -192,7 +194,7 @@ const Game = () => {
           }
           return prev + 1;
         });
-      }, 200); // Deal a card every 200ms
+      }, 100); // Deal a card every 100ms (reduced from 200ms)
     }, 1000);
   }, []);
 

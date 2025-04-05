@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, getCardValue } from "@/models/game";
 import CardComponent from "./Card";
@@ -55,19 +54,31 @@ const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: Gam
           <>
             <div className="relative h-32 w-24">
               {/* Display the stack of cards */}
-              {cards.map((card, index) => (
-                <CardComponent 
-                  key={card.id} 
-                  card={card} 
-                  isTable={true} 
-                  style={{
-                    position: 'absolute',
-                    zIndex: index + 1,
-                    transform: `translateX(${index % 3 - 1}px) translateY(${index % 2}px) rotate(${(index % 5 - 2) * 3}deg)`
-                  }}
-                  className={index === cards.length - 1 && !animatingCard ? "shadow-lg" : ""}
-                />
-              ))}
+              {cards.map((card, index) => {
+                // Only show the top two cards with special styling
+                if (index >= cards.length - 2) {
+                  const isTopCard = index === cards.length - 1;
+                  const isSecondCard = index === cards.length - 2;
+                  
+                  return (
+                    <CardComponent 
+                      key={card.id} 
+                      card={card} 
+                      isTable={true} 
+                      style={{
+                        position: 'absolute',
+                        zIndex: isTopCard ? 2 : 1,
+                        transform: isSecondCard ? 
+                          `translateX(${Math.random() > 0.5 ? -10 : -10}px) rotate(${Math.random() > 0.5 ? -40 : -40}deg)` : 
+                          'none',
+                        transition: 'transform 0.3s ease-out'
+                      }}
+                      className={isTopCard ? "shadow-lg" : "opacity-90"}
+                    />
+                  );
+                }
+                return null;
+              })}
               
               {/* Display the animating card on top with enhanced animation */}
               {animatingCard && (
