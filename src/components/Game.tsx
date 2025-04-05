@@ -134,6 +134,7 @@ const Game = () => {
   const playerPositions = getPlayerPositions();
 
   const startGame = useCallback(() => {
+    // Start with shuffling state
     setGameState(prev => ({
       ...prev,
       status: 'shuffling',
@@ -143,16 +144,18 @@ const Game = () => {
     setShowShuffleAnimation(true);
     setShuffleProgress(0);
 
-    const interval = setInterval(() => {
+    // Shuffle animation
+    const shuffleInterval = setInterval(() => {
       setShuffleProgress(prev => {
         if (prev >= 100) {
-          clearInterval(interval);
+          clearInterval(shuffleInterval);
           return 100;
         }
-        return prev + 10;
+        return prev + 2;
       });
-    }, 100);
+    }, 50);
 
+    // After shuffle animation, transition to dealing
     setTimeout(() => {
       setShowShuffleAnimation(false);
       const deck = createDeck();
@@ -161,7 +164,7 @@ const Game = () => {
       
       setGameState(prev => ({
         ...prev,
-        status: 'playing', // Changed from 'distributing' to 'playing'
+        status: 'playing',
         players,
         message: 'Distributing cards...'
       }));
@@ -170,7 +173,7 @@ const Game = () => {
       setCurrentCardIndex(0);
       setTotalCards(shuffledDeck.length);
       setIsDistributing(true);
-      setIsDealing(true); // Set isDealing to true when distribution starts
+      setIsDealing(true);
 
       // Start card-by-card distribution
       const distributionInterval = setInterval(() => {
@@ -178,7 +181,7 @@ const Game = () => {
           if (prev >= shuffledDeck.length) {
             clearInterval(distributionInterval);
             setIsDistributing(false);
-            setIsDealing(false); // Set isDealing to false when distribution completes
+            setIsDealing(false);
             // Update game state after distribution
             setGameState(prevState => ({
               ...prevState,
@@ -194,8 +197,8 @@ const Game = () => {
           }
           return prev + 1;
         });
-      }, 100); // Deal a card every 100ms (reduced from 200ms)
-    }, 1000);
+      }, 100);
+    }, 2500); // 2.5 seconds for shuffle animation
   }, []);
 
   const displayMessage = useCallback((text: string, type: 'info' | 'success' | 'warning' | 'error') => {
@@ -262,7 +265,7 @@ const Game = () => {
   };
 
   const handleHit = useCallback(() => {
-    if (gameState.isAnimating) return;
+    if (gameState.isAnimating || isDistributing) return;
     
     const currentPlayer = gameState.players[gameState.currentPlayerIndex];
     if (currentPlayer) {
@@ -357,41 +360,41 @@ const Game = () => {
             };
           }
           
-            // No match, add card to table
-            if (currentPlayer.cards.length === 0) {
-              updatedPlayers[prev.currentPlayerIndex].status = 'inactive';
-              displayMessage(`${currentPlayer.name} is out of cards!`, 'warning');
-              
-              const activePlayers = updatedPlayers.filter(
-                p => p.status === 'active' && p.cards.length > 0
-              );
-              
-              if (activePlayers.length === 1) {
-                return {
-                  ...prev,
-                  players: updatedPlayers.map(p => ({
-                    ...p,
-                    status: p.id === activePlayers[0].id ? 'winner' : 'loser'
-                  })),
-                  tableCards: [...prev.tableCards, prev.animatingCard!],
-                  status: 'finished',
-                  winner: activePlayers[0],
-                  animatingCard: null,
-                  isAnimating: false,
-                };
-              }
+          // No match, add card to table
+          if (currentPlayer.cards.length === 0) {
+            updatedPlayers[prev.currentPlayerIndex].status = 'inactive';
+            displayMessage(`${currentPlayer.name} is out of cards!`, 'warning');
+            
+            const activePlayers = updatedPlayers.filter(
+              p => p.status === 'active' && p.cards.length > 0
+            );
+            
+            if (activePlayers.length === 1) {
+              return {
+                ...prev,
+                players: updatedPlayers.map(p => ({
+                  ...p,
+                  status: p.id === activePlayers[0].id ? 'winner' : 'loser'
+                })),
+                tableCards: [...prev.tableCards, prev.animatingCard!],
+                status: 'finished',
+                winner: activePlayers[0],
+                animatingCard: null,
+                isAnimating: false,
+              };
             }
-            
-            const nextPlayerIndex = getNextPlayerIndex(updatedPlayers, prev.currentPlayerIndex);
-            
+          }
+          
+          const nextPlayerIndex = getNextPlayerIndex(updatedPlayers, prev.currentPlayerIndex);
+          
           // Keep the animation going until it's complete
-            return {
-              ...prev,
-              players: updatedPlayers,
-              currentPlayerIndex: nextPlayerIndex,
-              tableCards: [...prev.tableCards, prev.animatingCard!],
-              turnStartTime: Date.now(),
-              message: `${updatedPlayers[nextPlayerIndex].name}'s turn`,
+          return {
+            ...prev,
+            players: updatedPlayers,
+            currentPlayerIndex: nextPlayerIndex,
+            tableCards: [...prev.tableCards, prev.animatingCard!],
+            turnStartTime: Date.now(),
+            message: `${updatedPlayers[nextPlayerIndex].name}'s turn`,
             // Don't reset animatingCard and isAnimating here
           };
         });
@@ -403,11 +406,11 @@ const Game = () => {
             animatingCard: null,
             isAnimating: false
           }));
-        setLastActionType('none');
+          setLastActionType('none');
         }, 500); // Add a small delay to ensure smooth transition
       }, ANIMATION_DURATION);
     }, 100);
-  }, [displayMessage, gameState.isAnimating, playerPositions]);
+  }, [displayMessage, gameState.isAnimating, isDistributing, playerPositions]);
 
   const getNextPlayerIndex = (players: Player[], currentIndex: number) => {
     let nextIndex = (currentIndex + 1) % players.length;
@@ -533,7 +536,7 @@ const Game = () => {
   }, [displayMessage, gameState.isAnimating]);
 
   const handleShuffle = useCallback(() => {
-    if (gameState.isAnimating) return;
+    if (gameState.isAnimating || isDistributing) return;
     
     setGameState(prev => {
       const currentPlayer = prev.players[prev.currentPlayerIndex];
@@ -558,7 +561,7 @@ const Game = () => {
         players: updatedPlayers,
       };
     });
-  }, [displayMessage, gameState.isAnimating]);
+  }, [displayMessage, gameState.isAnimating, isDistributing]);
 
   const handleQuitGame = useCallback(() => {
     setGameState({
@@ -658,14 +661,197 @@ const Game = () => {
   }, [gameState.currentPlayerIndex, gameState.status, displayMessage]);
 
   if (gameState.status === 'waiting') {
-    return <WaitingState onStartGame={startGame} />;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-casino-dark p-4">
+        <SetupScreen onStartGame={(playerNames, playerCount) => {
+          const deck = shuffleDeck(createDeck());
+          const players = createPlayers(playerCount, deck);
+          // Update player names
+          players.forEach((player, index) => {
+            player.name = playerNames[index];
+          });
+          setGameState(prev => ({
+            ...prev,
+            players,
+            status: 'shuffling',
+            message: 'Shuffling cards...'
+          }));
+          setShowShuffleAnimation(true);
+          setShuffleProgress(0);
+
+          // Shuffle animation
+          const shuffleInterval = setInterval(() => {
+            setShuffleProgress(prev => {
+              if (prev >= 100) {
+                clearInterval(shuffleInterval);
+                return 100;
+              }
+              return prev + 2;
+            });
+          }, 50);
+
+          // Transition to playing state after shuffle
+          setTimeout(() => {
+            setGameState(prev => ({
+              ...prev,
+              status: 'playing',
+              message: 'Distributing cards...'
+            }));
+            setShowShuffleAnimation(false);
+            setShuffleProgress(0);
+            setIsDistributing(true);
+            setCurrentCardIndex(0);
+            setTotalCards(deck.length);
+
+            // Distribution animation
+            const distributionInterval = setInterval(() => {
+              setCurrentCardIndex(prev => {
+                if (prev >= deck.length) {
+                  clearInterval(distributionInterval);
+                  setIsDistributing(false);
+                  // Transition to playing state
+                  setGameState(prevState => ({
+                    ...prevState,
+                    currentPlayerIndex: 0,
+                    tableCards: [],
+                    animatingCard: null,
+                    isAnimating: false,
+                    turnStartTime: Date.now(),
+                    message: `${prevState.players[0].name}'s turn`,
+                    winner: null
+                  }));
+                  return prev;
+                }
+                return prev + 1;
+              });
+            }, 100);
+          }, 2500); // 2.5 seconds for shuffle animation
+        }} />
+      </div>
+    );
   }
 
   if (gameState.status === 'shuffling') {
-    return <ShufflingState 
-      shuffleProgress={shuffleProgress}
-      showShuffleAnimation={showShuffleAnimation}
-    />;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-casino-dark p-4">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-4 text-white">Shuffling Cards...</h2>
+          <div className="w-64 h-2 bg-gray-700 rounded-full overflow-hidden mb-4">
+            <div 
+              className="h-full bg-[#16A34A] transition-all duration-300"
+              style={{ width: `${shuffleProgress}%` }}
+            />
+          </div>
+          <div className="relative w-24 h-36 mx-auto">
+            {/* Deck of cards */}
+            {Array.from({ length: 5 }).map((_, i) => (
+              <motion.div
+                key={`deck-${i}`}
+                className="absolute inset-0 bg-white rounded-lg border-2 border-gray-300 shadow-lg"
+                style={{
+                  zIndex: 5 - i,
+                  transform: `translateY(${i * 0.5}px)`
+                }}
+                animate={{
+                  y: [i * 0.5, i * 0.5 - 2, i * 0.5],
+                }}
+                transition={{
+                  duration: 1,
+                  repeat: Infinity,
+                  repeatType: "reverse",
+                  delay: i * 0.1
+                }}
+              >
+                <CardBack />
+              </motion.div>
+            ))}
+
+            {/* Shuffling animation */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key="shuffling"
+                className="absolute inset-0 bg-white rounded-lg border-2 border-gray-300 shadow-lg"
+                initial={{ x: 0, y: 0, rotate: 0, scale: 1 }}
+                animate={{
+                  x: [0, 20, -20, 0],
+                  y: [0, -20, 20, 0],
+                  rotate: [0, 10, -10, 0],
+                }}
+                transition={{
+                  duration: 0.5,
+                  repeat: Infinity,
+                  repeatType: "reverse"
+                }}
+              >
+                <CardBack />
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (gameState.status === 'distributing') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-casino-dark p-4">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-4 text-white">Dealing Cards...</h2>
+          <div className="w-64 h-2 bg-gray-700 rounded-full overflow-hidden mb-4">
+            <div 
+              className="h-full bg-[#16A34A] transition-all duration-300"
+              style={{ width: `${(currentCardIndex / totalCards) * 100}%` }}
+            />
+          </div>
+          <div className="relative w-24 h-36 mx-auto">
+            {/* Deck of remaining cards */}
+            {Array.from({ length: Math.min(5, totalCards - currentCardIndex) }).map((_, i) => (
+              <motion.div
+                key={`deck-${i}`}
+                className="absolute inset-0 bg-white rounded-lg border-2 border-gray-300 shadow-lg"
+                style={{
+                  zIndex: 5 - i,
+                  transform: `translateY(${i * 0.5}px)`
+                }}
+                animate={{
+                  y: [i * 0.5, i * 0.5 - 2, i * 0.5],
+                }}
+                transition={{
+                  duration: 1,
+                  repeat: Infinity,
+                  repeatType: "reverse",
+                  delay: i * 0.1
+                }}
+              >
+                <CardBack />
+              </motion.div>
+            ))}
+
+            {/* Animating card */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentCardIndex}
+                className="absolute inset-0 bg-white rounded-lg border-2 border-gray-300 shadow-lg"
+                initial={{ x: 0, y: 0, rotate: 0, scale: 1 }}
+                animate={{
+                  ...getTargetPosition(playerPositions[gameState.players[Math.floor(currentCardIndex / (totalCards / gameState.players.length))]?.id] || 'bottom'),
+                  scale: 0.8,
+                }}
+                exit={{ opacity: 0 }}
+                transition={{
+                  type: "spring",
+                  stiffness: 300,
+                  damping: 25,
+                  mass: 0.5
+                }}
+              >
+                <CardBack />
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (gameState.status === 'playing') {

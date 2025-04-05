@@ -166,7 +166,7 @@ const PlayerArea = ({
             )}
             
             {isCurrentPlayer && cards.length > 0 && (
-              <div className="absolute -top-2 -right-2 bg-transparent text-white font-bold rounded-full flex items-center justify-center shadow-md w-6 h-6 text-xs border-2 border-white z-20">
+              <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-[#16A34A] text-white font-bold rounded-full flex items-center justify-center shadow-md w-6 h-6 text-xs border-2 border-white z-20">
                 {cards.length}
               </div>
             )}
@@ -185,12 +185,12 @@ const PlayerArea = ({
               disabled={!isCurrentPlayer || cards.length === 0 || status !== 'active' || localAnimating || isAnimating || isDealing}
               onClick={handleHit}
               className={cn(
-                "bg-transparent hover:bg-transparent text-white transition-all shadow-md",
+                "bg-[#16A34A] hover:bg-[#16A34A]/90 text-white transition-all shadow-md",
                 isMobile ? "text-[10px] px-2 py-1 h-7" : "text-xs sm:text-sm px-3 py-1.5",
                 isCurrentPlayer && status === 'active' && "animate-pulse"
               )}
             >
-              Play
+              Hit
             </Button>
             <Button
               variant="outline"
