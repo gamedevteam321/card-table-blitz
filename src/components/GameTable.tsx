@@ -1,46 +1,18 @@
-
 import { useState, useEffect } from "react";
 import { Card, getCardValue } from "@/models/game";
 import CardComponent from "./Card";
 import { cn } from "@/lib/utils";
-import { useScreenSize } from "@/hooks/use-screen-size";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface GameTableProps {
-  cards: Card[];                            // Cards displayed on the table
-  animatingCard: Card | null;               // Card currently being animated
-  animatingPlayerPosition?: 'top' | 'left' | 'right' | 'bottom' | null; // Position of the player who played the animating card
+  cards: Card[];
+  animatingCard: Card | null;
+  animatingPlayerPosition?: 'top' | 'left' | 'right' | 'bottom' | null;
 }
 
 const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: GameTableProps) => {
-  const { screenSize, isSmallMobile } = useScreenSize();
-  const [displayedCard, setDisplayedCard] = useState<Card | null>(null);  // Current card to display
-  const [showAnimatedCard, setShowAnimatedCard] = useState(true);         // Control visibility of animated card
-  
-  // Adjust table height based on screen size
-  const getTableHeight = () => {
-    switch(screenSize) {
-      case 'small': return 'h-48';   // Small screen height
-      case 'medium': return 'h-56';  // Medium screen height
-      default: return 'h-64';        // Default/large screen height
-    }
-  };
-  
-  // When animation completes, show the card in the deck
-  useEffect(() => {
-    if (animatingCard) {
-      setShowAnimatedCard(true);
-      // After animation completes, remove the animated card and update displayed card
-      const timer = setTimeout(() => {
-        setShowAnimatedCard(false);
-        setDisplayedCard(animatingCard);
-      }, 600); // Match the animation duration from Card component
-      
-      return () => clearTimeout(timer);
-    } else {
-      // If no card is animating, show the top card from the deck
-      setDisplayedCard(cards.length > 0 ? cards[cards.length - 1] : null);
-    }
-  }, [animatingCard, cards]);
+  const isMobile = useIsMobile();
+  const [cardPosition, setCardPosition] = useState({ x: 0, y: 0 });
   
   // Helper function to get the full name of a card
   const getCardName = (card: Card) => {
@@ -59,18 +31,12 @@ const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: Gam
   };
 
   // Get the latest card to display
-  const latestCard = displayedCard || (cards.length > 0 ? cards[cards.length - 1] : null);
-
-  // Scale cards for small mobile devices
-  const cardScale = isSmallMobile ? "scale-75" : "";
+  const latestCard = animatingCard || (cards.length > 0 ? cards[cards.length - 1] : null);
 
   return (
-    <div className={cn(
-      "relative w-full flex items-center justify-center overflow-visible",
-      getTableHeight()
-    )}>
-      {/* Casino table surface with decorative pattern */}
-      <div className="absolute inset-0 bg-casino-dark rounded-xl opacity-90 z-0 table-surface">
+    <div className="relative w-full h-64 flex items-center justify-center">
+      <div className="absolute inset-0 bg-casino-dark rounded-xl opacity-90 z-0">
+        {/* Decorative pattern for the table */}
         <div className="w-full h-full opacity-30" 
           style={{
             backgroundImage: 'radial-gradient(circle at 20% 35%, rgba(76, 29, 149, 0.2) 0%, transparent 60%), radial-gradient(circle at 80% 30%, rgba(29, 78, 216, 0.2) 0%, transparent 60%)',
@@ -79,65 +45,62 @@ const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: Gam
         </div>
       </div>
       
-      <div className="relative z-10 flex flex-col items-center justify-center gap-4 w-full table-card-container">
+      <div className="relative z-10 flex flex-col items-center justify-center gap-4 w-full">
         {cards.length === 0 && !animatingCard ? (
-          /* Display message when there are no cards on the table */
           <div className="text-gray-400 text-sm">
             Waiting for players...
           </div>
         ) : (
           <>
-            <div className={cn(
-              "relative center-card-area",
-              isSmallMobile ? "h-24 w-18" : "h-32 w-24"
-            )}>
-              {/* Display the stack of cards on the table */}
-              {cards.map((card, index) => (
+            <div className="relative h-32 w-24">
+              {/* Display the stack of cards */}
+              {cards.map((card, index) => {
+                // Only show the top two cards with special styling
+                if (index >= cards.length - 2) {
+                  const isTopCard = index === cards.length - 1;
+                  const isSecondCard = index === cards.length - 2;
+                  
+                  return (
+                    <CardComponent 
+                      key={card.id} 
+                      card={card} 
+                      isTable={true} 
+                      style={{
+                        position: 'absolute',
+                        zIndex: isTopCard ? 2 : 1,
+                        transform: isSecondCard ? 
+                          `translateX(${Math.random() > 0.5 ? -10 : -10}px) rotate(${Math.random() > 0.5 ? -40 : -40}deg)` : 
+                          'none',
+                        transition: 'transform 0.3s ease-out'
+                      }}
+                      className={isTopCard ? "shadow-lg" : "opacity-90"}
+                    />
+                  );
+                }
+                return null;
+              })}
+              
+              {/* Display the animating card on top with enhanced animation */}
+              {animatingCard && (
                 <CardComponent 
-                  key={card.id} 
-                  card={card} 
-                  isTable={true} 
-                  style={{
-                    position: 'absolute',
-                    zIndex: index + 1,
-                    // Offset each card slightly for stack effect
-                    transform: `translateX(${index % 3 - 1}px) translateY(${index % 2}px) rotate(${(index % 5 - 2) * 3}deg)`
-                  }}
-                  className={cn(
-                    index === cards.length - 1 && !animatingCard ? "shadow-lg" : "",
-                    cardScale
-                  )}
-                />
-              ))}
-            </div>
-            
-            {/* Display the animating card on top with enhanced animation */}
-            {animatingCard && showAnimatedCard && (
-              <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center pointer-events-none z-50">
-                <CardComponent 
-                  key={`animating-${animatingCard.id}`} 
+                  key={animatingCard.id} 
                   card={animatingCard} 
                   isTable={true}
                   animationType="throw"
                   playerPosition={animatingPlayerPosition}
-                  className={cn("shadow-lg", cardScale)}
+                  className="shadow-lg z-50"
+                  playerCardElement={`player-card-${playerPositionToPlayerId(animatingPlayerPosition)}`}
                   style={{
                     position: 'absolute',
-                    zIndex: 999,
+                    zIndex: cards.length + 10,
                   }}
                 />
-              </div>
-            )}
+              )}
+            </div>
             
-            {/* Display the card name at the bottom */}
             {latestCard && (
-              <div className={cn(
-                "text-casino-gold bg-casino-dark/80 rounded-full mt-2 z-20",
-                isSmallMobile ? "text-xs px-2 py-0.5" : "text-sm font-medium px-3 py-1"
-              )}>
-                {isSmallMobile 
-                  ? `${latestCard.rank} of ${latestCard.suit.charAt(0).toUpperCase()}` // Shorter text for mobile
-                  : getCardName(latestCard)} {/* Full card name for larger screens */}
+              <div className="text-casino-gold text-sm font-medium bg-casino-dark/80 px-3 py-1 rounded-full mt-2">
+                {getCardName(latestCard)}
               </div>
             )}
           </>
@@ -145,6 +108,17 @@ const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: Gam
       </div>
     </div>
   );
+};
+
+// Helper function to convert position to player ID format
+const playerPositionToPlayerId = (position: 'top' | 'left' | 'right' | 'bottom' | null): string => {
+  switch (position) {
+    case 'bottom': return 'player-0';
+    case 'left': return 'player-1';
+    case 'top': return 'player-2';
+    case 'right': return 'player-3';
+    default: return '';
+  }
 };
 
 export default GameTable;

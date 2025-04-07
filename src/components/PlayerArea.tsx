@@ -1,27 +1,27 @@
-
-import { Player } from "@/models/game";
+import { Button } from "@/components/ui/button";
+import { Player, Card as CardType } from "@/models/game";
 import CardComponent from "./Card";
 import { cn } from "@/lib/utils";
-import { useRef, useState, useEffect } from "react";
+import { RotateCcw } from "lucide-react";
+import { useRef, useState } from "react";
+import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
-import PlayerAvatar from "./PlayerAvatar";
-import PlayerControls from "./PlayerControls";
-import { useScreenSize } from "@/hooks/use-screen-size";
+import CardBack from './CardBack';
 
 interface PlayerAreaProps {
-  player: Player;                          // Player data
-  isCurrentPlayer: boolean;                // Whether this is the active player
-  onHit: () => void;                       // Handler for playing a card
-  onShuffle: () => void;                   // Handler for shuffling cards
-  timeRemaining: number;                   // Time remaining for player's turn
-  orientation: 'horizontal' | 'vertical';  // Layout orientation
-  onCardHitDone?: () => void;              // Callback for when a card hit animation completes
-  lastActionType?: 'none' | 'hit' | 'capture' | 'throw'; // Type of last action performed
-  isDealing?: boolean;                     // Whether cards are being dealt
-  positionClass?: 'top' | 'left' | 'right' | 'bottom' | 'top-left' | 'top-right' | string; // Position relative to table
-  isCapturing?: boolean;                   // Whether player is capturing cards
-  isMobile?: boolean;                      // Whether we're on a mobile device
-  isAnimating?: boolean;                   // Whether animation is in progress
+  player: Player;
+  isCurrentPlayer: boolean;
+  onHit: () => void;
+  onShuffle: () => void;
+  timeRemaining: number;
+  orientation: 'horizontal' | 'vertical';
+  onCardHitDone?: () => void;
+  lastActionType?: 'none' | 'hit' | 'capture' | 'throw';
+  isDealing?: boolean;
+  positionClass?: string;
+  isCapturing?: boolean;
+  isMobile?: boolean;
+  isAnimating?: boolean;
 }
 
 const PlayerArea = ({
@@ -40,101 +40,99 @@ const PlayerArea = ({
   isAnimating = false
 }: PlayerAreaProps) => {
   const { name, cards, shufflesRemaining, status } = player;
-  const topCard = cards[0];                          // The top card in player's hand
-  const cardRef = useRef<HTMLDivElement>(null);      // Reference to the card element
-  const [localAnimating, setLocalAnimating] = useState(false); // Local animation state
-  const [hideTopCard, setHideTopCard] = useState(false);       // Whether to hide the top card during animation
-  const { isSmallMobile } = useScreenSize();                   // Screen size context
-  
-  // Determine if we should use compact mode based on screen size and position
-  const useCompactMode = isSmallMobile || 
-    (isMobile && (positionClass === 'left' || positionClass === 'right'));
-  
-  // Handle card throwing animation
-  useEffect(() => {
-    if (isAnimating && lastActionType === 'throw') {
-      setHideTopCard(true);
-      const timer = setTimeout(() => {
-        setHideTopCard(false);
-      }, 700); // Match animation duration in Card component
-      return () => clearTimeout(timer);
-    }
-  }, [isAnimating, lastActionType]);
+  const topCard = cards[0];
+  const restOfCards = cards.slice(1);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [localAnimating, setLocalAnimating] = useState(false);
 
-  // Handle card hit action with animation
   const handleHit = () => {
-    // Prevent actions during animations or when not allowed
     if (localAnimating || isAnimating || !isCurrentPlayer || cards.length === 0 || status !== 'active' || isDealing) return;
     
     setLocalAnimating(true);
-    setHideTopCard(true);
     // Let the animation play before actually executing the hit logic
     setTimeout(() => {
       onHit();
-      setTimeout(() => {
-        setLocalAnimating(false);
-        setHideTopCard(false);
-      }, 700); // Match animation duration in Card component
+      setTimeout(() => setLocalAnimating(false), 500);
     }, 300);
   };
 
-  // Determine avatar background and ring colors
+  // Calculate the color values based on active/inactive state
+  const cardBgGradient = isCurrentPlayer 
+    ? "bg-transparent" 
+    : "bg-transparent";
+
   const avatarBg = isCurrentPlayer ? player.avatarColor : `${player.avatarColor.split('-')[0]}-700`;
   const avatarRingColor = isCurrentPlayer ? "ring-yellow-300" : "ring-white";
 
-  // Scale the card for compact mode
-  const cardScale = useCompactMode ? "scale-65" : isMobile ? "scale-75" : "";
-
   return (
     <Card className={cn(
-      "transition-all duration-500 ease-in-out border-0 shadow-none overflow-hidden bg-transparent",
-      isCurrentPlayer ? "opacity-100" : "opacity-90",
-      isCapturing && "ring-2 ring-yellow-400 shadow-lg", // Highlight when capturing
-      useCompactMode ? "p-1" : orientation === 'vertical' ? "p-2" : "p-3",
-      useCompactMode ? "max-w-[180px]" : "max-w-[220px]",
+      "transition-all duration-500 ease-in-out border-0 shadow-none overflow-hidden select-none",
+      isCurrentPlayer ? "" : "opacity-90",
+      isCapturing && "ring-2 ring-yellow-400 shadow-lg",
+      cardBgGradient,
+      orientation === 'vertical' ? "p-2" : "p-3",
+      isCurrentPlayer ? "shadow-purple-500/20" : "shadow-gray-900/10",
+      "max-w-[220px]" // Added max width to make cards more compact
     )}>
       <CardContent className={cn(
-        useCompactMode ? "p-1" : "p-2",
-        "flex gap-1",
+        "p-2 select-none",
+        "flex gap-2", // Reduced gap
         orientation === 'vertical' ? "flex-col items-center" : "flex-row items-center",
       )}>
-        {/* Player avatar section */}
+        {/* Avatar Section */}
         <div className={cn(
           "flex flex-col items-center",
           orientation === 'vertical' ? "mb-1" : "mr-2"
         )}>
-          <PlayerAvatar 
-            name={name}
-            avatarBg={avatarBg}
-            ringColor={avatarRingColor}
-            isCurrentPlayer={isCurrentPlayer}
-            isCompact={useCompactMode}
-          />
+          <div className={cn(
+            "rounded-full flex items-center justify-center font-bold text-white",
+            avatarBg,
+            "ring-2",
+            avatarRingColor,
+            "shadow-inner",
+            isCurrentPlayer 
+              ? "w-8 h-8 text-xs transition-all" 
+              : "w-8 h-8 text-xs transition-all"
+          )}>
+            {name[0].toUpperCase()}
+          </div>
+          
+          <div className="flex flex-col items-center">
+            <span className={cn(
+              "font-medium truncate mt-1",
+              isCurrentPlayer ? "text-sm sm:text-base text-white" : "text-sm sm:text-base text-white"
+            )}>
+              {name}
+            </span>
+          </div>
         </div>
 
-        {/* Player cards section */}
+        {/* Middle section with card stack */}
         <div className={cn(
-          "relative flex-shrink-0 player-card-stack flex flex-col items-center gap-2",
+          "relative flex-shrink-0 player-card-stack",
+          isCurrentPlayer ? "" : "scale-90"
         )} ref={cardRef}>
           <div className="relative">
-            {/* Show card stack if player has more than one card */}
+            {/* Card stack representation (excluding top card) */}
             {cards.length > 1 && (
               <div 
                 className={cn(
-                  "w-16 h-24 rounded-md card-back",
-                  cardScale,
-                  "after:content-[''] after:absolute after:top-1 after:left-1 after:w-full after:h-full after:bg-indigo-900 after:rounded-md after:-z-10"
+                  "w-16 h-24",
+                  isMobile ? "scale-75" : "",
+                  "relative"
                 )}
-              />
+              >
+                <CardBack />
+              </div>
             )}
             
+            {/* Top card - separate entity for animations */}
             {cards.length > 0 ? (
-              /* Display top card or empty space if animation is in progress */
               <div 
                 className={cn(
                   "cursor-pointer",
                   cards.length > 1 ? "absolute top-0 left-0" : "relative",
-                  (isAnimating && lastActionType === 'throw') || hideTopCard ? "opacity-0 pointer-events-none" : "opacity-100",
+                  isAnimating && lastActionType === 'throw' ? "opacity-0" : "opacity-100"
                 )}
                 onClick={handleHit}
                 data-player-position={positionClass}
@@ -144,59 +142,92 @@ const PlayerArea = ({
                   card={topCard} 
                   faceDown={true}
                   isDealing={isDealing}
+                  animationType={lastActionType === 'throw' ? 'throw' : (lastActionType === 'capture' ? 'capture' : 'none')}
                   className={cn(
                     isCapturing && "shadow-glow-card",
-                    cardScale,
-                    isCurrentPlayer && "hover:translate-y-[-5px] transition-transform"
+                    isMobile ? "scale-75" : "",
+                    isCurrentPlayer && "hover:scale-105 transition-transform",
+                    lastActionType === 'throw' && "animate-card-throw"
                   )}
-                  playerPosition={positionClass as 'top' | 'left' | 'right' | 'bottom' | 'top-left' | 'top-right' | null}
+                  playerPosition={positionClass === 'top' ? 'top' : 
+                                 positionClass === 'left' ? 'left' : 
+                                 positionClass === 'right' ? 'right' : 'bottom'}
+                  playerCardElement={`player-card-${player.id}`}
                 />
               </div>
             ) : (
-              /* Display empty card slot if player has no cards */
               <div className={cn(
                 "border border-dashed rounded-md flex items-center justify-center",
                 isCurrentPlayer ? "border-indigo-300" : "border-gray-600",
-                useCompactMode ? "w-7 h-10 text-[8px]" : isMobile ? "w-8 h-12 text-[8px]" : "w-12 h-18 sm:w-16 sm:h-24 text-xs",
+                isMobile ? "w-8 h-12 text-[8px]" : "w-12 h-18 sm:w-16 sm:h-24 text-xs",
               )}>
                 <span className={isCurrentPlayer ? "text-indigo-200" : "text-gray-500"}>No cards</span>
               </div>
             )}
             
-            {/* Card count badge for current player */}
             {isCurrentPlayer && cards.length > 0 && (
-              <div className={cn(
-                "absolute -top-2 -right-2 bg-amber-500 text-white font-bold rounded-full flex items-center justify-center shadow-md border-2 border-white z-20",
-                useCompactMode ? "w-5 h-5 text-[9px]" : "w-6 h-6 text-xs"
-              )}>
+              <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-[#16A34A] text-white font-bold rounded-full flex items-center justify-center shadow-md w-6 h-6 text-xs border-2 border-white z-20">
                 {cards.length}
               </div>
             )}
           </div>
-          
-          {/* Player controls (hit/shuffle buttons) */}
-          <PlayerControls
-            isCurrentPlayer={isCurrentPlayer}
-            onHit={handleHit}
-            onShuffle={onShuffle}
-            shufflesRemaining={shufflesRemaining}
-            cardsCount={cards.length}
-            isDisabled={status !== 'active'}
-            isAnimating={localAnimating || isAnimating}
-            isDealing={isDealing}
-            isCompact={useCompactMode}
-          />
         </div>
 
-        {/* Turn timer progress bar for current player */}
-        {isCurrentPlayer && status === 'active' && (
+        {/* Controls - Only show for current player or in compact form for others */}
+        {isCurrentPlayer ? (
           <div className={cn(
-            "w-full relative",
-            useCompactMode ? "mt-0.5" : "mt-1"
+            "flex gap-2",
+            orientation === 'vertical' ? "flex-row" : "flex-col"
           )}>
-            <div className="w-full bg-blue-900/50 h-1.5 rounded-full overflow-hidden">
+            <Button
+              variant="default"
+              size={isMobile ? "sm" : "default"}
+              disabled={!isCurrentPlayer || cards.length === 0 || status !== 'active' || localAnimating || isAnimating || isDealing}
+              onClick={handleHit}
+              className={cn(
+                "bg-[#16A34A] hover:bg-[#16A34A]/90 text-white transition-all shadow-md",
+                isMobile ? "text-[10px] px-2 py-1 h-7" : "text-xs sm:text-sm px-3 py-1.5",
+                isCurrentPlayer && status === 'active' && "animate-pulse"
+              )}
+            >
+              Hit
+            </Button>
+            <Button
+              variant="outline"
+              size={isMobile ? "sm" : "default"}
+              disabled={!isCurrentPlayer || shufflesRemaining <= 0 || cards.length === 0 || status !== 'active' || isDealing || isAnimating}
+              onClick={onShuffle}
+              className={cn(
+                "border-amber-400 bg-transparent text-amber-100 hover:bg-transparent",
+                isMobile ? "text-[10px] px-2 py-1 h-7" : "text-xs sm:text-sm px-2 py-1"
+              )}
+            >
+              <RotateCcw className={cn(
+                isMobile ? "w-3 h-3 mr-1" : "w-3 h-3 sm:w-4 sm:h-4 mr-1"
+              )} />
+              {shufflesRemaining}
+            </Button>
+          </div>
+        ) : (
+          <div className={cn(
+            "text-[10px] text-gray-400 flex items-center gap-1 mt-1 bg-transparent px-2 py-0.5 rounded-full",
+          )}>
+            {shufflesRemaining > 0 && (
+              <>
+                <RotateCcw className="w-2 h-2" />
+                <span>{shufflesRemaining}</span>
+              </>
+            )}
+            <span className="text-gray-300">{cards.length}c</span>
+          </div>
+        )}
+
+        {/* Turn timer - Only shown for active player */}
+        {isCurrentPlayer && status === 'active' && (
+          <div className="w-full mt-1 relative">
+            <div className="w-full bg-transparent h-1.5 rounded-full overflow-hidden">
               <div 
-                className="bg-gradient-to-r from-amber-300 to-amber-500 h-1.5 rounded-full transition-all duration-100"
+                className="bg-transparent h-1.5 rounded-full transition-all duration-100"
                 style={{ width: `${(timeRemaining / 10) * 100}%` }}
               />
             </div>
