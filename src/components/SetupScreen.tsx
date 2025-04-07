@@ -13,7 +13,9 @@ const SetupScreen = ({
   onStartGame
 }: SetupScreenProps) => {
   const [playerCount, setPlayerCount] = useState(2);
-  const [playerNames, setPlayerNames] = useState<string[]>(Array(4).fill(""));
+  const [playerNames, setPlayerNames] = useState<string[]>([
+    "Aditya", "Priya", "Rahul", "Neha"
+  ]);
   const [error, setError] = useState<string>("");
 
   const handlePlayerCountChange = (value: string) => {

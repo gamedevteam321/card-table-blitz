@@ -437,6 +437,12 @@ const Game = () => {
       
       const currentPlayer = prev.players[prev.currentPlayerIndex];
       const updatedPlayers = [...prev.players];
+
+      // Set animation origin for auto-play
+      if (currentPlayer) {
+        const position = playerPositions[currentPlayer.id] as 'top' | 'left' | 'right' | 'bottom' | null;
+        setThrowingPlayerPosition(position);
+      }
       
       const newAutoPlayCount = currentPlayer.autoPlayCount + 1;
       
@@ -623,12 +629,35 @@ const Game = () => {
   }, []);
 
   const handleGameOver = useCallback(() => {
-        setGameState(prev => ({
-          ...prev,
-          status: 'finished',
-      message: 'Game Over!',
-      turnStartTime: Date.now()
-    }));
+    setGameState(prev => {
+      // Find the player with the most cards
+      let winner = prev.players[0];
+      for (let i = 1; i < prev.players.length; i++) {
+        if (prev.players[i].cards.length > winner.cards.length) {
+          winner = prev.players[i];
+        }
+      }
+      
+      // Check for ties (multiple players with the same highest card count)
+      const winners = prev.players.filter(p => p.cards.length === winner.cards.length);
+
+      // If there's a tie, the game ends in a draw (or handle tie-breaking logic if needed)
+      // For now, let's just pick the first one if tied, or handle as draw later.
+      // Let's assume the first player in the winners array is the winner for simplicity
+      const finalWinner = winners[0];
+
+      return {
+        ...prev,
+        status: 'finished',
+        message: `Game Over! ${finalWinner.name} wins with the most cards!`, // Update message
+        winner: finalWinner, // Set the winner state
+        // Update player statuses
+        players: prev.players.map(p => ({
+          ...p,
+          status: p.id === finalWinner.id ? 'winner' : 'loser'
+        }))
+      };
+    });
   }, []);
 
   const resetGame = useCallback(() => {
@@ -659,6 +688,62 @@ const Game = () => {
       }
     }
   }, [gameState.currentPlayerIndex, gameState.status, displayMessage]);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    
+    if (gameState.status === 'playing' && !isPaused && !isDealing && !isDistributing) {
+      timer = setInterval(() => {
+        const currentTime = Date.now();
+        const turnElapsed = (currentTime - gameState.turnStartTime) / 1000;
+        const newTimeRemaining = Math.max(0, TURN_TIME_LIMIT - turnElapsed);
+        
+        setTimeRemaining(Math.ceil(newTimeRemaining));
+        
+        // Auto-play if time runs out
+        if (newTimeRemaining <= 0) {
+          const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+          if (currentPlayer && currentPlayer.status === 'active') {
+            handleAutoPlay();
+          }
+        }
+      }, 100);
+    }
+    
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [gameState.status, gameState.turnStartTime, isPaused, isDealing, isDistributing, handleAutoPlay]);
+
+  // Game timer effect
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    
+    if (gameState.status === 'playing' && !isPaused && !isDealing && !isDistributing) {
+      timer = setInterval(() => {
+        setGameTimeRemaining(prev => {
+          const newTime = Math.max(0, prev - 1);
+          if (newTime === 0) {
+            // Game over when time runs out
+            handleGameOver();
+          }
+          return newTime;
+        });
+      }, 1000);
+    }
+    
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [gameState.status, isPaused, isDealing, isDistributing, handleGameOver]);
+
+  // Reset timers when distribution completes
+  useEffect(() => {
+    if (!isDistributing && gameState.status === 'playing') {
+      setTimeRemaining(TURN_TIME_LIMIT);
+      setGameTimeRemaining(GAME_TIME_LIMIT);
+    }
+  }, [isDistributing, gameState.status]);
 
   if (gameState.status === 'waiting') {
     return (

@@ -66,7 +66,7 @@ const PlayerArea = ({
 
   return (
     <Card className={cn(
-      "transition-all duration-500 ease-in-out border-0 shadow-none overflow-hidden select-none",
+      "transition-all duration-500 ease-in-out border-0 shadow-none select-none",
       isCurrentPlayer ? "" : "opacity-90",
       isCapturing && "ring-2 ring-yellow-400 shadow-lg",
       cardBgGradient,
@@ -221,19 +221,25 @@ const PlayerArea = ({
             <span className="text-gray-300">{cards.length}c</span>
           </div>
         )}
-
-        {/* Turn timer - Only shown for active player */}
-        {isCurrentPlayer && status === 'active' && (
-          <div className="w-full mt-1 relative">
-            <div className="w-full bg-transparent h-1.5 rounded-full overflow-hidden">
-              <div 
-                className="bg-transparent h-1.5 rounded-full transition-all duration-100"
-                style={{ width: `${(timeRemaining / 10) * 100}%` }}
-              />
-            </div>
-          </div>
-        )}
       </CardContent>
+
+      {/* Turn timer - Moved outside CardContent to prevent clipping */}
+      {isCurrentPlayer && status === 'active' && (
+        <div className="w-full mt-1 px-2 pb-2 relative">
+          <div className="w-full bg-gray-700 h-2 rounded-full overflow-hidden">
+            <div 
+              className="bg-gradient-to-r from-red-500 to-green-500 h-2 rounded-full transition-all duration-100"
+              style={{ 
+                width: `${(timeRemaining / 10) * 100}%`,
+                transform: 'scaleX(-1)'
+              }}
+            />
+          </div>
+          <div className="absolute top-3 left-1/2 transform -translate-x-1/2 text-xs text-white">
+            {timeRemaining}s
+          </div>
+        </div>
+      )}
     </Card>
   );
 };
