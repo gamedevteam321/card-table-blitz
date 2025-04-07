@@ -52,7 +52,7 @@ const GameTable = ({ cards, animatingCard, animatingPlayerPosition = null }: Gam
           </div>
         ) : (
           <>
-            <div className="relative h-32 w-24">
+            <div className="relative h-24 w-16">
               {/* Display the stack of cards */}
               {cards.map((card, index) => {
                 // Only show the top two cards with special styling
