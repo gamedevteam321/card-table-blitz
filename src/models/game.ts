@@ -6,6 +6,9 @@ export interface Card {
   rank: CardRank;
   id: string; // unique identifier for animation purposes
   animationState?: 'throwing' | 'capturing' | 'placed' | 'none';
+  value: string;
+  position: number;
+  captured: boolean;
 }
 
 export type PlayerStatus = 'active' | 'inactive' | 'kicked' | 'winner' | 'loser';
@@ -14,10 +17,11 @@ export interface Player {
   id: string;
   name: string;
   cards: Card[];
-  status: PlayerStatus;
+  status: 'active' | 'inactive' | 'winner' | 'loser' | 'kicked';
   shufflesRemaining: number;
   autoPlayCount: number;
   avatarColor: string;
+  score: number;
 }
 
 export interface GameState {
@@ -46,7 +50,10 @@ export const createDeck = (): Card[] => {
         suit,
         rank,
         id: `${rank}-${suit}-${Math.random().toString(36).substring(2, 9)}`,
-        animationState: 'none'
+        animationState: 'none',
+        value: rank,
+        position: 0,
+        captured: false
       });
     });
   });
@@ -86,7 +93,7 @@ export const generatePlayerColors = (count: number): string[] => {
   ];
   
   // Shuffle colors and take the first 'count' colors
-  return shuffleDeck(colors.map(color => ({ suit: 'hearts' as CardSuit, rank: 'A' as CardRank, id: color })))
+  return shuffleDeck(colors.map(color => ({ suit: 'hearts' as CardSuit, rank: 'A' as CardRank, id: color, value: 'A', position: 0, captured: false })))
     .slice(0, count)
     .map(card => card.id);
 };

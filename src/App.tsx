@@ -1,6 +1,12 @@
-import { HashRouter as Router, Routes, Route } from 'react-router-dom';
-import HomePage from './pages/HomePage';
-import Index from './pages/Index';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './contexts/AuthContext';
+import Home from './pages/Home';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+import CreateRoom from './pages/CreateRoom';
+import JoinRoom from './pages/JoinRoom';
+import Room from './pages/Room';
+import PrivateRoute from './components/PrivateRoute';
 import { Toaster } from './components/ui/toaster';
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,24 +15,51 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-function App() {
+const App = () => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <Router>
-          <div className="min-h-screen bg-casino-dark">
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/setup" element={<Index />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </div>
-        </Router>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <AuthProvider>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <Router>
+            <div className="min-h-screen bg-casino-dark">
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route
+                  path="/create-room"
+                  element={
+                    <PrivateRoute>
+                      <CreateRoom />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/join-room"
+                  element={
+                    <PrivateRoute>
+                      <JoinRoom />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/room/:roomId"
+                  element={
+                    <PrivateRoute>
+                      <Room />
+                    </PrivateRoute>
+                  }
+                />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </div>
+          </Router>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </AuthProvider>
   );
-}
+};
 
 export default App;
