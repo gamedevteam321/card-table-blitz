@@ -62,7 +62,7 @@ const PlayingState = ({
   return (
     <div className="w-full max-w-7xl mx-auto flex flex-col h-full">
       <div className="bg-casino p-2 rounded-lg shadow-lg border border-casino-table mb-4 flex justify-between items-center">
-        <h1 className="text-base sm:text-xl font-bold text-casino-gold">Satte pe Satta</h1>
+        <h1 className="text-base sm:text-xl font-bold text-casino-gold">Patte pe Patta</h1>
         <div className="text-xs sm:text-sm text-gray-400">
           Game time: {Math.floor(gameTimeRemaining / 60)}:{(gameTimeRemaining % 60).toString().padStart(2, '0')}
         </div>

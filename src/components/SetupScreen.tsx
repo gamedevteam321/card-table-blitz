@@ -4,6 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useState } from "react";
 import { generatePlayerColors } from "@/models/game";
 import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 interface SetupScreenProps {
   onStartGame: (playerNames: string[], playerCount: number) => void;
@@ -14,7 +15,7 @@ const SetupScreen = ({
 }: SetupScreenProps) => {
   const [playerCount, setPlayerCount] = useState(2);
   const [playerNames, setPlayerNames] = useState<string[]>([
-    "Aditya", "Priya", "Rahul", "Neha"
+    "Player 1", "Player 2", "Player 3", "Player 4"
   ]);
   const [error, setError] = useState<string>("");
 
@@ -55,68 +56,75 @@ const SetupScreen = ({
   };
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="max-w-md w-full mx-auto p-6 bg-casino rounded-lg border border-casino-table shadow-lg"
+    <div
+      className="max-w-2xl w-full mx-auto p-6 sm:p-8 bg-casino rounded-lg border border-casino-table shadow-lg"
     >
-      <h2 className="text-2xl font-bold mb-6 text-center text-casino-gold">Satte pe Satta</h2>
+      <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center text-white">Patte pe Patta</h2>
       
       <form onSubmit={handleSubmit}>
-        <div className="mb-6">
-          <label className="block text-sm font-medium mb-2 text-white">Number of Players</label>
-          <Select onValueChange={handlePlayerCountChange} defaultValue={playerCount.toString()}>
-            <SelectTrigger className="bg-casino-dark border-casino-table text-white">
-              <SelectValue placeholder="Select player count" />
-            </SelectTrigger>
-            <SelectContent className="bg-casino-dark border-casino-table">
-              <SelectItem value="2">2 Players</SelectItem>
-              <SelectItem value="3">3 Players</SelectItem>
-              <SelectItem value="4">4 Players</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        
-        <div className="space-y-4 mb-6">
-          <h3 className="text-sm font-medium mb-2 text-white">Player Names</h3>
-          
-          {Array.from({ length: playerCount }).map((_, i) => (
-            <motion.div 
-              key={i}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.1 }}
-            >
-              <label className="block text-xs text-gray-300 mb-1">Player {i + 1}</label>
-              <Input 
-                value={playerNames[i]} 
-                onChange={e => handleNameChange(i, e.target.value)} 
-                className="bg-casino-dark border-casino-table text-white placeholder-gray-500"
-                placeholder={`Enter Player ${i + 1} name`}
-                maxLength={15}
-              />
-            </motion.div>
-          ))}
-        </div>
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <label className="text-white text-lg sm:text-xl font-medium">
+              Number of Players:
+            </label>
+            <div className="flex items-center gap-4">
+              <button
+                type="button"
+                onClick={() => setPlayerCount(Math.max(2, playerCount - 1))}
+                className={cn(
+                  "w-10 h-10 rounded-[3px] bg-[#00a92d] hover:bg-[#00a92d]/70 text-white text-xl font-bold flex items-center justify-center transition-colors",
+                  playerCount === 2 && "text-xs"
+                )}
+                disabled={playerCount === 2}
+              >
+                {playerCount === 2 ? "MIN" : "-"}
+              </button>
+              <span className="text-white text-xl font-bold min-w-[2rem] text-center">
+                {playerCount}
+              </span>
+              <button
+                type="button"
+                onClick={() => setPlayerCount(Math.min(4, playerCount + 1))}
+                className={cn(
+                  "w-10 h-10 rounded-[3px] bg-[#00a92d] hover:bg-[#00a92d]/70 text-white text-xl font-bold flex items-center justify-center transition-colors",
+                  playerCount === 4 && "text-xs"
+                )}
+                disabled={playerCount === 4}
+              >
+                {playerCount === 4 ? "MAX" : "+"}
+              </button>
+            </div>
+          </div>
 
-        {error && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-red-400 text-sm mb-4 text-center"
-          >
-            {error}
-          </motion.div>
-        )}
-        
-        <Button 
-          type="submit" 
-          className="w-full bg-[#16A34A] hover:bg-[#16A34A]/90 text-white font-medium"
-        >
-          Start Game
-        </Button>
+          <div className="space-y-4">
+            {Array.from({ length: playerCount }).map((_, index) => (
+              <div key={index} className="flex flex-col sm:flex-row items-center gap-4">
+                <label className="text-white text-lg sm:text-xl font-medium min-w-[8rem]">
+                  Player {index + 1}:
+                </label>
+                <input
+                  type="text"
+                  value={playerNames[index] || ''}
+                  onChange={(e) => handleNameChange(index, e.target.value)}
+                  placeholder={`Enter Player ${index + 1} name`}
+                  className="flex-1 w-full sm:w-auto px-4 py-2 rounded-lg bg-casino-dark/50 border border-[#00a92d]/30 text-white placeholder-white/50 focus:outline-none focus:border-[#00a92d] focus:ring-1 focus:ring-[#00a92d]"
+                  required
+                />
+              </div>
+            ))}
+          </div>
+
+          <div className="flex justify-center pt-4">
+            <button
+              type="submit"
+              className="w-full px-8 py-3 bg-[#00a92d] hover:bg-[#00a92d]/90 text-white font-bold rounded-[10px] text-lg transition-colors"
+            >
+              Start Game
+            </button>
+          </div>
+        </div>
       </form>
-    </motion.div>
+    </div>
   );
 };
 

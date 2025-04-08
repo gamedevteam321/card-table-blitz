@@ -230,8 +230,7 @@ const PlayerArea = ({
             <div 
               className="bg-gradient-to-r from-red-500 to-green-500 h-2 rounded-full transition-all duration-100"
               style={{ 
-                width: `${(timeRemaining / 10) * 100}%`,
-                transform: 'scaleX(-1)'
+                width: `${(timeRemaining / 10) * 100}%`
               }}
             />
           </div>

@@ -4,7 +4,7 @@ import path from "path";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  base: '/card-table-blitz/', // Always use the repository name as base path
+  base: mode === 'production' ? '/card-table-blitz/' : '/',
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
