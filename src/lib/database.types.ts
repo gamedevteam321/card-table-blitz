@@ -18,6 +18,9 @@ export interface Database {
           created_at: string
           updated_at: string
           code: string
+          amount_stack: number
+          max_players: number
+          waiting_time: number
         }
         Insert: {
           id?: string
@@ -27,6 +30,9 @@ export interface Database {
           created_at?: string
           updated_at?: string
           code: string
+          amount_stack?: number
+          max_players?: number
+          waiting_time?: number
         }
         Update: {
           id?: string
@@ -36,6 +42,9 @@ export interface Database {
           created_at?: string
           updated_at?: string
           code?: string
+          amount_stack?: number
+          max_players?: number
+          waiting_time?: number
         }
       }
       moves: {
@@ -106,6 +115,32 @@ export interface Database {
           id?: string
           username?: string | null
           avatar_url?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      player_readiness: {
+        Row: {
+          id: string
+          room_id: string
+          player_id: string
+          is_ready: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          room_id: string
+          player_id: string
+          is_ready?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          room_id?: string
+          player_id?: string
+          is_ready?: boolean
           created_at?: string
           updated_at?: string
         }

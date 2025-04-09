@@ -6,6 +6,7 @@ import Signup from './pages/Signup';
 import CreateRoom from './pages/CreateRoom';
 import JoinRoom from './pages/JoinRoom';
 import Room from './pages/Room';
+import ResetPassword from './pages/ResetPassword';
 import PrivateRoute from './components/PrivateRoute';
 import { Toaster } from './components/ui/toaster';
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -28,6 +29,7 @@ const App = () => {
                 <Route path="/" element={<Home />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
                 <Route
                   path="/create-room"
                   element={

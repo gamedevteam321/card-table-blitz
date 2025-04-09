@@ -193,39 +193,40 @@ const CardComponent = ({
         onClick={onClick}
         style={style}
         className={cn(
-          "w-16 h-24 rounded-md shadow cursor-pointer transition-transform duration-200",
-          isTable ? "card-shadow border-white" : "hover:scale-105",
+          "w-16 h-24 rounded-md shadow-lg cursor-pointer transition-all duration-200",
+          isTable ? "card-shadow border-white" : "hover:scale-105 hover:shadow-xl",
           isDealing ? "animate-card-deal" : "",
           className
         )}
         initial={selectedAnimation.initial}
         animate={selectedAnimation.animate}
-        exit={{ opacity: 0, scale: 0.8, transition: { duration: 0, ease: "easeOut" } }}
+        exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.2, ease: "easeOut" } }}
         whileHover={{ 
           scale: 1.05,
-          transition: { duration: 0, ease: "easeOut" }
+          y: -5,
+          transition: { duration: 0.2, ease: "easeOut" }
         }}
         whileTap={{ 
           scale: 0.95,
-          transition: { duration: 0, ease: "easeOut" }
+          transition: { duration: 0.1, ease: "easeOut" }
         }}
       >
         {faceDown ? (
           <CardBack />
         ) : (
-          <div className="flex flex-col h-full p-1 bg-white rounded-md">
-            <div className={cn("text-sm font-bold", getSuitColor(card.suit))}>
-              {getRankDisplay(card.rank)}
-              <span className="ml-1">{getSuitSymbol(card.suit)}</span>
+          <div className="flex flex-col h-full p-1 bg-white rounded-md border-2 border-gray-200">
+            <div className={cn("text-sm font-bold flex items-center justify-between px-1", getSuitColor(card.suit))}>
+              <span>{getRankDisplay(card.rank)}</span>
+              <span>{getSuitSymbol(card.suit)}</span>
             </div>
             <div className="flex-1 flex items-center justify-center">
-              <span className={cn("text-3xl", getSuitColor(card.suit))}>
+              <span className={cn("text-4xl", getSuitColor(card.suit))}>
                 {getSuitSymbol(card.suit)}
               </span>
             </div>
-            <div className={cn("text-sm font-bold self-end rotate-180", getSuitColor(card.suit))}>
-              {getRankDisplay(card.rank)}
-              <span className="ml-1">{getSuitSymbol(card.suit)}</span>
+            <div className={cn("text-sm font-bold self-end rotate-180 flex items-center justify-between px-1", getSuitColor(card.suit))}>
+              <span>{getRankDisplay(card.rank)}</span>
+              <span>{getSuitSymbol(card.suit)}</span>
             </div>
           </div>
         )}

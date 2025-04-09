@@ -56,19 +56,19 @@ interface GameProps {
 const createPlayers = (count: number, deck: Card[]): Player[] => {
   const colors = generatePlayerColors(count);
   const cardsPerPlayer = Math.floor(deck.length / count);
-  const players: Player[] = [];
-  
-  for (let i = 0; i < count; i++) {
-    const playerCards = deck.slice(i * cardsPerPlayer, (i + 1) * cardsPerPlayer);
+    const players: Player[] = [];
     
-    players.push({
-      id: `player-${i}`,
+  for (let i = 0; i < count; i++) {
+      const playerCards = deck.slice(i * cardsPerPlayer, (i + 1) * cardsPerPlayer);
+      
+      players.push({
+        id: `player-${i}`,
       name: `Player ${i + 1}`,
-      cards: playerCards,
-      status: 'active',
-      shufflesRemaining: 1,
-      autoPlayCount: 0,
-      avatarColor: colors[i],
+        cards: playerCards,
+        status: 'active',
+        shufflesRemaining: 1,
+        autoPlayCount: 0,
+        avatarColor: colors[i],
       score: 0
     });
   }
@@ -95,7 +95,7 @@ const getTargetPosition = (playerPosition: string) => {
 export function Game({ roomId, isHost }: GameProps) {
   const [gameState, setGameState] = useState<GameState>({
     players: [],
-    tableCards: [],
+      tableCards: [],
     myCards: [],
     currentTurn: ''
   });
@@ -236,7 +236,7 @@ export function Game({ roomId, isHost }: GameProps) {
   if (loading) return <div>Loading game...</div>;
   if (error) return <div>Error: {error}</div>;
 
-    return (
+  return (
     <div className="min-h-screen bg-gradient-to-b from-casino-dark to-casino-darker p-4">
       <div className="max-w-6xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -263,7 +263,7 @@ export function Game({ roomId, isHost }: GameProps) {
                   </h3>
                   <div className="text-casino-light">
                     Cards: {player.cards}
-          </div>
+        </div>
         </div>
                 {player.id === currentUser?.id && (
                   <div className="flex flex-wrap gap-2">
@@ -283,8 +283,8 @@ export function Game({ roomId, isHost }: GameProps) {
                 )}
               </motion.div>
             ))}
-            </div>
-            
+        </div>
+        
           {/* Game Table */}
           <div className="bg-casino-darker/50 rounded-xl p-6">
             <h3 className="text-xl font-semibold text-casino-gold mb-4">Table</h3>

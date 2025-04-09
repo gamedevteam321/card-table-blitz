@@ -8,6 +8,7 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [resetEmailSent, setResetEmailSent] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -30,6 +31,25 @@ const Login = () => {
     }
   };
 
+  const handleResetPassword = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) throw error;
+      setResetEmailSent(true);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'An error occurred while sending reset email');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-casino-dark flex flex-col items-center justify-center p-4 pt-24">
       <motion.div
@@ -44,6 +64,12 @@ const Login = () => {
           {error && (
             <div className="bg-red-500/10 border border-red-500/30 text-red-500 px-4 py-3 rounded-[10px] mb-4 text-sm">
               {error}
+            </div>
+          )}
+
+          {resetEmailSent && (
+            <div className="bg-green-500/10 border border-green-500/30 text-green-500 px-4 py-3 rounded-[10px] mb-4 text-sm">
+              Password reset email sent! Please check your inbox.
             </div>
           )}
 
@@ -85,12 +111,22 @@ const Login = () => {
             </button>
           </form>
 
-          <div className="mt-4 text-center">
+          <div className="mt-4 text-center space-y-2">
             <p className="text-sm text-white">
               Don't have an account?{' '}
               <Link to="/signup" className="text-[#00a92d] hover:text-[#00a92d]/90 font-medium">
                 Sign Up
               </Link>
+            </p>
+            <p className="text-sm text-white">
+              Forgot your password?{' '}
+              <button
+                onClick={handleResetPassword}
+                disabled={loading || !email}
+                className="text-[#00a92d] hover:text-[#00a92d]/90 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Reset Password
+              </button>
             </p>
           </div>
         </div>
