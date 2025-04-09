@@ -18,8 +18,8 @@ const DistributingState = ({
   totalCards
 }: DistributingStateProps) => {
   // Calculate which player is receiving the current card
-  const currentPlayerIndex = Math.floor(currentCardIndex / (totalCards / players.length));
-  const progress = (currentCardIndex / totalCards) * 100;
+  const currentPlayerIndex = totalCards > 0 ? Math.floor(currentCardIndex / (totalCards / players.length)) : 0;
+  const progress = totalCards > 0 ? (currentCardIndex / totalCards) * 100 : 0;
 
   // Get the target position for the current card
   const getTargetPosition = (playerPosition: string) => {

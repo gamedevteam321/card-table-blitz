@@ -333,7 +333,10 @@ const Room = () => {
     try {
       const { error } = await supabase
         .from('rooms')
-        .update({ status: 'in_progress' })
+        .update({ 
+          status: 'playing',
+          updated_at: new Date().toISOString()
+        })
         .eq('id', roomId);
 
       if (error) throw error;
@@ -342,6 +345,22 @@ const Room = () => {
       setTimeLeft(0);
     } catch (error) {
       console.error('Error starting game:', error);
+    }
+  };
+
+  const endGame = async () => {
+    try {
+      const { error } = await supabase
+        .from('rooms')
+        .update({ 
+          status: 'completed',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', roomId);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error ending game:', error);
     }
   };
 
@@ -369,7 +388,11 @@ const Room = () => {
 
   // If game has started, render the Game component
   if (gameStarted) {
-    return <Game roomId={roomId!} isHost={room?.created_by === user?.id} />;
+    return <Game 
+      roomId={roomId!} 
+      isHost={room?.created_by === user?.id} 
+      onGameComplete={endGame}
+    />;
   }
 
   return (

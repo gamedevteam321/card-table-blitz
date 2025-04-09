@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react';
+import { X, Play } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Player, Card, createDeck, shuffleDeck, generatePlayerColors, GameState as GameStateType, CardSuit, CardRank } from '../models/game';
 import { useToast } from '@/hooks/use-toast';
@@ -33,6 +33,11 @@ interface GamePlayer {
   id: string;
   username: string;
   cards: number;
+  status: 'active' | 'inactive';
+  shufflesRemaining: number;
+  autoPlayCount: number;
+  avatarColor: string;
+  score: number;
 }
 
 interface TableCard {
@@ -46,11 +51,17 @@ interface GameState {
   tableCards: TableCard[];
   myCards: number[];
   currentTurn: string;
+  gamePhase: 'shuffling' | 'distributing' | 'playing';
+  currentCardIndex: number;
+  totalCards: number;
+  shuffleProgress: number;
+  showShuffleAnimation: boolean;
 }
 
 interface GameProps {
   roomId: string;
   isHost: boolean;
+  onGameComplete?: () => void;
 }
 
 const createPlayers = (count: number, deck: Card[]): Player[] => {
@@ -92,12 +103,17 @@ const getTargetPosition = (playerPosition: string) => {
   }
 };
 
-export function Game({ roomId, isHost }: GameProps) {
+export function Game({ roomId, isHost, onGameComplete }: GameProps) {
   const [gameState, setGameState] = useState<GameState>({
     players: [],
-      tableCards: [],
+    tableCards: [],
     myCards: [],
-    currentTurn: ''
+    currentTurn: '',
+    gamePhase: 'shuffling',
+    currentCardIndex: 0,
+    totalCards: 0,
+    shuffleProgress: 0,
+    showShuffleAnimation: true
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -175,11 +191,16 @@ export function Game({ roomId, isHost }: GameProps) {
   };
 
   const processMovesToGameState = (moves: any[], players: any[], userId: string | undefined): GameState => {
-          return {
+    return {
       players: players.map(p => ({
         id: p.id,
         username: p.username,
-        cards: moves.filter(m => m.player_id === p.id && m.position === -1).length
+        cards: moves.filter(m => m.player_id === p.id && m.position === -1).length,
+        status: 'active',
+        shufflesRemaining: 1,
+        autoPlayCount: 0,
+        avatarColor: generatePlayerColors(players.length)[players.indexOf(p)],
+        score: 0
       })),
       tableCards: moves
         .filter(m => m.position >= 0)
@@ -191,7 +212,12 @@ export function Game({ roomId, isHost }: GameProps) {
       myCards: moves
         .filter(m => m.player_id === userId && m.position === -1)
         .map(m => parseInt(m.card_played)),
-      currentTurn: ''
+      currentTurn: '',
+      gamePhase: 'shuffling',
+      currentCardIndex: 0,
+      totalCards: 0,
+      shuffleProgress: 0,
+      showShuffleAnimation: true
     };
   };
 
@@ -233,80 +259,217 @@ export function Game({ roomId, isHost }: GameProps) {
     }
   };
 
+  const startGame = async () => {
+    try {
+      // Create and shuffle deck
+      const deck = shuffleDeck(createDeck());
+      const totalCards = deck.length;
+      const cardsPerPlayer = Math.floor(totalCards / gameState.players.length);
+      
+      // Start shuffling phase
+      setGameState(prev => ({
+        ...prev,
+        gamePhase: 'shuffling',
+        totalCards,
+        currentCardIndex: 0,
+        shuffleProgress: 0,
+        showShuffleAnimation: true
+      }));
+
+      // Simulate shuffling progress
+      for (let i = 0; i <= 100; i += 10) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        setGameState(prev => ({
+          ...prev,
+          shuffleProgress: i
+        }));
+      }
+
+      // Wait for shuffling animation
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Start distributing cards
+      setGameState(prev => ({
+        ...prev,
+        gamePhase: 'distributing',
+        showShuffleAnimation: false
+      }));
+
+      // Simulate card distribution
+      for (let i = 0; i < totalCards; i++) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        setGameState(prev => ({
+          ...prev,
+          currentCardIndex: i + 1
+        }));
+      }
+
+      // Wait for distribution animation to complete
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Start playing phase
+      setGameState(prev => ({
+        ...prev,
+        gamePhase: 'playing',
+        myCards: deck.slice(0, cardsPerPlayer).map(card => parseInt(card.value)),
+        currentTurn: gameState.players[0].id
+      }));
+
+    } catch (error) {
+      console.error('Error starting game:', error);
+      setError('Failed to start game');
+    }
+  };
+
+  const handleStartGame = async () => {
+    if (!isHost) {
+      toast.error('Only the host can start the game');
+      return;
+    }
+
+    try {
+      // Update room status to playing
+      const { error: roomError } = await supabase
+        .from('rooms')
+        .update({ 
+          status: 'playing',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', roomId);
+
+      if (roomError) throw roomError;
+
+      // Start the game sequence
+      await startGame();
+    } catch (error) {
+      console.error('Error starting game:', error);
+      toast.error('Failed to start game');
+    }
+  };
+
+  const handleGameComplete = async () => {
+    try {
+      // Call the onGameComplete callback if provided
+      if (onGameComplete) {
+        await onGameComplete();
+      }
+    } catch (error) {
+      console.error('Error completing game:', error);
+    }
+  };
+
   if (loading) return <div>Loading game...</div>;
   if (error) return <div>Error: {error}</div>;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-casino-dark to-casino-darker p-4">
       <div className="max-w-6xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Player Areas */}
-          <div className="space-y-8">
-            {gameState.players.map((player, index) => (
-              <motion.div
-                key={player.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className={`p-6 rounded-xl ${
-                  player.id === gameState.currentTurn
-                    ? 'bg-casino-gold/20 border-2 border-casino-gold'
-                    : 'bg-casino-darker/50'
-                }`}
+        {gameState.gamePhase === 'shuffling' && (
+          <div className="flex flex-col items-center justify-center gap-4">
+            <ShufflingState 
+              shuffleProgress={gameState.shuffleProgress}
+              showShuffleAnimation={gameState.showShuffleAnimation}
+            />
+            {isHost && (
+              <Button
+                onClick={handleStartGame}
+                className="bg-casino-gold hover:bg-casino-gold/90 text-white font-bold py-2 px-4 rounded-lg shadow-lg transition-all duration-200"
               >
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-xl font-semibold text-casino-gold">
-                    {player.username}
-                    {player.id === room?.created_by && (
-                      <span className="ml-2 text-sm text-casino-light">(Host)</span>
-                    )}
-                  </h3>
-                  <div className="text-casino-light">
-                    Cards: {player.cards}
-        </div>
-        </div>
-                {player.id === currentUser?.id && (
-                  <div className="flex flex-wrap gap-2">
-                    {gameState.myCards.map((card, cardIndex) => (
-                      <motion.div
-                        key={cardIndex}
-                        whileHover={{ y: -10 }}
-                        className="w-16 h-24 bg-white rounded-lg shadow-lg cursor-pointer"
-                        onClick={() => playCard(cardIndex)}
-                      >
-                        <div className="w-full h-full flex items-center justify-center text-2xl font-bold">
-                          {card}
-      </div>
-                      </motion.div>
-                    ))}
+                <Play className="w-4 h-4 mr-2" />
+                Start Game
+              </Button>
+            )}
           </div>
-                )}
-              </motion.div>
-            ))}
-        </div>
-        
-          {/* Game Table */}
-          <div className="bg-casino-darker/50 rounded-xl p-6">
-            <h3 className="text-xl font-semibold text-casino-gold mb-4">Table</h3>
-            <div className="min-h-[300px] bg-casino-dark/30 rounded-lg p-4">
-              <div className="grid grid-cols-4 gap-4">
-                {gameState.tableCards.map((card, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="w-16 h-24 bg-white rounded-lg shadow-lg"
-                  >
-                    <div className="w-full h-full flex items-center justify-center text-2xl font-bold">
-                      {card.card}
+        )}
+
+        {gameState.gamePhase === 'distributing' && (
+          <DistributingState 
+            players={gameState.players.map(p => ({
+              id: p.id,
+              name: p.username,
+              cards: [],
+              status: p.status,
+              shufflesRemaining: p.shufflesRemaining,
+              autoPlayCount: p.autoPlayCount,
+              avatarColor: p.avatarColor,
+              score: p.score
+            }))}
+            playerPositions={getPlayerPositions(gameState.players)}
+            currentCardIndex={gameState.currentCardIndex}
+            totalCards={gameState.totalCards}
+          />
+        )}
+
+        {gameState.gamePhase === 'playing' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Player Areas */}
+            <div className="space-y-8">
+              {gameState.players.map((player, index) => (
+                <motion.div
+                  key={player.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className={`p-6 rounded-xl ${
+                    player.id === gameState.currentTurn
+                      ? 'bg-casino-gold/20 border-2 border-casino-gold'
+                      : 'bg-casino-darker/50'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-semibold text-casino-gold">
+                      {player.username}
+                      {player.id === room?.created_by && (
+                        <span className="ml-2 text-sm text-casino-light">(Host)</span>
+                      )}
+                    </h3>
+                    <div className="text-casino-light">
+                      Cards: {player.cards}
                     </div>
-                  </motion.div>
-                ))}
+                  </div>
+                  {player.id === currentUser?.id && (
+                    <div className="flex flex-wrap gap-2">
+                      {gameState.myCards.map((card, cardIndex) => (
+                        <motion.div
+                          key={cardIndex}
+                          whileHover={{ y: -10 }}
+                          className="w-16 h-24 bg-white rounded-lg shadow-lg cursor-pointer"
+                          onClick={() => playCard(cardIndex)}
+                        >
+                          <div className="w-full h-full flex items-center justify-center text-2xl font-bold">
+                            {card}
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  )}
+                </motion.div>
+              ))}
+            </div>
+            
+            {/* Game Table */}
+            <div className="bg-casino-darker/50 rounded-xl p-6">
+              <h3 className="text-xl font-semibold text-casino-gold mb-4">Table</h3>
+              <div className="min-h-[300px] bg-casino-dark/30 rounded-lg p-4">
+                <div className="grid grid-cols-4 gap-4">
+                  {gameState.tableCards.map((card, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="w-16 h-24 bg-white rounded-lg shadow-lg"
+                    >
+                      <div className="w-full h-full flex items-center justify-center text-2xl font-bold">
+                        {card.card}
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
@@ -325,6 +488,18 @@ const getPlayerPosition = (index: number) => {
     default:
       return { x: 0, y: 0, rotate: 0 };
   }
+};
+
+// Helper function to get player positions
+const getPlayerPositions = (players: GamePlayer[]) => {
+  const positions: Record<string, string> = {};
+  const positionsList = ['bottom', 'left', 'top', 'right'];
+  
+  players.forEach((player, index) => {
+    positions[player.id] = positionsList[index % positionsList.length];
+  });
+  
+  return positions;
 };
 
 export default Game;

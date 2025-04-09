@@ -60,7 +60,7 @@ const JoinRoom = () => {
         console.error('Error cleaning up inactive rooms:', cleanupError);
       }
 
-      // Fetch active rooms
+      // Fetch active rooms that are in waiting state
       const { data: rooms, error: roomsError } = await supabase
         .from('rooms')
         .select('id, code, created_by, status, created_at')
