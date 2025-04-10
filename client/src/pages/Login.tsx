@@ -1,138 +1,90 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
-import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
-const Login = () => {
+export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [resetEmailSent, setResetEmailSent] = useState(false);
+  const [error, setError] = useState('');
+  const { signIn } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    setLoading(true);
-
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) throw error;
-      navigate('/');
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'An error occurred during login');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleResetPassword = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
-
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
-
-      if (error) throw error;
-      setResetEmailSent(true);
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'An error occurred while sending reset email');
-    } finally {
-      setLoading(false);
+      await signIn(email, password);
+      navigate('/dashboard');
+    } catch (err) {
+      setError('Failed to sign in. Please check your credentials.');
     }
   };
 
   return (
-    <div className="min-h-screen bg-casino-dark flex flex-col items-center justify-center p-4 pt-24">
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
-      >
-        <div className="bg-casino-dark border border-[#00a92d]/30 rounded-[10px] p-8 shadow-lg">
-          <h2 className="text-2xl font-bold text-white text-center mb-6">Login</h2>
-          
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-lg">
+        <div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            Sign in to your account
+          </h2>
+        </div>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
-            <div className="bg-red-500/10 border border-red-500/30 text-red-500 px-4 py-3 rounded-[10px] mb-4 text-sm">
-              {error}
-            </div>
+            <div className="text-red-500 text-sm text-center">{error}</div>
           )}
-
-          {resetEmailSent && (
-            <div className="bg-green-500/10 border border-green-500/30 text-green-500 px-4 py-3 rounded-[10px] mb-4 text-sm">
-              Password reset email sent! Please check your inbox.
-            </div>
-          )}
-
-          <form onSubmit={handleLogin} className="space-y-4">
+          <div className="rounded-md shadow-sm -space-y-px">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-white mb-1">
-                Email
+              <label htmlFor="email" className="sr-only">
+                Email address
               </label>
               <input
                 id="email"
+                name="email"
                 type="email"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder="Email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-2 rounded-[10px] bg-casino-dark/50 border border-[#00a92d]/30 text-white placeholder-white/50 focus:outline-none focus:border-[#00a92d] focus:ring-1 focus:ring-[#00a92d]"
-                required
               />
             </div>
-
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-white mb-1">
+              <label htmlFor="password" className="sr-only">
                 Password
               </label>
               <input
                 id="password"
+                name="password"
                 type="password"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-2 rounded-[10px] bg-casino-dark/50 border border-[#00a92d]/30 text-white placeholder-white/50 focus:outline-none focus:border-[#00a92d] focus:ring-1 focus:ring-[#00a92d]"
-                required
               />
             </div>
+          </div>
 
+          <div>
             <button
               type="submit"
-              disabled={loading}
-              className="w-full px-8 py-3 bg-[#00a92d] hover:bg-[#00a92d]/90 text-white font-bold rounded-[10px] text-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
-              {loading ? 'Logging in...' : 'Login'}
+              Sign in
             </button>
-          </form>
-
-          <div className="mt-4 text-center space-y-2">
-            <p className="text-sm text-white">
-              Don't have an account?{' '}
-              <Link to="/signup" className="text-[#00a92d] hover:text-[#00a92d]/90 font-medium">
-                Sign Up
-              </Link>
-            </p>
-            <p className="text-sm text-white">
-              Forgot your password?{' '}
-              <button
-                onClick={handleResetPassword}
-                disabled={loading || !email}
-                className="text-[#00a92d] hover:text-[#00a92d]/90 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Reset Password
-              </button>
-            </p>
           </div>
+        </form>
+        <div className="text-center">
+          <p className="text-sm text-gray-600">
+            Don't have an account?{' '}
+            <a
+              href="/signup"
+              className="font-medium text-indigo-600 hover:text-indigo-500"
+            >
+              Sign up
+            </a>
+          </p>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
-};
-
-export default Login; 
+} 

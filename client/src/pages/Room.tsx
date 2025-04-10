@@ -1,12 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSocket } from '../contexts/SocketContext';
 import Game from '@/components/Game';
 import { Button } from '@/components/ui/button';
 import { Users, Copy, Share2, Check, Clock } from 'lucide-react';
 import { shuffle } from '@/lib/utils';
+import { Room, RoomMessage, RoomParticipant } from '../types';
 
 interface Player {
   id: string;
@@ -49,14 +51,57 @@ const Room = () => {
   const { roomId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { socket } = useSocket();
   const [room, setRoom] = useState<Room | null>(null);
   const [players, setPlayers] = useState<Player[]>([]);
+  const [messages, setMessages] = useState<RoomMessage[]>([]);
+  const [participants, setParticipants] = useState<RoomParticipant[]>([]);
+  const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showCopied, setShowCopied] = useState(false);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [isReady, setIsReady] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!socket || !roomId) return;
+
+    // Join room
+    socket.emit('room:join', roomId);
+
+    // Listen for room updates
+    socket.on('room:user_joined', (data: { userId: string }) => {
+      setParticipants((prev) => [...prev, { user_id: data.userId } as RoomParticipant]);
+    });
+
+    socket.on('room:user_left', (data: { userId: string }) => {
+      setParticipants((prev) => prev.filter((p) => p.user_id !== data.userId));
+    });
+
+    socket.on('room:new_message', (message: RoomMessage) => {
+      setMessages((prev) => [...prev, message]);
+    });
+
+    socket.on('room:participants', (participants: RoomParticipant[]) => {
+      setParticipants(participants);
+    });
+
+    // Fetch room details
+    fetchRoomDetails();
+
+    return () => {
+      socket.off('room:user_joined');
+      socket.off('room:user_left');
+      socket.off('room:new_message');
+      socket.off('room:participants');
+    };
+  }, [socket, roomId]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   useEffect(() => {
     if (!roomId) {
@@ -370,6 +415,34 @@ const Room = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const fetchRoomDetails = async () => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/rooms/${roomId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${user?.id}`,
+          },
+        }
+      );
+      const data = await response.json();
+      setRoom(data);
+    } catch (err) {
+      setError('Failed to fetch room details');
+    }
+  };
+
+  const handleSendMessage = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMessage.trim() || !socket || !roomId) return;
+
+    socket.emit('room:message', {
+      roomId,
+      message: newMessage.trim(),
+    });
+    setNewMessage('');
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-casino-dark flex items-center justify-center">
@@ -396,115 +469,125 @@ const Room = () => {
   }
 
   return (
-    <div className="min-h-screen bg-casino-dark p-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-casino-dark/50 border border-casino-gold/30 rounded-xl p-6 shadow-lg">
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <h1 className="text-2xl font-bold text-casino-gold">Room {room?.code}</h1>
-              <p className="text-casino-light">
-                Created by {room?.creator_profile?.username}
-              </p>
+    <div className="min-h-screen bg-gray-100">
+      <nav className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16">
+            <div className="flex items-center">
+              <h1 className="text-xl font-bold text-gray-900">{room?.name}</h1>
             </div>
-            <div className="flex items-center gap-4">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  navigator.clipboard.writeText(window.location.href);
-                  setShowCopied(true);
-                  setTimeout(() => setShowCopied(false), 2000);
-                }}
-                className="text-casino-gold border-casino-gold/50 hover:bg-casino-gold/10"
+            <div className="flex items-center">
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="ml-4 px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
               >
-                {showCopied ? 'Copied!' : <Copy className="h-5 w-5" />}
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  navigator.share({
-                    title: 'Join my game room',
-                    text: 'Join my game room',
-                    url: window.location.href,
-                  });
-                }}
-                className="text-casino-gold border-casino-gold/50 hover:bg-casino-gold/10"
-              >
-                <Share2 className="h-5 w-5" />
-              </Button>
+                Back to Dashboard
+              </button>
             </div>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <h2 className="text-xl font-semibold text-casino-gold">Players</h2>
-              <div className="space-y-2">
-                {players.map((player) => (
-                  <div
-                    key={player.id}
-                    className="flex items-center justify-between bg-casino-dark/30 p-3 rounded-lg"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Users className="h-5 w-5 text-casino-gold" />
-                      <span className="text-white">{player.username}</span>
-                    </div>
-                    {player.is_ready && (
-                      <Check className="h-5 w-5 text-green-500" />
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <h2 className="text-xl font-semibold text-casino-gold">Game Settings</h2>
-              <div className="space-y-2">
-                <div className="flex justify-between items-center bg-casino-dark/30 p-3 rounded-lg">
-                  <span className="text-white">Stack Amount</span>
-                  <span className="text-casino-gold">{room?.amount_stack}</span>
-                </div>
-                <div className="flex justify-between items-center bg-casino-dark/30 p-3 rounded-lg">
-                  <span className="text-white">Max Players</span>
-                  <span className="text-casino-gold">{room?.max_players}</span>
-                </div>
-                <div className="flex justify-between items-center bg-casino-dark/30 p-3 rounded-lg">
-                  <span className="text-white">Time Remaining</span>
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-5 w-5 text-casino-gold" />
-                    <span className="text-casino-gold">
-                      {timeLeft !== null ? formatTime(timeLeft) : '--:--'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-8 flex justify-center">
-            <Button
-              onClick={handleReadyToggle}
-              className={`px-8 py-3 text-lg ${
-                isReady
-                  ? 'bg-red-500 hover:bg-red-600'
-                  : 'bg-casino-gold hover:bg-casino-gold/90'
-              }`}
-            >
-              {isReady ? 'Not Ready' : 'Ready'}
-            </Button>
-          </div>
-
-          {room?.created_by === user?.id && (
-            <div className="mt-4 flex justify-center">
-              <Button
-                onClick={startGame}
-                disabled={!players.every(p => p.is_ready)}
-                className="px-8 py-3 text-lg bg-green-500 hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Start Game
-              </Button>
-            </div>
-          )}
         </div>
-      </div>
+      </nav>
+
+      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div className="px-4 py-6 sm:px-0">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <div className="lg:col-span-2">
+              <div className="bg-white shadow rounded-lg p-6">
+                <h2 className="text-lg font-medium text-gray-900 mb-4">Chat</h2>
+                <div className="h-96 overflow-y-auto mb-4 space-y-4">
+                  {messages.map((message) => (
+                    <div
+                      key={message.id}
+                      className={`flex ${
+                        message.user_id === user?.id ? 'justify-end' : 'justify-start'
+                      }`}
+                    >
+                      <div
+                        className={`max-w-xs rounded-lg px-4 py-2 ${
+                          message.user_id === user?.id
+                            ? 'bg-indigo-600 text-white'
+                            : 'bg-gray-200 text-gray-900'
+                        }`}
+                      >
+                        <p className="text-sm">{message.content}</p>
+                      </div>
+                    </div>
+                  ))}
+                  <div ref={messagesEndRef} />
+                </div>
+                <form onSubmit={handleSendMessage} className="flex space-x-4">
+                  <input
+                    type="text"
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    placeholder="Type a message..."
+                    className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  />
+                  <button
+                    type="submit"
+                    className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  >
+                    Send
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <div className="bg-white shadow rounded-lg p-6">
+              <h2 className="text-lg font-medium text-gray-900 mb-4">
+                Room Details
+              </h2>
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm text-gray-500">Game Type</p>
+                  <p className="text-lg font-medium text-gray-900">
+                    {room?.game_type}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Room Type</p>
+                  <p className="text-lg font-medium text-gray-900">
+                    {room?.type}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Stake Value</p>
+                  <p className="text-lg font-medium text-gray-900">
+                    ${room?.stake_value}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Players</p>
+                  <p className="text-lg font-medium text-gray-900">
+                    {participants.length}/{room?.max_players}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  Participants
+                </h3>
+                <div className="space-y-2">
+                  {participants.map((participant) => (
+                    <div
+                      key={participant.user_id}
+                      className="flex items-center space-x-2"
+                    >
+                      <div className="w-2 h-2 rounded-full bg-green-500" />
+                      <span className="text-sm text-gray-900">
+                        {participant.user_id === user?.id
+                          ? 'You'
+                          : `Player ${participant.user_id.slice(0, 4)}`}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
   );
 };

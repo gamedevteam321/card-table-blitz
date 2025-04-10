@@ -1,22 +1,20 @@
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 
 interface PrivateRouteProps {
   children: React.ReactNode;
 }
 
-const PrivateRoute = ({ children }: PrivateRouteProps) => {
+export default function PrivateRoute({ children }: PrivateRouteProps) {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-casino-dark to-casino-darker flex items-center justify-center">
-        <div className="text-casino-gold text-xl">Loading...</div>
-      </div>
-    );
+    return <div>Loading...</div>;
   }
 
-  return user ? <>{children}</> : <Navigate to="/login" />;
-};
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
 
-export default PrivateRoute; 
+  return <>{children}</>;
+} 
